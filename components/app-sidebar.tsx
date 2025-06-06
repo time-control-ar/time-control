@@ -32,7 +32,7 @@ const data = {
     },
     {
       title: "Eventos",
-      url: "/resultados",
+      url: "/eventos",
       icon: Calendar1,
     }
   ]
