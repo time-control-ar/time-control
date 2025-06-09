@@ -17,6 +17,10 @@ export interface Category {
  runners: Runner[];
 }
 export interface Event {
- name: string;
- categories: Category[];
+    id: number | string;
+    name: string;
+    date: string;
+    time: string;
+    location: string;
+    categories: Category[];
 }
