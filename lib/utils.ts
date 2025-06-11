@@ -9,7 +9,14 @@ export function cn(...inputs: ClassValue[]) {
 export function textToJsonRaceResults(text: string): Event | undefined {
  try {
   const lines = text.trim().split("\n");
-  const event: Event = { name: "", categories: [] };
+  const event: Event = {
+   id: 0,
+   name: "",
+   date: "",
+   time: "",
+   location: "",
+   categories: [],
+  };
   let currentCategory: Category | null = null;
 
   for (const line of lines) {

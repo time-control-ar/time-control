@@ -6,50 +6,92 @@ import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import { Plus } from 'lucide-react'
 import EventList from '@/components/events/EventList'
+import { Category } from '../schemas'
 
+export const events = [
+  {
+    id: 1,
+    name: "Maratón Ciudad de Buenos Aires",
+    categories: [
+      {
+        id: 1,
+        name: "Maratón",
+        runners: []
+      }
+    ] as Category[],
+    date: "2025-08-15",
+    time: "07:00",
+    location: "Avenida 9 de Julio, Buenos Aires",
+    imageUrl: "https://www.timecontrolonline.com.ar/Archivos/eventos/Campeonato%20Duatlon%20Cordoba.jpeg",
+    description: "Participa en la maratón más emblemática de Argentina, recorriendo los puntos más icónicos de la ciudad."
+  },
+  {
+    id: 2,
+    name: "Maratón de la Cordillera",
+    categories: [
+      {
+        id: 1,
+        name: "Maratón",
+        runners: []
+      }
+    ] as Category[],
+    date: "2025-09-10",
+    time: "06:30",
+    location: "San Carlos de Bariloche, Río Negro",
+    imageUrl: "https://www.timecontrolonline.com.ar/Archivos/eventos/lista.jpeg",
+    description: "Corre entre paisajes montañosos y disfruta de la naturaleza en su máxima expresión."
+  },
+  {
+    id: 3,
+    name: "Maratón del Vino",
+    categories: [
+      {
+        id: 1,
+        name: "Maratón",
+        runners: []
+      }
+    ] as Category[],
+    date: "2025-10-05",
+    time: "08:00",
+    location: "Mendoza, Argentina",
+    imageUrl: "https://www.timecontrolonline.com.ar/Archivos/eventos/Gran%20Fondo%20Justiano%20Posse%2024%20Agosto%202025.jpeg",
+    description: "Una experiencia única corriendo entre viñedos y bodegas, con degustaciones al final del recorrido."
+  },
+  {
+    id: 4,
+    name: "Maratón Costera",
+    categories: [
+      {
+        id: 1,
+        name: "Maratón",
+        runners: []
+      }
+    ] as Category[],
+    date: "2025-11-20",
+    time: "07:00",
+    location: "Mar del Plata, Buenos Aires",
+    imageUrl: "https://www.timecontrolonline.com.ar/Archivos/eventos/WhatsApp%20Image%202025-05-24%20at%2019.23.57.jpeg",
+    description: "Disfruta de la brisa marina mientras corres a lo largo de la costa atlántica."
+  },
+  {
+    id: 5,
+    name: "Maratón Nocturna",
+    categories: [
+      {
+        id: 1,
+        name: "Maratón",
+        runners: []
+      }
+    ] as Category[],
+    date: "2025-12-15",
+    time: "20:00",
+    location: "Rosario, Santa Fe",
+    imageUrl: "https://www.timecontrolonline.com.ar/Archivos/eventos/Ocr.jpeg",
+    description: "Vive la emoción de correr bajo las estrellas en un evento nocturno único."
+  }
+]
 
-export default async function EventPage() {
-  //const { data } = await axios.get('/api/events/parse')
-  //console.log(data)
-  const events = [
-    {
-      id: 1,
-      name: "Charla sobre Inteligencia Artificial",
-      date: "2025-06-15",
-      time: "18:00",
-      location: "Auditorio Central - Universidad X"
-    },
-    {
-      id: 2,
-      name: "Taller de Desarrollo Web",
-      date: "2025-06-20",
-      time: "14:30",
-      location: "Laboratorio 3 - Edificio B"
-    },
-    {
-      id: 3,
-      name: "Festival de Música Independiente",
-      date: "2025-06-22",
-      time: "19:00",
-      location: "Parque Cultural del Río"
-    },
-    {
-      id: 4,
-      name: "Encuentro de Emprendedores",
-      date: "2025-06-25",
-      time: "10:00",
-      location: "Centro de Convenciones San Martín"
-    },
-    {
-      id: 5,
-      name: "Conferencia de Ciberseguridad",
-      date: "2025-07-01",
-      time: "09:00",
-      location: "Sala Magna - Facultad de Ingeniería"
-    }
-  ]
-
-
+export default async function EventsPage() {
   return (
     <SidebarProvider>
       <AppSidebar variant="inset" />
@@ -73,7 +115,7 @@ export default async function EventPage() {
               </div>
               <div className='px-4 lg:px-6'>
 
-                <EventList events={events}/>
+                <EventList events={events} />
               </div>
             </div>
           </div>

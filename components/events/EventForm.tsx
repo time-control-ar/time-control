@@ -2,7 +2,7 @@
 
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { eventSchema, EventFormData } from '@/lib/validations/event-schema'
+import { eventSchema, EventFormData } from '@/lib/schemas/event.schema'
 import { createEvent } from '@/services/eventService'
 import { Button } from '../ui/button'
 import { Input } from '../ui/input'
@@ -153,8 +153,8 @@ export default function EventForm() {
           )}
         </div>
       </div>
-      
-      
+
+
       <div className='flex items-center justify-end gap-2'>
         <Button
           type='button'

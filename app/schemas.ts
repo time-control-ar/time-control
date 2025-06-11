@@ -16,11 +16,13 @@ export interface Category {
  name: string;
  runners: Runner[];
 }
-export interface Event {
-    id: number | string;
-    name: string;
-    date: string;
-    time: string;
-    location: string;
-    categories: Category[];
+export interface EventProps {
+ id: number | string;
+ name: string;
+ date: string;
+ time: string;
+ location: string;
+ categories: Category[];
+ imageUrl: string;
+ description: string;
 }
