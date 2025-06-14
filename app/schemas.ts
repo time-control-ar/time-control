@@ -14,7 +14,6 @@ export interface Runner {
 export interface Category {
  id: number;
  name: string;
- runners: Runner[];
 }
 export interface EventProps {
  id: number | string;
@@ -23,6 +22,7 @@ export interface EventProps {
  time: string;
  location: string;
  categories: Category[];
+ participants: Runner[];
  imageUrl: string;
  description: string;
 }

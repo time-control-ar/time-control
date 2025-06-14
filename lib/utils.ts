@@ -1,4 +1,4 @@
-import { Category, Event, Runner } from "@/app/schemas";
+import { Category, EventProps, Runner } from "@/app/schemas";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 
@@ -6,15 +6,17 @@ export function cn(...inputs: ClassValue[]) {
  return twMerge(clsx(inputs));
 }
 
-export function textToJsonRaceResults(text: string): Event | undefined {
+export function textToJsonRaceResults(text: string): EventProps | undefined {
  try {
   const lines = text.trim().split("\n");
-  const event: Event = {
+  const event: EventProps = {
    id: 0,
-   name: "",
-   date: "",
    time: "",
    location: "",
+   imageUrl: "",
+   description: "",
+   name: "",
+   date: new Date().toISOString(),
    categories: [],
   };
   let currentCategory: Category | null = null;

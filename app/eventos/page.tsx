@@ -6,19 +6,86 @@ import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import { Plus } from 'lucide-react'
 import EventList from '@/components/events/EventList'
-import { Category } from '../schemas'
+import { Category, Runner } from '../schemas'
+const categories: Category[] = [
+  {
+    id: 1,
+    name: "Juveniles A"
+  },
+  {
+    id: 2,
+    name: "Juveniles B"
+  },
+  {
+    id: 3,
+    name: "Adultos A"
+  },
+  {
+    id: 4,
+    name: "Adultos B"
+  },
+  {
+    id: 5,
+    name: "Veteranos A"
+  },
+  {
+    id: 6,
+    name: "Veteranos B"
+  },
+  {
+    id: 7,
+    name: "Elite"
+  }
+]
+
+const runners: Runner[] = [
+  {
+    sex: "M",
+    name: "Juan Pérez",
+    chip: "A123",
+    dorsal: 1,
+    modality: "42K",
+    category: "Adultos A",
+    time: "03:45:30.000",
+    position: 1,
+    positionSex: 1,
+    positionCategory: 1,
+    pace: "05:20"
+  },
+  {
+    sex: "F",
+    name: "María García",
+    chip: "B456",
+    dorsal: 2,
+    modality: "42K",
+    category: "Elite",
+    time: "03:50:45.000",
+    position: 2,
+    positionSex: 1,
+    positionCategory: 1,
+    pace: "05:28"
+  },
+  {
+    sex: "M",
+    name: "Carlos López",
+    chip: "C789",
+    dorsal: 3,
+    modality: "21K",
+    category: "Veteranos A",
+    time: "01:45:20.000",
+    position: 1,
+    positionSex: 1,
+    positionCategory: 1,
+    pace: "05:00"
+  }
+]
 
 export const events = [
   {
     id: 1,
     name: "Maratón Ciudad de Buenos Aires",
-    categories: [
-      {
-        id: 1,
-        name: "Maratón",
-        runners: []
-      }
-    ] as Category[],
+    categories: categories.slice(2, 5),
+    participants: runners.slice(0, 2),
     date: "2025-08-15",
     time: "07:00",
     location: "Avenida 9 de Julio, Buenos Aires",
@@ -28,13 +95,8 @@ export const events = [
   {
     id: 2,
     name: "Maratón de la Cordillera",
-    categories: [
-      {
-        id: 1,
-        name: "Maratón",
-        runners: []
-      }
-    ] as Category[],
+    categories,
+    participants: runners,
     date: "2025-09-10",
     time: "06:30",
     location: "San Carlos de Bariloche, Río Negro",
@@ -44,13 +106,8 @@ export const events = [
   {
     id: 3,
     name: "Maratón del Vino",
-    categories: [
-      {
-        id: 1,
-        name: "Maratón",
-        runners: []
-      }
-    ] as Category[],
+    categories: categories.slice(3, 5),
+    participants: [runners[2]],
     date: "2025-10-05",
     time: "08:00",
     location: "Mendoza, Argentina",
@@ -60,13 +117,8 @@ export const events = [
   {
     id: 4,
     name: "Maratón Costera",
-    categories: [
-      {
-        id: 1,
-        name: "Maratón",
-        runners: []
-      }
-    ] as Category[],
+    categories: categories.slice(0, 2),
+    participants: [],
     date: "2025-11-20",
     time: "07:00",
     location: "Mar del Plata, Buenos Aires",
@@ -76,13 +128,8 @@ export const events = [
   {
     id: 5,
     name: "Maratón Nocturna",
-    categories: [
-      {
-        id: 1,
-        name: "Maratón",
-        runners: []
-      }
-    ] as Category[],
+    categories: categories.slice(6),
+    participants: [],
     date: "2025-12-15",
     time: "20:00",
     location: "Rosario, Santa Fe",
