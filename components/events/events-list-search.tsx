@@ -3,11 +3,12 @@
 import { useState, useCallback, useEffect } from 'react'
 import { events as eventsData } from '../../app/eventos/page'
 import { debounce } from 'lodash'
-import { ArrowUpRightIcon, CalendarIcon, PinIcon, PlusIcon, SearchIcon, TrophyIcon, Users2 } from 'lucide-react'
+import { ArrowUpIcon, CalendarIcon, PinIcon, PlusIcon, SearchIcon, TrophyIcon, Users2 } from 'lucide-react'
 import { AnimatePresence, motion } from 'framer-motion'
+import { AnimatedText } from '../ui/animated-text'
 import { EventProps } from '@/app/schemas'
 import Image from 'next/image'
-import { AnimatedText } from '../ui/animated-text'
+import { Button } from '../ui/button'
 
 const EventCard = ({ event }: { event: EventProps }) => {
     const [isOpen, setIsOpen] = useState(false)
@@ -19,85 +20,68 @@ const EventCard = ({ event }: { event: EventProps }) => {
 
     return (
         <motion.div
-            className="w-full rounded-t-2xl !rounded-b-[36px] bg-gray-950 overflow-hidden relative flex flex-col"
+            className="w-full rounded-t-3xl !rounded-b-3xl bg-gray-950 overflow-hidden relative flex flex-col"
             onClick={() => setIsOpen(!isOpen)}
         >
             <motion.div
-                layout
-                initial={{ height: isOpen ? '340px' : '250px' }}
-                animate={{ height: isOpen ? '340px' : '250px' }}
-                exit={{ height: isOpen ? '340px' : '250px', transition: { duration: 0.3 } }}
-                className="flex w-full justify-between top-0 right-0 z-10 p-2 cursor-pointer relative"
+                initial={{ height: isOpen ? '300px' : 'max' }}
+                animate={{ height: isOpen ? '300px' : 'max' }}
+                exit={{ height: isOpen ? '300px' : 'max' }}
+                className="flex w-full justify-between z-10 cursor-pointer relative"
             >
-                <div className="absolute top-2 left-2 flex flex-col w-full h-max z-30">
-                    <div className="flex items-center gap-2 p-2 px-3 rounded-xl bg-gray-50 shadow-md w-max">
-                        <CalendarIcon className="w-4 h-4 text-red-500" />
-                        <p className="text-gray-900 text-xs font-semibold tracking-tighter leading-tight">
-                            {parseDate(event.date)}
-                        </p>
+                <div className="absolute top-0 left-0 h-max z-30 w-full">
+                    <div className="flex w-full justify-between items-center p-2">
+                        {/* <div className="flex items-center gap-1 p-2 px-3 rounded-xl z-10 bg-white/80 backdrop-blur-sm">
+                            <CalendarIcon className="w-4 h-4 text-gray-900" />
+                            <p className="text-gray-900 text-xs font-semibold tracking-tighter leading-tight">
+                                {parseDate(event.date)}
+                            </p>
+                        </div> */}
+
+                        <button className="min-w-10 min-h-10 max-w-10 max-h-10 rounded-full flex items-center justify-center transition-all duration-75">
+                            <ArrowUpIcon
+                                className={`w-5 h-5 text-white transition-all ${isOpen ? 'rotate-180' : ''}`}
+                            />
+                        </button>
+
+
                     </div>
                 </div>
 
-                <Image
-                    src={event.imageUrl}
-                    alt={event.name}
-                    fill
-                    className="object-cover"
-                    objectPosition='top'
-                    priority
-                />
-
-                <motion.div layout className="px-4 bg-gradient-to-t from-gray-950 via-gray-950/90 to-transparent absolute bottom-0 left-0 right-0">
-                    <div className={`flex flex-col pb-6 px-2 cursor-pointer transition-all duration-500 ${isOpen ? 'pt-8' : 'pt-12'}`}>
-                        <div className="flex justify-between items-start">
-                            <h2 className="text-gray-50 text-2xl font-bold tracking-tight">
-                                {event.name}
-                            </h2>
-
-                            <button type="button" className={`w-8 h-8 rounded-full ${isOpen ? 'bg-gray-900/50' : 'bg-gray-900'} backdrop-blur-sm flex items-center justify-center`}>
-                                <ArrowUpRightIcon
-                                    className={`w-5 h-5 text-gray-50 transition-all ${isOpen ? 'rotate-45' : 'rotate-[135deg]'}`}
-                                />
-                            </button>
-                        </div>
-
-                        <AnimatePresence>
-                            {isOpen && (
-                                <motion.p
-                                    initial={{ opacity: 0, height: 0 }}
-                                    animate={{ opacity: 1, height: isOpen ? 'auto' : 0 }}
-                                    exit={{ opacity: 0, height: 0 }}
-                                    transition={{ duration: 0.3 }}
-                                    className={`text-gray-300 text-sm font-normal tracking-tight overflow-hidden`}>
-                                    {event.description}
-                                </motion.p>
-                            )}
-                        </AnimatePresence>
-                    </div>
-                </motion.div>
-
+                <div className="relative w-full h-[300px] overflow-hidden">
+                    <Image
+                        src={event.imageUrl}
+                        alt={event.name}
+                        className="object-cover"
+                        fill
+                        objectPosition='top'
+                        onClick={() => setIsOpen(!isOpen)}
+                        priority
+                    />
+                </div>
             </motion.div>
 
-            <div className="flex flex-col gap-4 px-6 pb-8">
-                <div className="flex gap-2 items-center">
-                    <PinIcon className="w-5 h-5 text-red-400" />
-                    <p className="text-gray-50 text-sm font-normal tracking-tighter leading-tight">
-                        {event.location}
-                    </p>
-                </div>
+            <div className="flex flex-col gap-4 px-6 pt-4 pb-6">
+                <div
+                    className={`flex flex-col gap-3 pb-6 cursor-pointer transition-all duration-500`}
+                    onClick={() => setIsOpen(!isOpen)}
+                >
+                    <h2 className="text-gray-50 text-2xl font-bold tracking-tight">
+                        {event.name}
+                    </h2>
 
-                <div className="flex gap-2 items-center">
-                    <Users2 className="w-5 h-5 text-sky-400" />
-                    <p className="text-gray-50 text-sm font-normal tracking-tighter leading-tight">
-                        {event?.participants?.length || 0} participantes
-                    </p>
-                </div>
-
-                <div className="flex gap-2 items-center">
-                    <TrophyIcon className="w-5 h-5 text-sky-400" />
-                    <p className="text-gray-50 text-sm font-normal tracking-tighter leading-tight">
-                        Ver resultados
-                    </p>
+                    <AnimatePresence>
+                        {isOpen && (
+                            <motion.p
+                                initial={{ opacity: 0, height: 0, overflow: 'hidden' }}
+                                animate={{ opacity: 1, height: 'max-content', overflow: 'visible' }}
+                                exit={{ opacity: 0, height: 0, overflow: 'hidden' }}
+                                transition={{ duration: 0.3, delay: 0.3 }}
+                                className={`text-gray-300 text-sm font-normal tracking-tight overflow-hidden`}>
+                                {event.description}
+                            </motion.p>
+                        )}
+                    </AnimatePresence>
                 </div>
             </div>
 
@@ -108,8 +92,29 @@ const EventCard = ({ event }: { event: EventProps }) => {
                         animate={{ opacity: 1, height: 'max-content' }}
                         exit={{ opacity: 0, height: 0 }}
                         transition={{ duration: 0.3, delay: 0.1 }}
-                        className="h-max"
+                        className="h-max flex flex-col gap-2"
                     >
+                        <div className="flex gap-2 items-center">
+                            <PinIcon className="w-5 h-5 text-red-400" />
+                            <p className="text-gray-50 text-sm font-normal tracking-tighter leading-tight">
+                                {event.location}
+                            </p>
+                        </div>
+
+                        <div className="flex gap-2 items-center">
+                            <Users2 className="w-5 h-5 text-blue-400" />
+                            <p className="text-gray-50 text-sm font-normal tracking-tighter leading-tight">
+                                {event?.participants?.length || 0} participantes
+                            </p>
+                        </div>
+
+                        <div className="flex gap-2 items-center">
+                            <TrophyIcon className="w-5 h-5 text-yellow-400" />
+                            <p className="text-gray-50 text-sm font-normal tracking-tighter leading-tight">
+                                Ver resultados
+                            </p>
+                        </div>
+
                         <div className="flex justify-end gap-2 px-4 pb-3 -mt-2">
                             <button disabled className="w-full max-w-max bg-white rounded-3xl py-3 flex items-center justify-center gap-2 px-4 hover:bg-white transition-all duration-75 disabled:opacity-50 disabled:cursor-not-allowed">
                                 <p className="text-gray-900 text-sm font-normal tracking-tighter leading-tight">
@@ -121,7 +126,7 @@ const EventCard = ({ event }: { event: EventProps }) => {
                     </motion.div>
                 ) : null}
             </AnimatePresence>
-        </motion.div>
+        </motion.div >
     )
 }
 const EventsListSearch = () => {
@@ -169,7 +174,7 @@ const EventsListSearch = () => {
                 delay={0.5}
             />
 
-            <motion.div className="flex flex-col w-full gap-5 pb-12 transition-all duration-75">
+            <motion.div className="flex flex-col w-full gap-5 transition-all duration-75">
 
                 <div className="sticky top-0 z-20 pb-2 h-full">
                     <div className="relative">
