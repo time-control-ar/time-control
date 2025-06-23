@@ -3,161 +3,119 @@
 import { useState, useCallback, useEffect } from 'react'
 import { events as eventsData } from '../../app/eventos/page'
 import { debounce } from 'lodash'
-import { ArrowUpIcon, CalendarIcon, PinIcon, PlusIcon, SearchIcon, TrophyIcon, Users2 } from 'lucide-react'
+import { CalendarIcon, FilterIcon, MinusIcon, PinIcon, PlusIcon, SearchIcon, SlidersHorizontal, SlidersIcon, TrophyIcon, Users2 } from 'lucide-react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { AnimatedText } from '../ui/animated-text'
 import { EventProps } from '@/app/schemas'
 import Image from 'next/image'
-import { Button } from '../ui/button'
 
+function serializeText(text: string) {
+    return text.toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/\s+/g, '')
+}
+
+// Event card component
 const EventCard = ({ event }: { event: EventProps }) => {
     const [isOpen, setIsOpen] = useState(false)
 
-    const parseDate = (date: string) => {
-        const dateObj = new Date(date)
-        return dateObj.toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })
-    }
+    const toggleOpen = () => setIsOpen(!isOpen)
 
     return (
         <motion.div
-            className="w-full rounded-t-3xl !rounded-b-3xl bg-gray-950 overflow-hidden relative flex flex-col"
-            onClick={() => setIsOpen(!isOpen)}
+            className="w-full rounded-[23px] overflow-hidden flex flex-col h-max cursor-pointer shadow-lg"
+            onClick={toggleOpen}
         >
-            <motion.div
-                initial={{ height: isOpen ? '300px' : 'max' }}
-                animate={{ height: isOpen ? '300px' : 'max' }}
-                exit={{ height: isOpen ? '300px' : 'max' }}
-                className="flex w-full justify-between z-10 cursor-pointer relative"
-            >
-                <div className="absolute top-0 left-0 h-max z-30 w-full">
-                    <div className="flex w-full justify-between items-center p-2">
-                        {/* <div className="flex items-center gap-1 p-2 px-3 rounded-xl z-10 bg-white/80 backdrop-blur-sm">
-                            <CalendarIcon className="w-4 h-4 text-gray-900" />
-                            <p className="text-gray-900 text-xs font-semibold tracking-tighter leading-tight">
-                                {parseDate(event.date)}
-                            </p>
-                        </div> */}
+            <motion.div className="flex w-full z-10 min-h-[350px] relative">
+                <div className="absolute top-0 left-0 w-full h-[17%] overflow-hidden bg-gradient-to-b from-gray-950/50 to-transparent z-20" />
 
-                        <button className="min-w-10 min-h-10 max-w-10 max-h-10 rounded-full flex items-center justify-center transition-all duration-75">
-                            <ArrowUpIcon
-                                className={`w-5 h-5 text-white transition-all ${isOpen ? 'rotate-180' : ''}`}
-                            />
-                        </button>
+                <Image
+                    src={event.imageUrl}
+                    alt={event.name}
+                    className="z-10"
+                    objectPosition='top'
+                    objectFit='cover'
+                    fill
+                    priority
+                />
 
+                <div className="absolute bottom-0 left-0 w-full z-10 pt-[58px] bg-gradient-to-t from-gray-950 via-gray-950/90 to-transparent px-4 pb-4">
+                    <motion.h2 className="text-gray-50 text-xl font-semibold tracking-tight mb-1">
+                        {event.name}
+                    </motion.h2>
 
-                    </div>
-                </div>
-
-                <div className="relative w-full h-[300px] overflow-hidden">
-                    <Image
-                        src={event.imageUrl}
-                        alt={event.name}
-                        className="object-cover"
-                        fill
-                        objectPosition='top'
-                        onClick={() => setIsOpen(!isOpen)}
-                        priority
-                    />
+                    <motion.div className="flex w-full justify-between items-end gap-3">
+                        <p className="text-gray-100 text-[14px] font-light tracking-tight">
+                            {event.description}
+                        </p>
+                    </motion.div>
                 </div>
             </motion.div>
 
-            <div className="flex flex-col gap-4 px-6 pt-4 pb-6">
-                <div
-                    className={`flex flex-col gap-3 pb-6 cursor-pointer transition-all duration-500`}
-                    onClick={() => setIsOpen(!isOpen)}
-                >
-                    <h2 className="text-gray-50 text-2xl font-bold tracking-tight">
-                        {event.name}
-                    </h2>
+            <motion.div layout="position" className="flex w-full justify-between items-end gap-3">
 
-                    <AnimatePresence>
-                        {isOpen && (
-                            <motion.p
-                                initial={{ opacity: 0, height: 0, overflow: 'hidden' }}
-                                animate={{ opacity: 1, height: 'max-content', overflow: 'visible' }}
-                                exit={{ opacity: 0, height: 0, overflow: 'hidden' }}
-                                transition={{ duration: 0.3, delay: 0.3 }}
-                                className={`text-gray-300 text-sm font-normal tracking-tight overflow-hidden`}>
-                                {event.description}
-                            </motion.p>
-                        )}
-                    </AnimatePresence>
-                </div>
-            </div>
-
-            <AnimatePresence mode="wait">
-                {isOpen ? (
-                    <motion.div
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: 'max-content' }}
-                        exit={{ opacity: 0, height: 0 }}
-                        transition={{ duration: 0.3, delay: 0.1 }}
-                        className="h-max flex flex-col gap-2"
-                    >
-                        <div className="flex gap-2 items-center">
-                            <PinIcon className="w-5 h-5 text-red-400" />
-                            <p className="text-gray-50 text-sm font-normal tracking-tighter leading-tight">
-                                {event.location}
-                            </p>
-                        </div>
-
-                        <div className="flex gap-2 items-center">
-                            <Users2 className="w-5 h-5 text-blue-400" />
-                            <p className="text-gray-50 text-sm font-normal tracking-tighter leading-tight">
-                                {event?.participants?.length || 0} participantes
-                            </p>
-                        </div>
-
-                        <div className="flex gap-2 items-center">
-                            <TrophyIcon className="w-5 h-5 text-yellow-400" />
-                            <p className="text-gray-50 text-sm font-normal tracking-tighter leading-tight">
-                                Ver resultados
-                            </p>
-                        </div>
-
-                        <div className="flex justify-end gap-2 px-4 pb-3 -mt-2">
-                            <button disabled className="w-full max-w-max bg-white rounded-3xl py-3 flex items-center justify-center gap-2 px-4 hover:bg-white transition-all duration-75 disabled:opacity-50 disabled:cursor-not-allowed">
-                                <p className="text-gray-900 text-sm font-normal tracking-tighter leading-tight">
-                                    Inscribirme
-                                </p>
-                                <PlusIcon className="w-5 h-5 text-gray-900" />
-                            </button>
-                        </div>
-                    </motion.div>
-                ) : null}
-            </AnimatePresence>
+                <AnimatePresence mode="wait">
+                    {isOpen && (
+                        <motion.div
+                            initial={{ height: 0 }}
+                            animate={{ height: 'auto' }}
+                            exit={{ height: 0 }}
+                            transition={{ duration: 0.3, ease: 'easeInOut' }}
+                            className="z-20 bg-gray-950 -mt-1 w-full"
+                        >
+                            <motion.div
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0, transition: { delay: 0.1 } }}
+                                exit={{ opacity: 0, y: 10 }}
+                                transition={{ duration: 0.3, ease: 'easeInOut' }}
+                                className="h-max flex flex-col gap-3 p-2 bg-gray-950"
+                            >
+                                <button
+                                    className="w-full max-w-max bg-white rounded-3xl py-2 flex items-center justify-center gap-2 px-5 hover:bg-white transition-all duration-75 disabled:opacity-50 disabled:cursor-not-allowed ml-auto"
+                                >
+                                    <p className="text-gray-900 text-sm font-normal tracking-tighter">
+                                        Ver más
+                                    </p>
+                                    <PlusIcon className="w-4 h-4 text-gray-900" />
+                                </button>
+                            </motion.div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+            </motion.div>
         </motion.div >
     )
 }
+
 const EventsListSearch = () => {
     const [mounted, setMounted] = useState(false)
-
     const [events, setEvents] = useState(eventsData)
     const [search, setSearch] = useState('')
-    const [isLoading, setIsLoading] = useState(false)
 
-    function serializeText(text: string) {
-        return text.toLowerCase().replace(/ /g, '').replace(/á/g, 'a').replace(/é/g, 'e').replace(/í/g, 'i').replace(/ó/g, 'o').replace(/ú/g, 'u')
-    }
+
     const handleSearch = useCallback(
-        debounce((search: string) => {
-            setIsLoading(true)
-
-            if (search.length > 0) {
-                const filteredEvents = eventsData.filter((event) => serializeText(event.name).includes(serializeText(search)) || serializeText(event.location).includes(serializeText(search)) || serializeText(event.description).includes(serializeText(search)))
-
-                setEvents(filteredEvents)
-            } else {
+        debounce((searchTerm: string) => {
+            if (!searchTerm.trim()) {
                 setEvents(eventsData)
+                return
             }
-            setIsLoading(false)
+
+            const serializedSearch = serializeText(searchTerm)
+            const filteredEvents = eventsData.filter(event =>
+                serializeText(event.name).includes(serializedSearch) ||
+                serializeText(event.location).includes(serializedSearch) ||
+                serializeText(event.description).includes(serializedSearch)
+            )
+
+            setEvents(filteredEvents)
         }, 300),
         []
     )
 
     useEffect(() => {
         handleSearch(search)
-    }, [search])
+    }, [search, handleSearch])
 
     useEffect(() => {
         setMounted(true)
@@ -166,69 +124,75 @@ const EventsListSearch = () => {
     if (!mounted) return null
 
     return (
-        <div className="flex flex-col h-full w-full px-6 overflow-y-auto ">
+        <div className="flex flex-col h-full w-full overflow-y-auto">
 
-            <AnimatedText
-                text="Eventos"
-                className="text-3xl md:text-3xl text-start font-medium text-gray-800 dark:text-white p-2"
-                delay={0.5}
-            />
 
-            <motion.div className="flex flex-col w-full gap-5 transition-all duration-75">
+            <motion.div className="flex flex-col w-full">
 
-                <div className="sticky top-0 z-20 pb-2 h-full">
-                    <div className="relative">
-                        <div className="absolute h-6 top-0 left-0 w-full bg-gradient-to-b to-transparent from-white dark:from-gray-950 via-white/60 dark:via-gray-950  rounded-b-7xl -z-10" />
+                <AnimatedText
+                    text="Eventos"
+                    className="text-3xl md:text-3xl text-start font-medium text-gray-700 dark:text-white pt-6 px-6 pb-3"
+                    delay={0.5}
+                />
+                <div className="sticky top-0 z-20 pb-1 mb-6 h-full w-full bg-white dark:bg-gray-950 flex items-center justify-between gap-3 px-6">
+                    <motion.div
+                        className="relative select-none max-w-[300px]"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ duration: 0.3, delay: 0.9 }}
+                    >
+                        <SearchIcon className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 z-20" />
 
-                        <div className="px-6 pt-2">
-                            <motion.div
-                                className="relative select-none"
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 1 }}
-                                exit={{ opacity: 0 }}
-                                transition={{ duration: 0.3, delay: 0.9 }}
-                            >
-                                <SearchIcon className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 z-20" />
-                                <input
-                                    type="text"
-                                    placeholder="Buscar"
-                                    value={search}
-                                    onChange={(e) => setSearch(e.target.value)}
-                                    className="
-                                w-full p-3 placeholder:text-gray-500 text-gray-700 placeholder:text-lg bg-white/90  border border-gray-200 rounded-[20px] pl-10 outline-none ring-0 backdrop-blur-sm shadow-sm
-                                focus:bg-gray-100/80 transition-all duration-75
-                                hover:shadow-md max-w-[400px]
-                                "
-                                />
-                            </motion.div>
-                        </div>
-                    </div>
+                        <input
+                            type="text"
+                            placeholder="Buscar"
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                            className="w-full px-3 py-2 placeholder:text-gray-500 text-gray-700 dark:text-gray-300 dark:placeholder:text-gray-300 placeholder:text-lg bg-white/90 dark:bg-gray-950/60 border border-gray-200 dark:border-gray-800 rounded-[20px] pl-10 outline-none ring-0 focus:bg-gray-100/80 transition-all duration-75 hover:shadow-md max-w-[400px]"
+                        />
+                    </motion.div>
+
+                    <button className=" p-3 rounded-[20px] bg-white dark:bg-gray-950 active:bg-gray-100 active:scale-95 transition-all duration-75">
+                        <SlidersIcon className="w-5 h-5 text-gray-950" />
+                    </button>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 pb-6">
                     <AnimatePresence mode="wait">
-                        {events.map((event, index) => (
-                            <motion.div
-                                key={event.id + index}
-                                animate={{ opacity: 1 }}
-                                initial={{ opacity: 0 }}
-                                exit={{ opacity: 0 }}
-                                transition={{ duration: 0.1, delay: 0.2 * index }}
-                                viewport={{ once: true }}
-                            >
-                                <EventCard event={event} />
-                            </motion.div>
-                        ))}
+                        {events?.length > 0 ? (
+                            <div className="flex flex-col gap-5 px-8">
+                                {events?.map((event, index) => (
+                                    <motion.div
+                                        key={event.id}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        initial={{ opacity: 0, y: 20 }}
+                                        exit={{ opacity: 0, y: -20 }}
+                                        transition={{ duration: 0.2, delay: 0.1 * index }}
+                                        viewport={{ once: true }}
+                                    >
+                                        <EventCard event={event} />
+                                    </motion.div>
+                                ))}
+
+                                <div className="flex items-center justify-center">
+                                    <p className="text-gray-500 text-sm">
+                                        {events.length} eventos encontrados
+                                    </p>
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="flex items-center justify-center col-span-full">
+                                <p className="text-gray-500 text-sm">
+                                    No se encontraron eventos
+                                </p>
+                            </div>
+                        )}
                     </AnimatePresence>
                 </div>
 
-                <div className="flex items-center justify-center">
-                    <p className="text-gray-500 text-sm">
-                        {events.length} eventos encontrados
-                    </p>
-                </div>
             </motion.div>
-        </div >
+        </div>
     )
 }
 

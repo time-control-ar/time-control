@@ -7,7 +7,7 @@ export default function Home() {
   return (
     <div className="flex flex-col h-screen sm:p-20 font-[family-name:var(--font-geist-sans)] bg-white dark:bg-gray-950 overflow-hidden">
 
-      <div className="px-6 w-full flex justify-between items-center pb-3">
+      <div className="px-6 w-full flex justify-between items-center">
         <AnimatedLogo />
         <ModeToggle />
       </div>
