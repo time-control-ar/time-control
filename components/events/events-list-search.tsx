@@ -3,11 +3,12 @@
 import { useState, useCallback, useEffect } from 'react'
 import { events as eventsData } from '../../app/eventos/page'
 import { debounce } from 'lodash'
-import { CalendarIcon, FilterIcon, MinusIcon, PinIcon, PlusIcon, SearchIcon, SlidersHorizontal, SlidersIcon, TrophyIcon, Users2 } from 'lucide-react'
+import { PlusIcon, SearchIcon, SlidersIcon } from 'lucide-react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { AnimatedText } from '../ui/animated-text'
 import { EventProps } from '@/app/schemas'
 import Image from 'next/image'
+import { useRouter } from 'next/navigation'
 
 function serializeText(text: string) {
     return text.toLowerCase()
@@ -18,17 +19,20 @@ function serializeText(text: string) {
 
 // Event card component
 const EventCard = ({ event }: { event: EventProps }) => {
+    const router = useRouter()
     const [isOpen, setIsOpen] = useState(false)
+    const [selectedEvent, setSelectedEvent] = useState<EventProps | null>(null)
 
     const toggleOpen = () => setIsOpen(!isOpen)
 
     return (
         <motion.div
-            className="w-full rounded-[23px] overflow-hidden flex flex-col h-max cursor-pointer shadow-lg"
+            className="w-full rounded-[23px] overflow-hidden flex flex-col h-max cursor-pointer shadow-lg max-w-[300px] mx-auto"
             onClick={toggleOpen}
+            animate={{ scale: isOpen ? 1.05 : 1, transition: { duration: 0.2, ease: 'easeInOut' } }}
         >
             <motion.div className="flex w-full z-10 min-h-[350px] relative">
-                <div className="absolute top-0 left-0 w-full h-[17%] overflow-hidden bg-gradient-to-b from-gray-950/50 to-transparent z-20" />
+                {/* <div className="absolute top-0 left-0 w-full h-[10%] overflow-hidden bg-gradient-to-b from-gray-950/50 to-transparent z-20" /> */}
 
                 <Image
                     src={event.imageUrl}
@@ -62,22 +66,23 @@ const EventCard = ({ event }: { event: EventProps }) => {
                             animate={{ height: 'auto' }}
                             exit={{ height: 0 }}
                             transition={{ duration: 0.3, ease: 'easeInOut' }}
-                            className="z-20 bg-gray-950 -mt-1 w-full"
+                            className="z-10 bg-gray-950 -mt-1 w-full"
                         >
                             <motion.div
-                                initial={{ opacity: 0, y: 10 }}
+                                initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0, transition: { delay: 0.1 } }}
-                                exit={{ opacity: 0, y: 10 }}
+                                exit={{ opacity: 0, y: 20 }}
                                 transition={{ duration: 0.3, ease: 'easeInOut' }}
                                 className="h-max flex flex-col gap-3 p-2 bg-gray-950"
                             >
                                 <button
-                                    className="w-full max-w-max bg-white rounded-3xl py-2 flex items-center justify-center gap-2 px-5 hover:bg-white transition-all duration-75 disabled:opacity-50 disabled:cursor-not-allowed ml-auto"
+                                    onClick={() => router.push(`/eventos/${event.id}`)}
+                                    className="w-full max-w-max bg-transparent border border-white rounded-3xl py-2 flex items-center justify-center gap-2 px-5 hover:bg-white/50 transition-all duration-75 disabled:opacity-50 disabled:cursor-not-allowed ml-auto"
                                 >
-                                    <p className="text-gray-900 text-sm font-normal tracking-tighter">
+                                    <p className="text-white text-sm font-normal tracking-tighter">
                                         Ver más
                                     </p>
-                                    <PlusIcon className="w-4 h-4 text-gray-900" />
+                                    <PlusIcon className="w-4 h-4 text-white" />
                                 </button>
                             </motion.div>
                         </motion.div>
@@ -125,73 +130,74 @@ const EventsListSearch = () => {
 
     return (
         <div className="flex flex-col h-full w-full overflow-y-auto">
+            <AnimatedText
+                text="Eventos"
+                className="text-3xl md:text-3xl text-start font-medium text-gray-700 dark:text-white pt-6 px-6 pb-3"
+                delay={0.5}
+            />
+
+            <div className="sticky top-0 z-20 pt-1 mb-6 h-max w-full flex items-start justify-between gap-3 px-6 bg-gradient-to-b from-white via-white/50 to-transparent dark:from-gray-950 dark:via-gray-950/50 dark:to-transparent pb-1">
+                <motion.div
+                    className="relative select-none max-w-[300px] z"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.3, delay: 0.3 }}
+                >
+                    <SearchIcon className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 z-20" />
+
+                    <input
+                        type="text"
+                        placeholder="Buscar"
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                        className="w-full pl-10 p-2 max-w-[400px] rounded-[20px] h-12 backdrop-blur-md text-[13px] tracking-tighter
+                         text-gray-700 dark:text-gray-300 placeholder:text-gray-500 dark:placeholder:text-gray-300 placeholder:text-base
+                          bg-white dark:bg-gray-950 focus:bg-gray-100/80 
+                          border border-gray-200 dark:border-gray-800
+                          outline-none ring-0 transition-all duration-75 hover:shadow-md"
+                    />
+                </motion.div>
+
+                <button className="border border-gray-200 dark:border-gray-800
+                          outline-none ring-0 hover:shadow-md p-3 rounded-[20px] bg-white dark:bg-gray-950 focus:bg-gray-100/80 active:scale-95 transition-all duration-75">
+                    <SlidersIcon className="w-5 h-5 text-gray-500 z-20" />
+                </button>
+            </div>
 
 
-            <motion.div className="flex flex-col w-full">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 pb-6">
+                <AnimatePresence mode="wait">
+                    {events?.length > 0 ? (
+                        <div className="flex flex-col gap-5 px-8">
+                            {events?.map((event, index) => (
+                                <motion.div
+                                    key={event.id}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    initial={{ opacity: 0, y: 20 }}
+                                    exit={{ opacity: 0, y: -20 }}
+                                    transition={{ duration: 0.2, delay: 0.1 * index }}
+                                    viewport={{ once: true }}
+                                >
+                                    <EventCard event={event} />
+                                </motion.div>
+                            ))}
 
-                <AnimatedText
-                    text="Eventos"
-                    className="text-3xl md:text-3xl text-start font-medium text-gray-700 dark:text-white pt-6 px-6 pb-3"
-                    delay={0.5}
-                />
-                <div className="sticky top-0 z-20 pb-1 mb-6 h-full w-full bg-white dark:bg-gray-950 flex items-center justify-between gap-3 px-6">
-                    <motion.div
-                        className="relative select-none max-w-[300px]"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        transition={{ duration: 0.3, delay: 0.9 }}
-                    >
-                        <SearchIcon className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 z-20" />
-
-                        <input
-                            type="text"
-                            placeholder="Buscar"
-                            value={search}
-                            onChange={(e) => setSearch(e.target.value)}
-                            className="w-full px-3 py-2 placeholder:text-gray-500 text-gray-700 dark:text-gray-300 dark:placeholder:text-gray-300 placeholder:text-lg bg-white/90 dark:bg-gray-950/60 border border-gray-200 dark:border-gray-800 rounded-[20px] pl-10 outline-none ring-0 focus:bg-gray-100/80 transition-all duration-75 hover:shadow-md max-w-[400px]"
-                        />
-                    </motion.div>
-
-                    <button className=" p-3 rounded-[20px] bg-white dark:bg-gray-950 active:bg-gray-100 active:scale-95 transition-all duration-75">
-                        <SlidersIcon className="w-5 h-5 text-gray-950" />
-                    </button>
-                </div>
-
-
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 pb-6">
-                    <AnimatePresence mode="wait">
-                        {events?.length > 0 ? (
-                            <div className="flex flex-col gap-5 px-8">
-                                {events?.map((event, index) => (
-                                    <motion.div
-                                        key={event.id}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        initial={{ opacity: 0, y: 20 }}
-                                        exit={{ opacity: 0, y: -20 }}
-                                        transition={{ duration: 0.2, delay: 0.1 * index }}
-                                        viewport={{ once: true }}
-                                    >
-                                        <EventCard event={event} />
-                                    </motion.div>
-                                ))}
-
-                                <div className="flex items-center justify-center">
-                                    <p className="text-gray-500 text-sm">
-                                        {events.length} eventos encontrados
-                                    </p>
-                                </div>
-                            </div>
-                        ) : (
-                            <div className="flex items-center justify-center col-span-full">
+                            <div className="flex items-center justify-center">
                                 <p className="text-gray-500 text-sm">
-                                    No se encontraron eventos
+                                    {events.length} eventos encontrados
                                 </p>
                             </div>
-                        )}
-                    </AnimatePresence>
-                </div>
+                        </div>
+                    ) : (
+                        <div className="flex items-center justify-center col-span-full">
+                            <p className="text-gray-500 text-sm">
+                                No se encontraron eventos
+                            </p>
+                        </div>
+                    )}
+                </AnimatePresence>
+            </div>
 
-            </motion.div>
         </div>
     )
 }
