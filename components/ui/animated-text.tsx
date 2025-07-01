@@ -10,6 +10,9 @@ export function AnimatedText({ text = 'Typing Effect', className, delay = 0 }: {
     return (
         <h2
             ref={ref}
+            style={{
+                fontStretch: 'expanded',
+            }}
             className={cn("text-xl text-center sm:text-4xl font-bold tracking-tighter md:text-6xl md:leading-[4rem] select-none", className)}
         >
             {text.split('').map((letter, index) => (
