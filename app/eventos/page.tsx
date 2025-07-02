@@ -1,11 +1,6 @@
-import { SidebarProvider } from '@/components/ui/sidebar'
-import { SidebarInset } from '@/components/ui/sidebar'
-import { AppSidebar } from '@/components/app-sidebar'
-import { SiteHeader } from '@/components/site-header'
-import { Button } from '@/components/ui/button'
+
 import Link from 'next/link'
 import { Plus } from 'lucide-react'
-import EventList from '@/components/events/EventList'
 import { Category, Runner } from '../schemas'
 const categories: Category[] = [
   {
@@ -138,36 +133,36 @@ export const events = [
   }
 ]
 
+const EventList = () => {
+  return (
+    <div>
+      <h1>Eventos</h1>
+    </div>
+  )
+}
 export default async function EventsPage() {
   return (
-    <SidebarProvider>
-      <AppSidebar variant="inset" />
-      <SidebarInset>
-        <SiteHeader title="Eventos" />
-        <div className="flex flex-1 flex-col">
-          <div className="@container/main flex flex-1 flex-col gap-2">
-            <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
-              <div className="px-4 lg:px-6 flex items-center justify-between">
-                <p className="font-semibold leading-none tracking-tight">
-                  Visualización de eventos
-                </p>
-                <Link href='eventos/create'>
-                  <Button variant="outline" >
-                    <span>
-                      <Plus />
-                    </span>
-                    Crear evento
-                  </Button>
-                </Link>
-              </div>
-              <div className='px-4 lg:px-6'>
 
-                <EventList events={events} />
-              </div>
-            </div>
+    <div className="flex flex-1 flex-col">
+      <div className="@container/main flex flex-1 flex-col gap-2">
+        <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
+          <div className="px-4 lg:px-6 flex items-center justify-between">
+            <p className="font-semibold leading-none tracking-tight">
+              Visualización de eventos
+            </p>
+            <Link href='eventos/create'>
+              <button className='flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-md'>
+                <Plus size={16} />
+                Crear evento
+              </button>
+            </Link>
+          </div>
+          <div className='px-4 lg:px-6'>
+
+            <EventList />
           </div>
         </div>
-      </SidebarInset>
-    </SidebarProvider>
+      </div>
+    </div>
   )
 }

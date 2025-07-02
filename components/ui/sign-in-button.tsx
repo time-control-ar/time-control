@@ -16,7 +16,7 @@ export function SignInButton() {
         );
     }
     return (
-        <button className="bg-gray-900 dark:bg-white rounded-full px-6 py-3 text-white dark:text-gray-950 flex items-center gap-2 hover:opacity-80 transition-all duration-300" onClick={() => signIn("google")}>
+        <button className="rounded-btn" onClick={() => signIn("google")}>
             <p className="text-xs font-semibold tracking-tight">
                 Iniciar sesión
             </p>

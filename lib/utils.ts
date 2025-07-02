@@ -1,59 +1,84 @@
-import { Category, EventProps, Runner } from "@/app/schemas";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
+
+// FILE TYPES
+export interface Runner {
+ sex: "M" | "F";
+ name: string;
+ chip: string;
+ dorsal: number;
+ modality: string;
+ category: string;
+ time: string; // Format HH:MM:SS.sss
+ position: number;
+ positionSex: number;
+ positionCategory: number;
+ pace: string; // Format MM:SS min/Km
+}
+export interface Category {
+ id: number;
+ name: string;
+}
+export interface EventProps {
+ id: number | string;
+ name: string;
+ date: string;
+ time: string;
+ location: string;
+ categories: Category[];
+ participants: Runner[];
+ imageUrl: string;
+ description: string;
+}
 
 export function cn(...inputs: ClassValue[]) {
  return twMerge(clsx(inputs));
 }
 
-export function textToJsonRaceResults(text: string): EventProps | undefined {
+export async function textToJsonRaceResults(
+ text: string
+): Promise<EventProps | undefined> {
  try {
   const lines = text.trim().split("\n");
   const event: EventProps = {
-   id: 0,
-   time: "",
-   location: "",
-   imageUrl: "",
-   description: "",
+   id: Date.now().toString(),
    name: "",
    date: new Date().toISOString(),
+   time: "",
+   location: "",
    categories: [],
+   participants: [],
+   imageUrl: "",
+   description: "",
   };
+
   let currentCategory: Category | null = null;
 
   for (const line of lines) {
-   // Skip empty lines
    if (!line.trim()) continue;
 
    const parts = line.split("|");
 
-   // Check if it's an event line
    if (line.startsWith("1|")) {
-    event.name = parts[1].trim(); // e.g., "2 Fecha xc Andino"
+    event.name = parts[1].trim();
     continue;
    }
 
-   // Check if it's a category header
    if (line.match(/^;\d+\|/)) {
-    // Push the previous category if it exists
     if (currentCategory) {
      event.categories.push(currentCategory);
     }
-    // Start a new category
     currentCategory = {
      id: parseInt(parts[0].replace(";", "").trim()),
      name: parts[1].trim(),
-     runners: [],
     };
     continue;
    }
 
-   // Check if it's a header line (SEXO|NOMBRE|...)
    if (line.includes("SEXO|NOMBRE")) {
-    continue; // Skip header
+    continue;
    }
 
-   // Process runner data
    if (currentCategory && parts.length >= 11) {
     const runner: Runner = {
      sex: parts[0].trim() as "M" | "F",
@@ -68,16 +93,15 @@ export function textToJsonRaceResults(text: string): EventProps | undefined {
      positionCategory: parseInt(parts[9].trim()),
      pace: parts[10].trim(),
     };
-    currentCategory.runners.push(runner);
+    event.participants.push(runner);
    }
   }
 
-  // Push the last category
   if (currentCategory) {
    event.categories.push(currentCategory);
   }
 
-  return event ?? undefined;
+  return event;
  } catch (error) {
   console.error(error);
   return undefined;
