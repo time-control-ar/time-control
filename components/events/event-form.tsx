@@ -2,9 +2,8 @@
 
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { eventSchema, EventFormData } from '@/lib/schemas/event.schema'
-import { createEvent } from '@/services/eventService'
-import { File, Trash, Loader2, ArrowLeftIcon, EyeIcon, InfoIcon, ChartBarIcon, CheckIcon } from 'lucide-react'
+import { eventCreateSchema, EventFormData } from '@/lib/schemas/event.schema'
+import { File, Trash, Loader2, ArrowLeftIcon, EyeIcon, CheckIcon } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 
 const MAX_IMAGE_SIZE = 15 * 1024 * 1024 // 15MB
@@ -12,16 +11,23 @@ const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10MB
 const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp']
 const ALLOWED_FILE_EXTENSIONS = ['.racecheck', '.xlsx']
 
-import { EventCard } from './event-card'
-import { EventProps, textToJsonRaceResults } from '@/lib/utils'
+import { RaceCheckProps } from '@/lib/schemas/racecheck.schema'
+import { textToJsonRaceResults } from '@/lib/utils'
 import { AnimatedText } from '../ui/animated-text'
 import Toast from '../ui/toast'
 import Modal from '../ui/modal'
 import { useEffect, useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import EventPreview from './event-preview'
+import { useSession } from 'next-auth/react'
+import axios from 'axios'
+
+
 
 export default function EventForm() {
   const router = useRouter()
+  const { data: session } = useSession()
+
+
   const {
     register,
     handleSubmit,
@@ -29,14 +35,14 @@ export default function EventForm() {
     watch,
     formState: { errors, isSubmitting }
   } = useForm<EventFormData>({
-    resolver: zodResolver(eventSchema),
-    mode: 'onBlur'
+    resolver: zodResolver(eventCreateSchema),
+    mode: 'onBlur',
   })
 
   const [isMounted, setIsMounted] = useState(false)
   const [eventFile, setEventFile] = useState<File | undefined>(undefined)
   const [imageFile, setImageFile] = useState<File | undefined>(undefined)
-  const [parsedResults, setParsedResults] = useState<EventProps | undefined>(undefined)
+  const [parsedResults, setParsedResults] = useState<RaceCheckProps | undefined>(undefined)
   const [toast, setToast] = useState<{
     message: string;
     type: 'success' | 'error' | 'info';
@@ -47,7 +53,6 @@ export default function EventForm() {
     show: false
   });
   const [showPreview, setShowPreview] = useState(false)
-  const [selectedTab, setSelectedTab] = useState<'info' | 'results'>('info')
 
   const validateFile = (file: File, options: {
     maxSize: number,
@@ -72,25 +77,22 @@ export default function EventForm() {
 
   const onSubmit = async (data: EventFormData) => {
     try {
-      const formData = new FormData()
-
-      // Agregar datos del formulario
-      Object.entries(data).forEach(([key, value]) => {
-        if (value !== undefined && value !== '') {
-          formData.append(key, value.toString())
-        }
-      })
-
-      // Agregar archivos si existen
-      if (imageFile) formData.append('image', imageFile)
-      if (eventFile) formData.append('results', eventFile)
-
-      // Agregar datos parseados si existen
-      if (parsedResults) {
-        formData.append('parsedResults', JSON.stringify(parsedResults))
+      const newEvent = {
+        name: data.name,
+        date: data.date,
+        time: data.time,
+        location: data.location,
+        description: data.description,
+        maxParticipants: data.maxParticipants,
+        image: imageFile,
+        results: parsedResults,
       }
-
-      await createEvent(formData)
+      // return console.log(newEvent)
+      await axios({
+        method: 'POST',
+        url: `/api/events`,
+        data: newEvent,
+      })
 
       setToast({
         message: 'Evento creado exitosamente',
@@ -102,7 +104,7 @@ export default function EventForm() {
       setImageFile(undefined)
       setEventFile(undefined)
       setParsedResults(undefined)
-      router.push('/eventos')
+      router.push('/')
     } catch (error) {
       console.error('Error creando evento:', error)
       setToast({
@@ -159,111 +161,41 @@ export default function EventForm() {
     }
   }
 
-  const handleTabChange = (tab: 'info' | 'results') => {
-    setSelectedTab(tab)
-  }
-
   useEffect(() => {
     setIsMounted(true)
   }, [])
+  // dev
+  const defaultValues: EventFormData = {
+    name: "Carrera de Ejemplo",
+    date: new Date().toISOString().split('T')[0], // Fecha actual
+    time: "09:00",
+    location: "Parque Central",
+    description: "Una carrera de ejemplo para demostrar valores predeterminados.",
+    maxParticipants: 100,
+    // results: undefined // Puede ser un objeto RaceCheckProps o undefined
+  }
 
+  useEffect(() => {
+    reset(defaultValues)
+  }, [reset])
+  // dev
   if (!isMounted) return null
 
+  if (!session?.user?.email) return (
+    <div className="flex flex-col items-center justify-center h-screen">
+      <p className="text-gray-500 dark:text-gray-400 text-sm">
+        Debes iniciar sesión para crear eventos
+      </p>
+    </div>
+  )
+
+  console.log(errors)
   return (
     <>
-      {toast?.show && (
-        <Toast
-          message={toast.message}
-          type={toast.type}
-          dismissible={true}
-          onDismiss={() => setToast({ message: '', type: 'info', show: false })}
-        />
-      )}
-
-      <Modal
-        isOpen={showPreview}
-        onClose={() => setShowPreview(false)}
-        title="Preview"
-        showCloseButton={true}
-      >
-        <div className="flex w-full gap-3 pt-6">
-          <button
-            onClick={() => handleTabChange('info')}
-            className={`rounded-btn ${selectedTab === 'info' ? '!bg-gray-200 !dark:bg-gray-700' : '!bg-transparent'}`}>
-            <InfoIcon className="w-4 h-4 text-gray-500 z-20" />
-            <p className="text-xs font-medium tracking-tight text-gray-950 dark:text-white">
-              Información
-            </p>
-          </button>
-          <button
-            onClick={() => handleTabChange('results')}
-            className={`rounded-btn ${selectedTab === 'results' ? '!bg-gray-200 !dark:bg-gray-700' : '!bg-transparent'}`}>
-            <ChartBarIcon className="w-4 h-4 text-gray-500 z-20" />
-            <p className="text-xs font-medium tracking-tight text-gray-950 dark:text-white">
-              Resultados
-            </p>
-          </button>
-        </div>
-
-        <div className="p-2">
-          <AnimatePresence mode="wait">
-            {selectedTab === 'info' ? (
-              <motion.div
-                key="info"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 10 }}
-                transition={{ duration: 0.2 }}
-                className="flex flex-col gap-3 pt-6"
-              >
-                <EventCard
-                  event={{
-                    id: '',
-                    name: watch('name') as string,
-                    date: watch('date') ? new Date(watch('date')).toISOString() : '',
-                    time: watch('time') as string,
-                    location: watch('location') as string,
-                    description: watch('description') as string,
-                    imageUrl: imageFile ? URL.createObjectURL(imageFile) : '',
-                    categories: parsedResults?.categories || [],
-                    participants: parsedResults?.participants || []
-                  }}
-                />
-              </motion.div>
-            ) : (
-              <motion.div
-                key="results"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 10 }}
-                transition={{ duration: 0.2 }}
-                className="flex flex-col gap-3 pt-6"
-              >
-                {parsedResults ? (
-                  <div className="flex flex-col gap-4">
-                    <h3 className="text-lg font-medium">Resultados cargados</h3>
-                    <div className="flex flex-col gap-2">
-                      <p className="text-sm text-gray-500">
-                        Categorías: {parsedResults.categories.length}
-                      </p>
-                      <p className="text-sm text-gray-500">
-                        Participantes: {parsedResults.participants.length}
-                      </p>
-                    </div>
-                  </div>
-                ) : (
-                  <p className="text-gray-500 text-sm">No hay resultados cargados</p>
-                )}
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
-      </Modal>
-
-      <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col h-max">
+      <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col font-geist-sans w-full md:h-screen md:overflow-hidden overflow-auto">
 
         {/* header */}
-        <div className="sticky md:relative top-0 left-0 z-10 px-6 pt-2 flex items-center justify-between bg-white dark:bg-gray-900">
+        <div className="flex items-center justify-between bg-white dark:bg-gray-900 w-full px-6 md:px-8">
           <div className="flex items-center gap-3 py-4">
             <button type='button' className="rounded-full p-1.5 active:scale-95 transition-all duration-300 bg-gray-100 dark:bg-gray-800" onClick={() => router.push('/eventos')}>
               <ArrowLeftIcon className="w-4 h-4 text-gray-500 dark:text-white" />
@@ -271,21 +203,22 @@ export default function EventForm() {
             <AnimatedText text="Nuevo evento" className='!text-2xl font-semibold text-start' />
           </div>
 
-          <button type='button' className="rounded-btn !bg-transparent md:hidden" onClick={() => setShowPreview(!showPreview)}>
-            <EyeIcon className="w-4 h-4 text-gray-500 dark:text-white" />
-            <p className="text-sm font-medium tracking-tight text-gray-950 dark:text-white">
-              Preview
+          <button type='button' className="rounded-btn !bg-gray-100 md:hidden scale-90" onClick={() => setShowPreview(!showPreview)}>
+            <p className="text-sm font-medium tracking-tight text-gray-600 dark:text-white">
+              Vista previa
             </p>
+            <EyeIcon className="w-4 h-4 text-gray-500 dark:text-white" />
           </button>
         </div>
 
         {/* content */}
-        <div className="flex flex-col md:flex-row gap-4 mx-auto mt-4 w-full h-full px-12">
+        <div className="flex flex-col md:flex-row gap-4 mx-auto mt-4 w-full h-max overflow-hidden">
 
-          <div className="flex flex-col gap-4 h-max max-w-md mx-auto w-full">
+          {/* form content */}
+          <div className="flex flex-col gap-4 max-w-md mx-auto w-full h-full px-6 md:px-8 md:overflow-auto">
 
             <div>
-              <label className="block text-sm font-medium mb-2">Título del evento *</label>
+              <label className="label-input">Título del evento *</label>
               <input
                 {...register("name")}
                 className="input"
@@ -296,13 +229,13 @@ export default function EventForm() {
               )}
             </div>
 
-            <div className="flex flex-col md:flex-row items-center gap-4 w-full">
+            <div className="flex flex-row items-start gap-4 max-w-full w-full md:flex-col">
               <div className="w-full max-w-md flex flex-col">
-                <label className="block text-sm font-medium mb-2">Fecha *</label>
+                <label className="label-input">Fecha *</label>
                 <input
                   type="date"
                   {...register("date")}
-                  className="input"
+                  className="input w-full"
                 />
                 {errors.date && (
                   <p className="error-input">{errors.date.message}</p>
@@ -310,11 +243,11 @@ export default function EventForm() {
               </div>
 
               <div className="w-full max-w-md flex flex-col">
-                <label className="block text-sm font-medium mb-2">Hora *</label>
+                <label className="label-input">Hora *</label>
                 <input
                   type="time"
                   {...register("time")}
-                  className="input"
+                  className="input w-full"
                 />
                 {errors.time && (
                   <p className="error-input">{errors.time.message}</p>
@@ -323,7 +256,7 @@ export default function EventForm() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-2">Ubicación *</label>
+              <label className="label-input">Ubicación *</label>
               <input
                 {...register("location")}
                 className="input"
@@ -335,7 +268,7 @@ export default function EventForm() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-2">Descripción</label>
+              <label className="label-input">Descripción</label>
               <textarea
                 {...register("description")}
                 rows={4}
@@ -345,7 +278,7 @@ export default function EventForm() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-2">Máximo de participantes</label>
+              <label className="label-input">Máximo de participantes</label>
               <input
                 type="number"
                 {...register("maxParticipants", { valueAsNumber: true })}
@@ -358,14 +291,14 @@ export default function EventForm() {
               )}
             </div>
 
-            <div>
-              <label className="block text-sm font-medium mb-2">Imagen del evento</label>
-              <div className="w-full border-2 border-dashed border-gray-300 rounded-lg p-4 hover:border-gray-400 transition-colors">
+            <div className='w-full flex flex-col gap-1'>
+              <label className="label-input">Imagen del evento</label>
+              <div className="w-full border-2 border-dashed border-gray-300 rounded-[12px] p-4 hover:border-gray-400 transition-colors flex items-center justify-center">
                 {imageFile?.name ? (
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
+                  <div className="flex items-center justify-between w-full">
+                    <div className="flex items-center gap-3 w-full">
                       <File size={20} className="text-blue-500" />
-                      <span className="text-sm font-medium truncate">{imageFile.name}</span>
+                      <span className="text-sm font-medium truncate">{imageFile?.name}</span>
                     </div>
                     <button
                       type="button"
@@ -385,9 +318,9 @@ export default function EventForm() {
                       id="image-upload"
                     />
                     <label htmlFor="image-upload" className="cursor-pointer">
-                      <div className="text-gray-500">
+                      <div className="text-gray-500 flex flex-col items-center justify-center">
                         <File size={24} className="mx-auto mb-2" />
-                        <p>Haz clic para seleccionar una imagen</p>
+                        <p className='text-sm'>Haz clic para seleccionar una imagen</p>
                         <p className="text-xs">PNG, JPG hasta 15MB</p>
                       </div>
                     </label>
@@ -396,20 +329,16 @@ export default function EventForm() {
               </div>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium mb-2">Archivo de resultados (.racecheck o .xlsx)</label>
-              <div className="w-full border-2 border-dashed border-gray-300 rounded-[12px] p-4 hover:border-gray-400 transition-colors">
+            <div className='w-full flex flex-col gap-1'>
+              <label className="label-input">Archivo de resultados (.racecheck o .xlsx)</label>
+              <div className="w-full border-2 border-dashed border-gray-300 rounded-[12px] p-4 hover:border-gray-400 transition-colors flex items-center justify-center">
                 {eventFile?.name ? (
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
+                  <div className="flex items-center justify-between w-full px-2">
+                    <div className="flex items-center gap-3 w-full">
                       <File size={20} className="text-blue-500" />
-                      <span className="text-sm font-medium truncate">{eventFile.name}</span>
-                      {parsedResults && (
-                        <span className="text-xs text-green-600 bg-green-100 px-2 py-1 rounded">
-                          ✓ Parseado
-                        </span>
-                      )}
+                      <p className="text-sm w-full font-medium truncate">{eventFile.name}</p>
                     </div>
+
                     <button
                       type="button"
                       onClick={() => {
@@ -431,9 +360,9 @@ export default function EventForm() {
                       type="file"
                     />
                     <label htmlFor="race-check-file" className="cursor-pointer">
-                      <div className="text-gray-500">
+                      <div className="text-gray-500 flex flex-col items-center justify-center">
                         <File size={24} className="mx-auto mb-2" />
-                        <p>Haz clic para seleccionar archivo de resultados</p>
+                        <p className='text-sm'>Haz clic para seleccionar archivo de resultados</p>
                         <p className="text-xs">Archivos .racecheck o .xlsx hasta 10MB</p>
                       </div>
                     </label>
@@ -442,7 +371,7 @@ export default function EventForm() {
               </div>
             </div>
 
-            <div className="flex items-center justify-between md:justify-end gap-4 bg-white dark:bg-gray-900 z-10 py-10">
+            <div className="flex w-full items-center justify-between md:justify-end gap-4 bg-white dark:bg-gray-900 z-10 py-10">
               <button
                 type="button"
                 className="rounded-btn !text-gray-950 !bg-gray-100 !border-gray-300"
@@ -458,70 +387,70 @@ export default function EventForm() {
                 disabled={isSubmitting}
                 className="rounded-btn"
               >
-                {isSubmitting ? (
-                  <>
+                <div className="flex items-center gap-2">
+                  <p className='text-sm font-medium tracking-tight text-white dark:text-white'>
+                    {isSubmitting ? 'Procesando...' : 'Guardar'}
+                  </p>
+                  {isSubmitting ? (
                     <Loader2 size={18} className="animate-spin" />
-                    Procesando...
-                  </>
-                ) : (
-                  <div className="flex items-center gap-2">
-                    <p className='text-sm font-medium tracking-tight text-white dark:text-white'>
-                      Guardar
-                    </p>
+                  ) : (
                     <CheckIcon className="w-4 h-4 text-white" />
-                  </div>
-                )}
+                  )}
+                </div>
               </button>
             </div>
           </div>
 
-          <div className="hidden md:flex h-full sticky top-0 left-0 w-full flex-col items-center justify-center p-4 md:p-6">
-            <p className="text-sm font-medium tracking-tight text-gray-950 dark:text-white">
-              Preview
-            </p>
-
-            <div className="flex items-center justify-center gap-3 w-full my-3">
-              <button className={`rounded-btn ${selectedTab === 'info' ? '!bg-gray-100 !dark:bg-gray-700' : '!bg-transparent'}`} onClick={() => handleTabChange('info')}>
-                <InfoIcon className="w-4 h-4 text-gray-500 dark:text-white" />
-                <p className="text-sm font-medium tracking-tight text-gray-950 dark:text-white">
-                  Información
-                </p>
-              </button>
-              <button className={`rounded-btn ${selectedTab === 'results' ? '!bg-gray-100 !dark:bg-gray-700' : '!bg-transparent'}`} onClick={() => handleTabChange('results')}>
-                <ChartBarIcon className="w-4 h-4 text-gray-500 dark:text-white" />
-                <p className="text-sm font-medium tracking-tight text-gray-950 dark:text-white">
-                  Resultados
-                </p>
-              </button>
-            </div>
-
-            <div className="w-full max-w-[350px] h-[2px] bg-gradient-to-r from-transparent via-gray-200 dark:via-gray-700 to-transparent rounded-full my-6 mt-4">
-            </div>
-
-            <div className="w-full max-w-[350px] sticky top-0 left-0 p-4">
-              <motion.div
-                className="w-full max-w-[350px]"
-              >
-                <EventCard
-                  event={{
-                    id: '',
-                    name: watch('name') as string,
-                    date: watch('date') ? new Date(watch('date')).toISOString() : '',
-                    time: watch('time') as string,
-                    location: watch('location') as string,
-                    description: watch('description') as string,
-                    imageUrl: imageFile ? URL.createObjectURL(imageFile) : '',
-                    categories: parsedResults?.categories || [],
-                    participants: parsedResults?.participants || []
-                  }}
-                />
-              </motion.div>
-            </div>
+          {/* preview pc  */}
+          <div className="hidden md:flex w-full flex-col h-full overflow-y-auto items-center justify-start">
+            <EventPreview
+              event={{
+                id: Date.now().toString(),
+                name: watch('name') as string,
+                date: watch('date') ? new Date(watch('date')).toISOString() : '',
+                time: watch('time') as string,
+                location: watch('location') as string,
+                description: watch('description') as string,
+                imageUrl: imageFile ? URL.createObjectURL(imageFile) : '',
+                categories: parsedResults?.categories || [],
+                participants: parsedResults?.participants || [],
+              }}
+            />
           </div>
 
         </div>
-
       </form >
+
+      {toast?.show && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          dismissible={true}
+          onDismiss={() => setToast({ message: '', type: 'info', show: false })}
+        />
+      )}
+
+      <Modal
+        isOpen={showPreview}
+        onClose={() => setShowPreview(false)}
+        title="Previsualización del evento"
+        showCloseButton={true}
+      >
+
+        <EventPreview
+          event={{
+            id: Date.now().toString(),
+            name: watch('name') as string,
+            date: watch('date') ? new Date(watch('date')).toISOString() : '',
+            time: watch('time') as string,
+            location: watch('location') as string,
+            description: watch('description') as string,
+            imageUrl: imageFile ? URL.createObjectURL(imageFile) : '',
+            categories: parsedResults?.categories || [],
+            participants: parsedResults?.participants || [],
+          }}
+        />
+      </Modal>
     </>
   )
 }

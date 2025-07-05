@@ -1,12 +1,32 @@
 import { z } from "zod";
+import { raceCheckSchema } from "./racecheck.schema";
 
-export const eventSchema = z.object({
+export const eventCreateSchema = z.object({
  name: z
   .string()
   .min(1, "El nombre es obligatorio.")
   .max(100, "El nombre no puede exceder 100 caracteres."),
- date: z.string().min(1, "La fecha es obligatoria."),
- time: z.string().min(1, "La hora es obligatoria."),
+ date: z
+  .string()
+  .min(1, "La fecha es obligatoria.")
+  .refine((date) => {
+   const parsedDate = new Date(date);
+   return !isNaN(parsedDate.getTime());
+  }, "La fecha no es válida."),
+ time: z
+  .string()
+  .min(1, "La hora es obligatoria.")
+  .refine((time) => {
+   const [hours, minutes] = time.split(":").map(Number);
+   return (
+    !isNaN(hours) &&
+    !isNaN(minutes) &&
+    hours >= 0 &&
+    hours < 24 &&
+    minutes >= 0 &&
+    minutes < 60
+   );
+  }, "La hora no es válida."),
  location: z
   .string()
   .min(1, "La ubicación es obligatoria.")
@@ -16,30 +36,8 @@ export const eventSchema = z.object({
   .number()
   .min(1, "Debe tener al menos 1 participante.")
   .optional(),
- createdBy: z.string().min(1, "El creador es obligatorio."),
-});
-
-export const eventCreateSchema = eventSchema.extend({
  image: z.any().optional(),
- results: z.any().optional(),
+ results: raceCheckSchema.optional(),
 });
 
-export type EventFormData = z.infer<typeof eventSchema>;
-export type EventCreateData = z.infer<typeof eventCreateSchema>;
-
-// Esquema para la respuesta del servidor
-export interface EventResponse {
- _id: string;
- name: string;
- date: string;
- time: string;
- location: string;
- description: string;
- maxParticipants: number;
- image: string;
- results: string;
- parsedResults: string;
- createdBy: string;
- createdAt: string;
- updatedAt: string;
-}
+export type EventFormData = z.infer<typeof eventCreateSchema>;

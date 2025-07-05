@@ -1,56 +1,64 @@
+import { CalendarIcon, ImageIcon, MapPinIcon } from 'lucide-react'
+import { EventResponse } from '@/services/eventService'
 import { motion } from "framer-motion"
 import Image from "next/image"
-import { EventProps } from "@/lib/utils"
+
 // Event card component
-export const EventCard = ({ event, setSelectedEvent }: { event: EventProps, setSelectedEvent?: (event: EventProps) => void }) => {
+export const EventCard = ({ event, setSelectedEvent }: { event: EventResponse, setSelectedEvent?: (event: EventResponse) => void }) => {
+    const parsedDate = event?.date
+        ? event?.date.split('T')[0].replace(/-/g, '/').split('/').reverse().join('/')
+        : 'Fecha'
 
     return (
-        <>
+        <div className="w-full max-w-[300px] mx-auto">
+            <div className="flex gap-1 items-center w-full p-2">
+                <MapPinIcon className="w-4 h-4 text-red-500 dark:text-red-500" />
+                <p className="text-gray-500 dark:text-white text-sm font-medium tracking-tight">
+                    {event?.location || 'Ubicación'}
+                </p>
+            </div>
             <motion.div
-                className={`w-full rounded-3xl overflow-hidden flex flex-col h-max max-w-[350px] mx-auto bg-gradient-to-b bg-gray-100 dark:bg-gray-900 ${setSelectedEvent ? 'cursor-pointer' : ''}`}
+                className={`w-full relative rounded-3xl overflow-hidden flex flex-col h-max mx-auto bg-gradient-to-b bg-gray-100 dark:bg-[#10141a] ${setSelectedEvent ? 'cursor-pointer' : ''}`}
                 onClick={() => setSelectedEvent?.(event)}
-            // animate={{ scale: isOpen ? 1.05 : 1, transition: { duration: 0.2, ease: 'easeInOut' } }}
             >
-                <motion.div className="flex items-center justify-center w-full z-10 min-h-[290px] relative">
-                    {event?.imageUrl ? (
+                <div className="z-30 absolute top-0 left-0 p-2 flex flex-col gap-1">
+
+                    <div className="flex gap-1 rounded-full bg-black/30 backdrop-blur-sm dark:bg-white/30 px-3 py-2 w-max items-center">
+                        <CalendarIcon className="w-4 h-4 text-white dark:text-white" />
+                        <p className="text-white dark:text-white text-xs tracking-tight">
+                            {parsedDate}
+                        </p>
+                    </div>
+                </div>
+
+                <motion.div className="flex items-center justify-center w-full z-10 min-h-[300px] relative">
+                    {event?.image ? (
                         <Image
-                            src={event?.imageUrl || ''}
+                            src={event?.image || ''}
                             alt={event?.name || ''}
-                            className="z-10"
-                            objectPosition='top'
-                            objectFit='cover'
+                            className="z-10 object-cover"
                             fill
                             priority
                         />
                     ) : (
-                        <div className="z-10 flex items-center justify-center w-full h-full">
-                            <p className="text-gray-500 dark:text-gray-400 text-sm tracking-tight text-center font-semibold">
-                                No hay imagen para mostrar
+                        <div className="z-10 flex flex-col items-center justify-center w-full h-full">
+                            <ImageIcon className="w-6 h-6 text-gray-500 dark:text-gray-400" strokeWidth={1.5} />
+                            <p className="text-gray-500 dark:text-gray-400 text-sm tracking-tight text-center font-medium">
+                                Imagen
                             </p>
                         </div>
                     )}
                 </motion.div>
             </motion.div >
 
-            <motion.div className="flex flex-col w-full pt-3 px-1">
+            <motion.div className="flex flex-col w-full pt-3 px-1 max-w-[300px] mx-auto">
                 <motion.h2 className="text-gray-950 dark:text-gray-50 text-lg font-semibold tracking-tight">
-                    {event?.name || ''}
+                    {event?.name || 'Nombre'}
                 </motion.h2>
-                <p className=" text-gray-500 dark:text-gray-400 text-sm tracking-tight">
-                    {event?.description || ''}
+                <p className=" text-gray-500 dark:text-gray-400 text-sm tracking-tight w-full">
+                    {event?.description || 'Descripción'}
                 </p>
-
-                {/* <div className="flex w-full justify-end mt-4">
-                    <button
-                        className="dark:bg-gray-900 bg-white w-max rounded-full px-6 py-3 text-gray-950 dark:text-white flex items-center gap-2 hover:opacity-80 transition-all duration-300"
-                        onClick={() => setSelectedEvent(event)}>
-                        <p className="text-xs font-semibold tracking-tight">
-                            Ver detalles
-                        </p>
-                        <ArrowRightIcon className="w-4 h-4 text-gray-950 dark:text-white" />
-                    </button>
-                </div> */}
             </motion.div>
-        </>
+        </div>
     )
 }

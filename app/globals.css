@@ -182,19 +182,89 @@
   shadow-sm transition-all duration-75;
 }
 
+.label-input {
+  @apply text-gray-950 dark:text-gray-50 text-sm font-medium tracking-tight font-inter;
+}
+
 .error-input {
   @apply text-red-500 text-sm font-medium font-inter mt-1;
+}
+
+.rounded-search-input {
+  @apply w-full rounded-full px-10 h-10 bg-white/80 dark:bg-gray-950/80 border border-gray-200 dark:border-gray-500 outline-none ring-0 transition-all duration-75 shadow-sm md:hover:shadow-md placeholder:text-gray-500 dark:placeholder:text-gray-400 placeholder:text-sm font-medium tracking-tight;
 }
 
 .rounded-btn {
   @apply bg-gray-950 dark:bg-white rounded-full px-6 py-3 text-white dark:text-gray-950 flex items-center gap-2 hover:opacity-80 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed;
 }
 
+/* Modern Table Styles */
+.modern-table {
+  @apply w-full h-full bg-white dark:bg-[#10141a] rounded-xl border border-gray-200 dark:border-gray-800;
+}
+
+.modern-table-header {
+  @apply sticky top-0 z-20 w-full bg-gradient-to-b from-white via-white to-transparent dark:from-[#10141a] dark:via-[#10141a] dark:to-transparent;
+}
+
+.modern-table-header th {
+  @apply px-6 py-4 text-left text-xs font-semibold text-[#10141a] dark:text-gray-100 tracking-wide;
+}
+
+.modern-table-body tr {
+  @apply hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-200 border-b border-gray-100 dark:border-gray-700;
+}
+
+.modern-table-body tr:last-child {
+  @apply border-b-0;
+}
+
+.modern-table-body td {
+  @apply px-6 py-4 text-sm text-gray-700 dark:text-gray-300;
+}
+
+.modern-table-body tr:nth-child(even) {
+  @apply bg-gray-50/50 dark:bg-[#191f29];
+}
+
+/* Search Input Styles */
+.search-input {
+  @apply w-full max-w-md px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 
+         bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 
+         placeholder-gray-500 dark:placeholder-gray-400
+         focus:ring-2 focus:ring-blue-500 focus:border-transparent
+         transition-all duration-200 shadow-sm;
+}
+
+/* Pagination Styles */
+.pagination-container {
+  @apply flex flex-col md:flex-row items-center justify-between p-2 md:px-6 md:py-4 bg-gradient-to-t from-white via-white to-transparent dark:from-[#10141a] dark:via-[#10141a] dark:to-transparent sticky bottom-0 left-0 z-10;
+}
+
+.pagination-info {
+  @apply text-sm text-gray-700 dark:text-gray-300 pb-2 md:pb-0;
+}
+
+.pagination-controls {
+  @apply flex items-center space-x-2 overflow-x-auto;
+}
+
+.pagination-button {
+  @apply text-sm font-medium rounded-full border border-gray-300 dark:border-gray-600 flex items-center justify-center
+         bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300
+         hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-400 dark:hover:border-gray-500
+         disabled:opacity-50 disabled:cursor-not-allowed
+         transition-all duration-200 h-7 w-7 md:h-7 md:w-7;
+}
+
+.pagination-button.active {
+  @apply text-white dark:text-gray-950 bg-gray-950 dark:bg-white border-gray-950 dark:border-white hover:bg-gray-900 dark:hover:bg-gray-100;
+}
+
 /* Toast mobile optimizations */
 @media (max-width: 768px) {
   .toast-container {
     position: fixed !important;
-    top: env(safe-area-inset-top, 1rem) !important;
     left: 1rem !important;
     right: 1rem !important;
     z-index: 9999 !important;

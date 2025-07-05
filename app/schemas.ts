@@ -16,7 +16,7 @@
 //  id: number;
 //  name: string;
 // }
-// export interface EventProps {
+// export interface RaceCheckProps {
 //  id: number | string;
 //  name: string;
 //  date: string;
