@@ -11,22 +11,24 @@ const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10MB
 const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp']
 const ALLOWED_FILE_EXTENSIONS = ['.racecheck', '.xlsx']
 
+import { EventResponse, createEvent, updateEvent } from '@/services/eventService'
+import { adminEmails, textToJsonRaceResults } from '@/lib/utils'
 import { RaceCheckProps } from '@/lib/schemas/racecheck.schema'
-import { textToJsonRaceResults } from '@/lib/utils'
+import { SignInButton } from '../ui/sign-in-button'
 import { AnimatedText } from '../ui/animated-text'
-import Toast from '../ui/toast'
-import Modal from '../ui/modal'
 import { useEffect, useState } from 'react'
-import EventPreview from './event-preview'
 import { useSession } from 'next-auth/react'
-import axios from 'axios'
+import Modal from '../ui/modal'
+import Toast from '../ui/toast'
+import EventPreview from './event-preview'
 
+interface EventFormProps {
+  event?: EventResponse;
+}
 
-
-export default function EventForm() {
+export default function EventForm({ event }: EventFormProps) {
   const router = useRouter()
   const { data: session } = useSession()
-
 
   const {
     register,
@@ -37,12 +39,20 @@ export default function EventForm() {
   } = useForm<EventFormData>({
     resolver: zodResolver(eventCreateSchema),
     mode: 'onBlur',
+    defaultValues: event || {
+      name: "",
+      date: new Date().toISOString().split('T')[0],
+      time: "09:00",
+      location: "",
+      description: "",
+      maxParticipants: 100,
+    }
   })
 
   const [isMounted, setIsMounted] = useState(false)
   const [eventFile, setEventFile] = useState<File | undefined>(undefined)
   const [imageFile, setImageFile] = useState<File | undefined>(undefined)
-  const [parsedResults, setParsedResults] = useState<RaceCheckProps | undefined>(undefined)
+  const [parsedResults, setParsedResults] = useState<RaceCheckProps | undefined>(event?.results)
   const [toast, setToast] = useState<{
     message: string;
     type: 'success' | 'error' | 'info';
@@ -77,38 +87,48 @@ export default function EventForm() {
 
   const onSubmit = async (data: EventFormData) => {
     try {
-      const newEvent = {
-        name: data.name,
-        date: data.date,
-        time: data.time,
-        location: data.location,
-        description: data.description,
-        maxParticipants: data.maxParticipants,
-        image: imageFile,
-        results: parsedResults,
-      }
-      // return console.log(newEvent)
-      await axios({
-        method: 'POST',
-        url: `/api/events`,
-        data: newEvent,
-      })
+      const formData = new FormData();
+      formData.append('name', data.name);
+      formData.append('date', data.date);
+      formData.append('time', data.time);
+      formData.append('location', data.location);
+      formData.append('description', data.description || '');
+      formData.append('maxParticipants', data.maxParticipants?.toString() || '0');
 
-      setToast({
-        message: 'Evento creado exitosamente',
-        type: 'success',
-        show: true
-      })
+      if (parsedResults) {
+        formData.append('results', JSON.stringify(parsedResults));
+      }
+      if (imageFile) {
+        formData.append('image', imageFile);
+      }
+
+      if (event?._id) {
+        // Update existing event
+        await updateEvent(event._id, formData);
+        setToast({
+          message: 'Evento actualizado exitosamente',
+          type: 'success',
+          show: true
+        })
+      } else {
+        // Create new event
+        await createEvent(formData);
+        setToast({
+          message: 'Evento creado exitosamente',
+          type: 'success',
+          show: true
+        })
+      }
 
       reset()
       setImageFile(undefined)
       setEventFile(undefined)
       setParsedResults(undefined)
-      router.push('/')
+      router.push('/eventos')
     } catch (error) {
-      console.error('Error creando evento:', error)
+      console.error('Error procesando evento:', error)
       setToast({
-        message: 'Error al crear el evento',
+        message: 'Error al procesar el evento',
         type: 'error',
         show: true
       })
@@ -164,32 +184,50 @@ export default function EventForm() {
   useEffect(() => {
     setIsMounted(true)
   }, [])
-  // dev
-  const defaultValues: EventFormData = {
-    name: "Carrera de Ejemplo",
-    date: new Date().toISOString().split('T')[0], // Fecha actual
-    time: "09:00",
-    location: "Parque Central",
-    description: "Una carrera de ejemplo para demostrar valores predeterminados.",
-    maxParticipants: 100,
-    // results: undefined // Puede ser un objeto RaceCheckProps o undefined
-  }
 
-  useEffect(() => {
-    reset(defaultValues)
-  }, [reset])
-  // dev
   if (!isMounted) return null
 
   if (!session?.user?.email) return (
-    <div className="flex flex-col items-center justify-center h-screen">
-      <p className="text-gray-500 dark:text-gray-400 text-sm">
-        Debes iniciar sesión para crear eventos
-      </p>
+    <div className="w-full max-w-xl mx-auto flex flex-col gap-3 p-6">
+      <div className="flex flex-col gap-4 max-w-md mx-auto w-full">
+        <p className="text-gray-500 dark:text-gray-400 text-sm">
+          Debes iniciar sesión para gestionar eventos
+        </p>
+
+        <div className="flex items-center justify-between gap-4 w-full">
+          <button className="rounded-btn !bg-gray-100 dark:!bg-gray-800 !border-gray-300 flex items-center gap-2"
+            onClick={() => router.push('/')}
+          >
+            <ArrowLeftIcon className="w-4 h-4 text-gray-500 dark:text-gray-300" />
+            <p className="text-xs font-semibold tracking-tight text-gray-700 dark:text-gray-300">
+              Volver
+            </p>
+          </button>
+          <SignInButton />
+        </div>
+      </div>
     </div>
   )
 
-  console.log(errors)
+  if (session?.user?.email && !adminEmails.includes(session?.user?.email)) return (
+    <div className="w-full max-w-xl mx-auto flex flex-col gap-3 p-6">
+      <p className="text-gray-500 dark:text-gray-400 text-sm">
+        No tienes permisos para gestionar eventos
+      </p>
+
+      <div className="flex items-center justify-between gap-4 w-full">
+        <button className="rounded-btn !bg-gray-100 dark:!bg-gray-800 !border-gray-300 flex items-center gap-2"
+          onClick={() => router.push('/')}
+        >
+          <ArrowLeftIcon className="w-4 h-4 text-gray-500 dark:text-gray-300" />
+          <p className="text-xs font-semibold tracking-tight text-gray-700 dark:text-gray-300">
+            Volver
+          </p>
+        </button>
+      </div>
+    </div>
+  )
+
   return (
     <>
       <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col font-geist-sans w-full md:h-screen md:overflow-hidden overflow-auto">
@@ -200,7 +238,7 @@ export default function EventForm() {
             <button type='button' className="rounded-full p-1.5 active:scale-95 transition-all duration-300 bg-gray-100 dark:bg-gray-800" onClick={() => router.push('/eventos')}>
               <ArrowLeftIcon className="w-4 h-4 text-gray-500 dark:text-white" />
             </button>
-            <AnimatedText text="Nuevo evento" className='!text-2xl font-semibold text-start' />
+            <AnimatedText text={event ? "Editar evento" : "Nuevo evento"} className='!text-2xl font-semibold text-start' />
           </div>
 
           <button type='button' className="rounded-btn !bg-gray-100 md:hidden scale-90" onClick={() => setShowPreview(!showPreview)}>
@@ -294,11 +332,11 @@ export default function EventForm() {
             <div className='w-full flex flex-col gap-1'>
               <label className="label-input">Imagen del evento</label>
               <div className="w-full border-2 border-dashed border-gray-300 rounded-[12px] p-4 hover:border-gray-400 transition-colors flex items-center justify-center">
-                {imageFile?.name ? (
+                {imageFile?.name || event?.image ? (
                   <div className="flex items-center justify-between w-full">
                     <div className="flex items-center gap-3 w-full">
                       <File size={20} className="text-blue-500" />
-                      <span className="text-sm font-medium truncate">{imageFile?.name}</span>
+                      <span className="text-sm font-medium truncate">{imageFile?.name || "Imagen actual"}</span>
                     </div>
                     <button
                       type="button"
@@ -332,11 +370,11 @@ export default function EventForm() {
             <div className='w-full flex flex-col gap-1'>
               <label className="label-input">Archivo de resultados (.racecheck o .xlsx)</label>
               <div className="w-full border-2 border-dashed border-gray-300 rounded-[12px] p-4 hover:border-gray-400 transition-colors flex items-center justify-center">
-                {eventFile?.name ? (
+                {eventFile?.name || event?.results ? (
                   <div className="flex items-center justify-between w-full px-2">
                     <div className="flex items-center gap-3 w-full">
                       <File size={20} className="text-blue-500" />
-                      <p className="text-sm w-full font-medium truncate">{eventFile.name}</p>
+                      <p className="text-sm w-full font-medium truncate">{eventFile?.name || "Resultados actuales"}</p>
                     </div>
 
                     <button
@@ -389,7 +427,7 @@ export default function EventForm() {
               >
                 <div className="flex items-center gap-2">
                   <p className='text-sm font-medium tracking-tight text-white dark:text-white'>
-                    {isSubmitting ? 'Procesando...' : 'Guardar'}
+                    {isSubmitting ? 'Procesando...' : (event ? 'Actualizar' : 'Guardar')}
                   </p>
                   {isSubmitting ? (
                     <Loader2 size={18} className="animate-spin" />
@@ -405,15 +443,18 @@ export default function EventForm() {
           <div className="hidden md:flex w-full flex-col h-full overflow-y-auto items-center justify-start">
             <EventPreview
               event={{
-                id: Date.now().toString(),
+                _id: event?._id || Date.now().toString(),
                 name: watch('name') as string,
                 date: watch('date') ? new Date(watch('date')).toISOString() : '',
                 time: watch('time') as string,
                 location: watch('location') as string,
                 description: watch('description') as string,
-                imageUrl: imageFile ? URL.createObjectURL(imageFile) : '',
-                categories: parsedResults?.categories || [],
-                participants: parsedResults?.participants || [],
+                maxParticipants: parseInt(watch('maxParticipants') as unknown as string) || 0,
+                image: imageFile ? URL.createObjectURL(imageFile) : event?.image || '',
+                results: parsedResults || event?.results || {} as RaceCheckProps,
+                createdBy: session?.user?.email || '',
+                createdAt: event?.createdAt || new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
               }}
             />
           </div>
@@ -436,18 +477,20 @@ export default function EventForm() {
         title="Previsualización del evento"
         showCloseButton={true}
       >
-
         <EventPreview
           event={{
-            id: Date.now().toString(),
+            _id: event?._id || Date.now().toString(),
             name: watch('name') as string,
             date: watch('date') ? new Date(watch('date')).toISOString() : '',
             time: watch('time') as string,
             location: watch('location') as string,
             description: watch('description') as string,
-            imageUrl: imageFile ? URL.createObjectURL(imageFile) : '',
-            categories: parsedResults?.categories || [],
-            participants: parsedResults?.participants || [],
+            maxParticipants: parseInt(watch('maxParticipants') as unknown as string) || 0,
+            image: imageFile ? URL.createObjectURL(imageFile) : event?.image || '',
+            results: parsedResults || event?.results || {} as RaceCheckProps,
+            createdBy: session?.user?.email || '',
+            createdAt: event?.createdAt || new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
           }}
         />
       </Modal>

@@ -1,7 +1,7 @@
-import { CalendarIcon, ImageIcon, MapPinIcon } from 'lucide-react'
+import { CalendarIcon, MapPinIcon } from 'lucide-react'
 import { EventResponse } from '@/services/eventService'
 import { motion } from "framer-motion"
-import Image from "next/image"
+import SafeImage from '@/components/ui/safe-image'
 
 // Event card component
 export const EventCard = ({ event, setSelectedEvent }: { event: EventResponse, setSelectedEvent?: (event: EventResponse) => void }) => {
@@ -17,12 +17,12 @@ export const EventCard = ({ event, setSelectedEvent }: { event: EventResponse, s
                     {event?.location || 'Ubicación'}
                 </p>
             </div>
+
             <motion.div
                 className={`w-full relative rounded-3xl overflow-hidden flex flex-col h-max mx-auto bg-gradient-to-b bg-gray-100 dark:bg-[#10141a] ${setSelectedEvent ? 'cursor-pointer' : ''}`}
                 onClick={() => setSelectedEvent?.(event)}
             >
                 <div className="z-30 absolute top-0 left-0 p-2 flex flex-col gap-1">
-
                     <div className="flex gap-1 rounded-full bg-black/30 backdrop-blur-sm dark:bg-white/30 px-3 py-2 w-max items-center">
                         <CalendarIcon className="w-4 h-4 text-white dark:text-white" />
                         <p className="text-white dark:text-white text-xs tracking-tight">
@@ -31,24 +31,15 @@ export const EventCard = ({ event, setSelectedEvent }: { event: EventResponse, s
                     </div>
                 </div>
 
-                <motion.div className="flex items-center justify-center w-full z-10 min-h-[300px] relative">
-                    {event?.image ? (
-                        <Image
-                            src={event?.image || ''}
-                            alt={event?.name || ''}
-                            className="z-10 object-cover"
-                            fill
-                            priority
-                        />
-                    ) : (
-                        <div className="z-10 flex flex-col items-center justify-center w-full h-full">
-                            <ImageIcon className="w-6 h-6 text-gray-500 dark:text-gray-400" strokeWidth={1.5} />
-                            <p className="text-gray-500 dark:text-gray-400 text-sm tracking-tight text-center font-medium">
-                                Imagen
-                            </p>
-                        </div>
-                    )}
-                </motion.div>
+
+                <SafeImage
+                    src={event?.image || ''}
+                    alt={event?.name || ''}
+                    className="z-10 object-cover"
+                    fill
+                    priority
+                    fallbackText="Imagen"
+                />
             </motion.div >
 
             <motion.div className="flex flex-col w-full pt-3 px-1 max-w-[300px] mx-auto">

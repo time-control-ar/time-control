@@ -159,41 +159,41 @@ const RaceCheckTable = ({ results }: { results: RaceCheckProps | undefined }) =>
                         ))}
                     </tbody>
                 </table>
-                {totalPages > 1 && (
-                    <div className="pagination-container">
-
-                        <div className="pagination-controls">
-                            <button
-                                type="button"
-                                onClick={() => handlePageChange(currentPage - 1)}
-                                disabled={currentPage === 1}
-                                className="pagination-button"
-                            >
-                                <ArrowLeftIcon className="w-4 h-4" />
-                            </button>
-
-                            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                                <button
-                                    key={page}
-                                    onClick={() => handlePageChange(page)}
-                                    className={`pagination-button ${currentPage === page ? 'active' : ''}`}
-                                >
-                                    {page}
-                                </button>
-                            ))}
-
-                            <button
-                                type="button"
-                                onClick={() => handlePageChange(currentPage + 1)}
-                                disabled={currentPage === totalPages}
-                                className="pagination-button"
-                            >
-                                <ArrowRightIcon className="w-4 h-4" />
-                            </button>
-                        </div>
-                    </div>
-                )}
             </div>
+            {totalPages > 1 && (
+                <div className="pagination-container">
+
+                    <div className="pagination-controls">
+                        <button
+                            type="button"
+                            onClick={() => handlePageChange(currentPage - 1)}
+                            disabled={currentPage === 1}
+                            className="pagination-button"
+                        >
+                            <ArrowLeftIcon className="w-4 h-4" />
+                        </button>
+
+                        {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                            <button
+                                key={page}
+                                onClick={() => handlePageChange(page)}
+                                className={`pagination-button ${currentPage === page ? 'active' : ''}`}
+                            >
+                                {page}
+                            </button>
+                        ))}
+
+                        <button
+                            type="button"
+                            onClick={() => handlePageChange(currentPage + 1)}
+                            disabled={currentPage === totalPages}
+                            className="pagination-button"
+                        >
+                            <ArrowRightIcon className="w-4 h-4" />
+                        </button>
+                    </div>
+                </div>
+            )}
         </div>
     )
 }

@@ -133,7 +133,7 @@ const EventsListSearch = ({ eventsData }: { eventsData: EventResponse[] }) => {
             </AnimatePresence>
 
             <div className='flex flex-col h-full w-full'>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 pb-6 max-w-screen-2xl mx-auto">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 pb-6 max-w-screen-2xl mx-auto w-full">
                     <AnimatePresence mode="wait">
                         {events?.length > 0 ? (
                             <>
@@ -145,6 +145,7 @@ const EventsListSearch = ({ eventsData }: { eventsData: EventResponse[] }) => {
                                         exit={{ opacity: 0, y: -20 }}
                                         transition={{ duration: 0.2, delay: 0.1 * index }}
                                         viewport={{ once: true }}
+                                        className="w-full"
                                     >
                                         <EventCard event={event} setSelectedEvent={setSelectedEvent} />
                                     </motion.div>

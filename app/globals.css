@@ -164,14 +164,12 @@
     --sidebar-ring: 217.2 91.2% 59.8%}
 }
 
-
-
 @layer base {
   * {
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground h-full;
   }
 }
 
@@ -238,7 +236,7 @@
 
 /* Pagination Styles */
 .pagination-container {
-  @apply flex flex-col md:flex-row items-center justify-between p-2 md:px-6 md:py-4 bg-gradient-to-t from-white via-white to-transparent dark:from-[#10141a] dark:via-[#10141a] dark:to-transparent sticky bottom-0 left-0 z-10;
+  @apply flex flex-col md:flex-row items-center justify-between p-2 md:pt-6 bg-gradient-to-t from-white via-white to-transparent dark:from-[#10141a] dark:via-[#10141a] dark:to-transparent;
 }
 
 .pagination-info {
@@ -297,8 +295,4 @@
     border-radius: 1.5rem 1.5rem 0 0 !important;
   }
   
-  .modal-backdrop {
-    backdrop-filter: blur(8px) !important;
-    background-color: rgba(0, 0, 0, 0.6) !important;
-  }
 }

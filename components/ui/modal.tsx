@@ -30,10 +30,8 @@ const Modal = ({
         const bodyStyle = document.body.style;
         if (isOpen) {
             bodyStyle.overflow = 'hidden';
-            document.body.classList.add('modal-open');
         } else {
             bodyStyle.overflow = 'auto';
-            document.body.classList.remove('modal-open');
         }
         return () => {
             bodyStyle.overflow = 'auto';
@@ -52,7 +50,7 @@ const Modal = ({
             onClick={(e) => e.stopPropagation()}
             className={`
                 ${isMobile ?
-                    'h-[95%] right-0 bottom-0 mt-auto w-full rounded-t-3xl pb-20' :
+                    'h-[95%] mt-auto w-full rounded-t-3xl pb-20 fixed' :
                     'w-full md:max-w-[700px] h-full max-h-[80%] m-auto rounded-2xl top-[1%] left-1/2 -translate-x-1/2'} 
                 z-[9999] bg-white dark:bg-[#10141a] overflow-y-auto shadow-2xl flex flex-col ${className}`}
         >
@@ -90,9 +88,11 @@ const Modal = ({
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
                     transition={{ duration: 0.3, ease: 'easeOut' }}
-                    className="absolute bottom-0 left-0 z-[9998] h-screen w-screen bg-black/10 dark:bg-black/10 backdrop-blur-sm modal-backdrop md:flex items-center justify-center overflow-hidden"
+                    className=" top-0 left-0 z-[9998] h-full w-full bg-black/10 dark:bg-black/10 backdrop-blur-sm md:flex items-center justify-center overflow-hidden fixed"
                 >
-                    {renderModalContent()}
+                    <div className="flex items-end justify-center w-full h-full">
+                        {renderModalContent()}
+                    </div>
                 </motion.div>
             )}
         </AnimatePresence>

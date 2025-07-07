@@ -2,10 +2,10 @@ import EventsListSearch from '@/components/events/events-list-search';
 import { ModeToggle } from '@/components/mode-toggle';
 import AnimatedLogo from "@/components/ui/animated-logo";
 import { SignInButton } from '@/components/ui/sign-in-button';
-import { EventResponse, obtainEvents } from '@/services/eventService';
+import { obtainEventsServer } from '@/lib/server/eventService';
 
 export default async function Home() {
-  const events = (await obtainEvents()) as unknown as Array<EventResponse>;
+  const events = await obtainEventsServer();
 
   return (
     <div className="flex flex-col h-screen font-[family-name:var(--font-geist-sans)] relative bg-white dark:bg-gray-950 overflow-y-auto">

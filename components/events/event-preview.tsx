@@ -1,11 +1,12 @@
-import { RaceCheckProps } from '@/lib/utils'
+
 import { AnimatePresence, motion } from "framer-motion"
 import { EventCard } from './event-card'
 import RaceCheckTable from './race-check-table'
 import { useState } from 'react'
 import { ChartBarIcon, ImageIcon } from 'lucide-react'
+import { EventResponse } from '@/services/eventService'
 
-const EventPreview = ({ event }: { event: RaceCheckProps }) => {
+const EventPreview = ({ event }: { event: EventResponse }) => {
     const [tab, setTab] = useState<'info' | 'results'>('info')
 
     return (
@@ -51,11 +52,9 @@ const EventPreview = ({ event }: { event: RaceCheckProps }) => {
                     className="flex flex-col gap-3 p-6 w-full max-h-full overflow-auto"
                 >
                     {tab === 'info' ? (
-                        <div className="">
-                            <EventCard event={event} />
-                        </div>
+                        <EventCard event={event} />
                     ) : (
-                        <RaceCheckTable results={event} />
+                        <RaceCheckTable results={event.results} />
                     )}
                 </motion.div>
             </AnimatePresence>

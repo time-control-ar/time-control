@@ -66,3 +66,36 @@ export async function textToJsonRaceResults(
   return undefined;
  }
 }
+
+export const adminEmails = [
+ "jeronimodonato@gmail.com",
+ "info@timecontrol.com.ar",
+];
+
+// Función para validar y limpiar URLs de imágenes
+export function validateImageUrl(url: string): string {
+ if (!url) return "";
+
+ // Si la URL ya es válida, la retornamos
+ if (
+  url.startsWith("https://") &&
+  url.includes("timecontrol.blob.core.windows.net")
+ ) {
+  return url;
+ }
+
+ // Si es una URL local o relativa, la retornamos tal como está
+ if (url.startsWith("/") || url.startsWith("blob:")) {
+  return url;
+ }
+
+ // Si no es una URL válida, retornamos string vacío
+ return "";
+}
+
+// Función para obtener la URL de la imagen con fallback
+export function getImageUrl(imageUrl: string, fallbackUrl?: string): string {
+ const validUrl = validateImageUrl(imageUrl);
+ if (validUrl) return validUrl;
+ return fallbackUrl || "";
+}
