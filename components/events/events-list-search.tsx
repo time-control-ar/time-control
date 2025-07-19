@@ -1,14 +1,17 @@
 'use client'
 
-import { useState, useCallback, useEffect, useMemo } from 'react'
-import { ChartBarIcon, InfoIcon, SearchIcon, SlidersIcon, XIcon } from 'lucide-react'
+import { useState, useCallback, useEffect } from 'react'
+import { ChartBarIcon, ClockIcon, InfoIcon, MapPinIcon, PlusIcon, SearchIcon, SlidersIcon, XIcon } from 'lucide-react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { AnimatedText } from '../ui/animated-text'
 import RaceCheckTable from './race-check-table'
 import { EventCard } from './event-card'
 import { debounce } from 'lodash'
 import Modal from '../ui/modal'
 import { EventResponse } from '@/services/eventService'
+import SafeImage from '../ui/safe-image'
+import { useSession } from 'next-auth/react'
+import { adminEmails } from '@/lib/utils'
+import { useRouter } from 'next/navigation'
 
 function serializeText(text: string) {
     return text.toLowerCase()
@@ -18,6 +21,9 @@ function serializeText(text: string) {
 }
 
 const EventsListSearch = ({ eventsData }: { eventsData: EventResponse[] }) => {
+    const router = useRouter()
+    const session = useSession()
+    const isAdmin = adminEmails.includes(session.data?.user?.email || '')
     const [filtersOpen, setFiltersOpen] = useState(false)
     const [isMounted, setIsMounted] = useState(false)
     const [events, setEvents] = useState(eventsData)
@@ -53,16 +59,16 @@ const EventsListSearch = ({ eventsData }: { eventsData: EventResponse[] }) => {
         handleSearch(search)
     }, [search, handleSearch])
 
-    const eventsByMonth = useMemo(() => {
-        return eventsData.reduce((acc, event) => {
-            const month = new Date(event.date).getMonth()
-            acc[month] = acc[month] || []
-            acc[month].push(event)
-            return acc
-        }, {} as Record<number, EventResponse[]>)
-    }, [eventsData])
+    // const eventsByMonth = useMemo(() => {
+    //     return eventsData.reduce((acc, event) => {
+    //         const month = new Date(event.date).getMonth()
+    //         acc[month] = acc[month] || []
+    //         acc[month].push(event)
+    //         return acc
+    //     }, {} as Record<number, EventResponse[]>)
+    // }, [eventsData])
 
-    console.log(eventsByMonth)
+    // console.log(eventsByMonth)
 
     useEffect(() => {
         setIsMounted(true)
@@ -72,28 +78,24 @@ const EventsListSearch = ({ eventsData }: { eventsData: EventResponse[] }) => {
 
 
     return (
-        <>
-            <AnimatedText
-                text="Eventos"
-                className="text-4xl font-medium text-gray-800 dark:text-white px-6 pt-12 pb-6"
-            />
+        <div className='flex flex-col w-full h-full'>
+            <motion.div
+                layout
+                animate={{ overflow: filtersOpen ? 'hidden' : 'visible', height: filtersOpen ? 'auto' : 'auto' }}
+                transition={{ duration: 0.2 }}
+                className={`
+                    sticky top-0 z-40 pt-3 pb-2 mb-6 max-w-screen-lg mx-auto backdrop-blur-md
+                    w-full flex flex-col items-start justify-between px-6 
+                    bg-gradient-to-b
+                    from-white via-white to-white/90
+                    dark:from-gray-950 dark:via-gray-950 dark:to-gray-950/50
+                    `}
+            >
 
-            <AnimatePresence mode="wait">
-                <motion.div
-                    initial={{ opacity: 0, transition: { duration: 0.3 } }}
-                    animate={{ opacity: 1, transition: { duration: 0.3 } }}
-                    exit={{ opacity: 0, transition: { duration: 0.1 } }}
-                    className={`sticky top-0 z-40 pt-3 pb-1 mb-6 max-w-screen-lg mx-auto
-                w-full flex items-start justify-between gap-6 px-6 
-                bg-gradient-to-b backdrop-blur-md
-                from-white via-white/60 to-transparent 
-                dark:from-gray-950 dark:via-gray-950/60 dark:to-transparent`}
-                >
-
-                    <motion.div key='search-open' className="flex relative">
-                        <SearchIcon className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 z-20" />
+                <div className="flex items-center justify-between w-full gap-6">
+                    <div className="flex relative">
+                        <SearchIcon className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-white z-20" />
                         <input
-
                             type="text"
                             placeholder="Buscar"
                             className="rounded-search-input"
@@ -108,58 +110,87 @@ const EventsListSearch = ({ eventsData }: { eventsData: EventResponse[] }) => {
                         />
 
                         {search && (
-                            <button className="absolute right-3 top-1/2 -translate-y-1/2" onClick={() => setSearch('')} disabled={!search}>
+                            <button type="button" className="absolute right-3 top-1/2 -translate-y-1/2" onClick={() => setSearch('')} disabled={!search}>
                                 <XIcon className="w-5 h-5 text-gray-500 z-20 hover:text-gray-700 dark:hover:text-gray-300 transition-all duration-75 disabled:opacity-50 disabled:cursor-not-allowed" />
                             </button>
                         )}
-                    </motion.div>
+                    </div>
 
 
                     <button
-                        className="h-10 rounded-full w-max pl-3 pr-4
+                        type="button"
+                        className={`h-10 rounded-full w-max p-3
                           relative select-none flex items-center gap-2
-                          bg-white/80 dark:bg-gray-950/80 
-                          border border-gray-200 dark:border-gray-500
+                          bg-gradient-to-t from-white to-white dark:from-gray-800 dark:to-gray-900
+                          border ${filtersOpen ? 'border-gray-300 dark:border-gray-700' : ' border-gray-200 dark:border-gray-800'}
                           outline-none ring-0 transition-all duration-75 shadow-sm md:hover:shadow-md
-                          p-3"
+                          p-3`}
                         onClick={() => setFiltersOpen(!filtersOpen)}
                     >
-                        <SlidersIcon strokeWidth={2.5} className="w-4 h-4 text-gray-500 z-20" />
-                        <p className="text-gray-700 dark:text-gray-300 text-sm font-medium tracking-tight">
-                            Filtrar
-                        </p>
-                    </button>
-                </motion.div>
-            </AnimatePresence>
-
-            <div className='flex flex-col h-full w-full'>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 pb-6 max-w-screen-2xl mx-auto w-full">
-                    <AnimatePresence mode="wait">
-                        {events?.length > 0 ? (
-                            <>
-                                {events?.map((event, index) => (
-                                    <motion.div
-                                        key={event._id}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        initial={{ opacity: 0, y: 20 }}
-                                        exit={{ opacity: 0, y: -20 }}
-                                        transition={{ duration: 0.2, delay: 0.1 * index }}
-                                        viewport={{ once: true }}
-                                        className="w-full"
-                                    >
-                                        <EventCard event={event} setSelectedEvent={setSelectedEvent} />
-                                    </motion.div>
-                                ))}
-                            </>
+                        {filtersOpen ? (
+                            <XIcon strokeWidth={2.5} className="w-4 h-4 text-gray-500 dark:text-white z-20" />
                         ) : (
-                            <div className="flex items-center justify-center col-span-full">
-                                <p className="text-gray-500 text-sm">
-                                    No se encontraron eventos
-                                </p>
-                            </div>
+                            <SlidersIcon strokeWidth={2.5} className="w-4 h-4 text-gray-500 dark:text-white z-20" />
                         )}
-                    </AnimatePresence>
+                    </button>
                 </div>
+
+                <AnimatePresence mode="wait">
+                    {filtersOpen && (
+                        <motion.div
+                            initial={{ opacity: 0, height: 0, overflow: 'hidden' }}
+                            animate={{ opacity: 1, height: 'auto', overflow: 'hidden' }}
+                            exit={{ opacity: 0, height: 0, overflow: 'hidden', transition: { duration: 0.1 } }}
+                            transition={{ duration: 0.2 }}
+                        >
+                            <div className="w-full flex flex-col gap-4 p-4">
+
+                                <div className="flex flex-col gap-4">
+                                    <p className='text-gray-500 dark:text-gray-400 text-sm font-medium tracking-tight'>Filtros</p>
+                                </div>
+
+
+                            </div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+            </motion.div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-y-10 gap-x-2 pb-20 max-w-screen-2xl md:px-6 mx-auto w-full h-full">
+                {isAdmin && (
+                    <button
+                        type="button"
+                        className="bg-gray-100 dark:bg-gray-800 rounded-3xl overflow-hidden hover:shadow-lg  dark:shadow-gray-950/50 flex items-center justify-center gap-2 h-full flex-col max-w-[300px] mx-auto w-full min-h-[300px] cursor-pointer select-none border-2 border-dashed border-gray-300 dark:border-gray-700 transition-all duration-75"
+                        onClick={() => router.push('/eventos/nuevo')}
+                    >
+                        <PlusIcon className="w-4 h-4 text-gray-500 dark:text-white" />
+                        <p className="text-sm font-medium tracking-tight text-gray-600 dark:text-gray-400">Nuevo evento</p>
+                    </button>
+                )}
+                <AnimatePresence mode="wait">
+                    {events?.length > 0 ? (
+                        <>
+                            {events?.map((event, index) => (
+                                <motion.div
+                                    key={event._id}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    initial={{ opacity: 0, y: 20 }}
+                                    exit={{ opacity: 0, y: -20 }}
+                                    transition={{ duration: 0.2, delay: 0.1 * index }}
+                                    viewport={{ once: true }}
+                                >
+                                    <EventCard event={event} setSelectedEvent={setSelectedEvent} />
+                                </motion.div>
+                            ))}
+                        </>
+                    ) : (
+                        <div className="flex items-center justify-center col-span-full">
+                            <p className="text-gray-500 text-sm">
+                                No se encontraron eventos
+                            </p>
+                        </div>
+                    )}
+                </AnimatePresence>
             </div>
 
             <Modal
@@ -168,24 +199,38 @@ const EventsListSearch = ({ eventsData }: { eventsData: EventResponse[] }) => {
                 title={selectedEvent?.name}
                 showCloseButton={true}
             >
-                <div className="flex w-full gap-2 px-4 border-b border-gray-200 dark:border-gray-600">
+                <div className="flex w-full items-center justify-start px-6 pb-3 gap-2">
                     <button
+                        type="button"
                         onClick={() => handleTabChange('info')}
-                        className={`-mb-[0.9px] px-2 py-4 transition-all duration-100 flex items-center justify-center gap-3 bg-transparent border-b ${selectedTab === 'info' ? '!border-black dark:border-blue-300' : 'border-transparent opacity-60'}`}
+                        className={`h-10 px-4 rounded-full flex items-center justify-center
+                           relative select-none gap-2
+                           bg-gradient-to-t from-white to-white dark:from-gray-800 dark:to-gray-900
+                           border border-gray-200 dark:border-gray-800 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors`}
                     >
-                        <InfoIcon className={`w-4 h-4 ${selectedTab === 'info' ? 'text-black dark:text-blue-300' : 'text-gray-500 dark:text-gray-400'}`} />
-                        <p className={`text-sm tracking-tight`}>
-                            Información
-                        </p>
-                    </button>
+                        <div className={`${selectedTab === 'info' ? 'opacity-100' : 'opacity-60'} flex items-center justify-center gap-2`}>
 
+                            <InfoIcon className={`w-4 h-4 text-blue-400 dark:text-cyan-300`} />
+                            <p className={`text-xs font-semibold tracking-tight`}>
+                                Información
+                            </p>
+                        </div>
+                    </button>
                     <button
+                        type="button"
                         onClick={() => handleTabChange('results')}
-                        className={`-mb-[0.9px] px-2 py-4 transition-all duration-100 flex items-center justify-center gap-3 bg-transparent border-b ${selectedTab === 'results' ? '!border-black dark:border-blue-300' : 'border-transparent opacity-60'}`}>
-                        <ChartBarIcon className={`w-4 h-4 ${selectedTab === 'results' ? 'text-black dark:text-blue-300' : 'text-gray-500 dark:text-gray-400'}`} />
-                        <p className={`text-sm tracking-tight`}>
-                            Resultados
-                        </p>
+                        className={`h-10 px-4 rounded-full flex items-center justify-center
+                           relative select-none gap-2
+                           bg-gradient-to-t from-white to-white dark:from-gray-800 dark:to-gray-900
+                           border border-gray-200 dark:border-gray-800 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors`}
+                    >
+                        <div className={`${selectedTab === 'results' ? 'opacity-100' : 'opacity-60'} flex items-center justify-center gap-2`}>
+
+                            <ChartBarIcon className={`w-4 h-4 text-orange-500 dark:text-orange-400`} />
+                            <p className={`text-xs font-semibold tracking-tight`}>
+                                Resultados
+                            </p>
+                        </div>
                     </button>
                 </div>
 
@@ -199,9 +244,50 @@ const EventsListSearch = ({ eventsData }: { eventsData: EventResponse[] }) => {
                             transition={{ duration: 0.2 }}
                             className="flex flex-col gap-3 p-6 h-full overflow-y-auto"
                         >
-                            <p className="text-gray-500 dark:text-gray-400 text-sm font-light tracking-tight text-justify">
-                                {selectedEvent?.description}
-                            </p>
+                            <SafeImage
+                                src={selectedEvent?.image || ''}
+                                alt={selectedEvent?.name || ''}
+                                className="z-10 object-cover rounded-3xl md:!min-h-[300px]"
+                                fill
+                                priority
+                                fallbackText="Imagen"
+                            />
+
+                            <div className="flex flex-col gap-4 h-max">
+                                <div className="flex items-end justify-start max-w-max gap-3">
+                                    <div className="flex flex-col rounded-2xl bg-gradient-to-b dark:from-gray-900 dark:to-gray-800 from-gray-100 to-white backdrop-blur-sm px-3 py-2 w-max items-center">
+                                        <p className="text-gray-950 dark:text-white text-3xl font-semibold tracking-tight -mb-1">
+                                            {new Date(selectedEvent?.date || '').getDate()}
+                                        </p>
+                                        <p className="text-gray-950 dark:text-white text-sm tracking-tight font-medium capitalize">
+                                            {new Date(selectedEvent?.date || '').toLocaleString('es-ES', { month: 'long' })}
+                                        </p>
+                                    </div>
+
+                                    <div className="flex flex-col gap-2">
+                                        <div className="flex gap-2 items-center w-full">
+                                            <ClockIcon className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+                                            <p className="text-black dark:text-white text-base tracking-tight">
+                                                {selectedEvent?.startTime} a {selectedEvent?.endTime} hs
+                                            </p>
+                                        </div>
+
+                                        <div className="flex gap-2 items-center w-full">
+                                            <MapPinIcon className="w-5 h-5 text-red-500 dark:text-red-500" />
+                                            <p className="text-black dark:text-white text-base tracking-tight">
+                                                {selectedEvent?.location || 'Ubicación'}
+                                            </p>
+                                        </div>
+
+                                    </div>
+                                </div>
+
+                                <div className="px-3">
+                                    <p className="text-gray-500 dark:text-gray-400 text-base font-light tracking-tight text-justify">
+                                        {selectedEvent?.description}
+                                    </p>
+                                </div>
+                            </div>
                         </motion.div>
                     ) : (
                         <motion.div
@@ -210,7 +296,7 @@ const EventsListSearch = ({ eventsData }: { eventsData: EventResponse[] }) => {
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: 10 }}
                             transition={{ duration: 0.2 }}
-                            className="p-4 h-full flex flex-col overflow-y-auto"
+                            className="h-full flex flex-col overflow-y-auto px-4 relative"
                         >
                             <RaceCheckTable results={selectedEvent?.results} />
                         </motion.div>
@@ -218,7 +304,7 @@ const EventsListSearch = ({ eventsData }: { eventsData: EventResponse[] }) => {
                 </AnimatePresence>
 
             </Modal>
-        </>
+        </div>
     )
 }
 

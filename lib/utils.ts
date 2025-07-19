@@ -99,3 +99,30 @@ export function getImageUrl(imageUrl: string, fallbackUrl?: string): string {
  if (validUrl) return validUrl;
  return fallbackUrl || "";
 }
+
+export const eventTypes = [
+ {
+  name: "Maratón",
+  value: "marathon",
+ },
+ {
+  name: "Duatlón",
+  value: "duathlon",
+ },
+ {
+  name: "Triatlón",
+  value: "triathlon",
+ },
+ {
+  name: "Aguas abiertas",
+  value: "aquathlon",
+ },
+ {
+  name: "Ciclismo de montaña",
+  value: "aquaride",
+ },
+ {
+  name: "Ciclismo de ruta",
+  value: "aquasprint",
+ },
+];

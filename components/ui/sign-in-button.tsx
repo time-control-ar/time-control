@@ -8,7 +8,7 @@ export function SignInButton() {
 
     if (session) {
         return (
-            <button className="bg-gray-950 dark:bg-white rounded-full text-white dark:text-gray-950 flex items-center gap-2 hover:opacity-80 transition-all duration-300" onClick={() => signOut()}>
+            <button type="button" className="bg-gray-950 dark:bg-white rounded-full text-white dark:text-gray-950 flex items-center gap-2 hover:opacity-80 transition-all duration-300" onClick={() => signOut()}>
                 <div className="relative h-8 w-8 md:w-10 md:h-10 overflow-hidden rounded-full">
                     <Image src={session.user?.image || ''} alt="User" width={40} height={40} className="object-cover" />
                 </div>
@@ -16,7 +16,7 @@ export function SignInButton() {
         );
     }
     return (
-        <button className="rounded-btn w-max" onClick={() => signIn("google")}>
+        <button type="button" className="rounded-btn w-max" onClick={() => signIn("google")}>
             <p className="text-xs font-semibold tracking-tight">
                 Iniciar sesión
             </p>

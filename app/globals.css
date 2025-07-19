@@ -174,10 +174,12 @@
 }
 
 .input {
-  @apply w-full rounded-[12px] h-12 border border-gray-300 
-  bg-white text-gray-900 px-3 py-2.5 ring-0 outline-none
-  dark:bg-gray-950 dark:text-gray-50 dark:border-gray-500
-  shadow-sm transition-all duration-75;
+  @apply w-full px-4 rounded-[12px] h-12 border border-gray-200 dark:border-gray-800 focus:border-gray-400 dark:focus:border-gray-700
+  bg-gradient-to-t from-white to-white dark:from-gray-800 dark:to-gray-900
+  outline-none ring-0 transition-all duration-75 shadow-sm md:hover:shadow-md placeholder:text-gray-500 dark:placeholder:text-gray-400 placeholder:text-sm font-medium tracking-tight;
+}
+.file-input {
+  @apply w-full border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-[12px] p-4 hover:border-gray-400 transition-colors flex items-center justify-center cursor-pointer bg-white dark:bg-gray-950;
 }
 
 .label-input {
@@ -189,28 +191,33 @@
 }
 
 .rounded-search-input {
-  @apply w-full rounded-full px-10 h-10 bg-white/80 dark:bg-gray-950/80 border border-gray-200 dark:border-gray-500 outline-none ring-0 transition-all duration-75 shadow-sm md:hover:shadow-md placeholder:text-gray-500 dark:placeholder:text-gray-400 placeholder:text-sm font-medium tracking-tight;
+  @apply w-full rounded-full px-10 h-10 
+  border border-gray-200 dark:border-gray-800 focus:border-gray-400 dark:focus:border-gray-700
+  bg-gradient-to-t from-white to-white dark:from-gray-800 dark:to-gray-900
+  outline-none ring-0 transition-all duration-75 shadow-sm md:hover:shadow-md placeholder:text-gray-500 dark:placeholder:text-gray-400 placeholder:text-sm font-medium tracking-tight;
 }
 
 .rounded-btn {
-  @apply bg-gray-950 dark:bg-white rounded-full px-6 py-3 text-white dark:text-gray-950 flex items-center gap-2 hover:opacity-80 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed;
+  @apply bg-gray-950 dark:bg-white rounded-full h-10 px-4 text-white dark:text-gray-950 flex items-center gap-2 hover:opacity-80 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed;
 }
 
 /* Modern Table Styles */
 .modern-table {
-  @apply w-full h-full bg-white dark:bg-[#10141a] rounded-xl border border-gray-200 dark:border-gray-800;
+  @apply w-full h-full bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800;
 }
 
 .modern-table-header {
-  @apply sticky top-0 z-20 w-full bg-gradient-to-b from-white via-white to-transparent dark:from-[#10141a] dark:via-[#10141a] dark:to-transparent;
+  @apply sticky top-0 z-20 w-full backdrop-blur-xl rounded-t-xl
+  bg-gradient-to-b from-white via-white to-transparent 
+  dark:from-gray-900 dark:via-gray-900/90 dark:to-transparent;
 }
 
 .modern-table-header th {
-  @apply px-6 py-4 text-left text-xs font-semibold text-[#10141a] dark:text-gray-100 tracking-wide;
+  @apply p-4 text-left text-xs font-semibold text-[#10141a] dark:text-gray-100 tracking-wide;
 }
 
 .modern-table-body tr {
-  @apply hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-200 border-b border-gray-100 dark:border-gray-700;
+  @apply  border-b border-gray-100 dark:border-gray-800;
 }
 
 .modern-table-body tr:last-child {
@@ -218,11 +225,11 @@
 }
 
 .modern-table-body td {
-  @apply px-6 py-4 text-sm text-gray-700 dark:text-gray-300;
+  @apply px-2 py-4 text-sm text-gray-700 dark:text-gray-300;
 }
 
 .modern-table-body tr:nth-child(even) {
-  @apply bg-gray-50/50 dark:bg-[#191f29];
+  @apply bg-gray-50/50 dark:bg-transparent;
 }
 
 /* Search Input Styles */
@@ -236,11 +243,11 @@
 
 /* Pagination Styles */
 .pagination-container {
-  @apply flex flex-col md:flex-row items-center justify-between p-2 md:pt-6 bg-gradient-to-t from-white via-white to-transparent dark:from-[#10141a] dark:via-[#10141a] dark:to-transparent;
+  @apply flex flex-col md:flex-row items-center justify-between p-2 md:pt-6 bg-transparent;
 }
 
 .pagination-info {
-  @apply text-sm text-gray-700 dark:text-gray-300 pb-2 md:pb-0;
+  @apply text-xs text-gray-700 dark:text-gray-300 pb-2 md:pb-0 font-medium tracking-tight;
 }
 
 .pagination-controls {
@@ -280,8 +287,6 @@
 .modal-open {
   overflow: hidden !important;
   position: fixed !important;
-  width: 100% !important;
-  height: 100% !important;
 }
 
 @media (max-width: 768px) {

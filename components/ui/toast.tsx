@@ -68,6 +68,7 @@ const Toast = ({
                         <span className="font-medium text-sm md:text-base flex-1 break-words">{message}</span>
                         {dismissible && (
                             <button
+                                type="button"
                                 onClick={() => {
                                     setIsVisible(false)
                                     onDismiss?.()

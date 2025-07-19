@@ -6,6 +6,13 @@ export const eventCreateSchema = z.object({
   .string()
   .min(1, "El nombre es obligatorio.")
   .max(100, "El nombre no puede exceder 100 caracteres."),
+ type: z
+  .array(z.string())
+  .min(1, "Debe seleccionar al menos un tipo de evento.")
+  .refine(
+   (types) => types.every((type) => type.length > 0),
+   "Los tipos de evento no pueden estar vacíos"
+  ),
  date: z
   .string()
   .min(1, "La fecha es obligatoria.")
@@ -13,7 +20,21 @@ export const eventCreateSchema = z.object({
    const parsedDate = new Date(date);
    return !isNaN(parsedDate.getTime());
   }, "La fecha no es válida."),
- time: z
+ startTime: z
+  .string()
+  .min(1, "La hora es obligatoria.")
+  .refine((time) => {
+   const [hours, minutes] = time.split(":").map(Number);
+   return (
+    !isNaN(hours) &&
+    !isNaN(minutes) &&
+    hours >= 0 &&
+    hours < 24 &&
+    minutes >= 0 &&
+    minutes < 60
+   );
+  }, "La hora no es válida."),
+ endTime: z
   .string()
   .min(1, "La hora es obligatoria.")
   .refine((time) => {

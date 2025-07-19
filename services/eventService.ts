@@ -5,7 +5,8 @@ export interface EventResponse {
  _id: string;
  name: string;
  date: string;
- time: string;
+ startTime: string;
+ endTime: string;
  location: string;
  description: string;
  maxParticipants: number;
@@ -14,6 +15,7 @@ export interface EventResponse {
  createdBy: string;
  createdAt: string;
  updatedAt: string;
+ type: string[];
 }
 
 export async function createEvent(

@@ -8,9 +8,9 @@ export default async function Home() {
   const events = await obtainEventsServer();
 
   return (
-    <div className="flex flex-col h-screen font-[family-name:var(--font-geist-sans)] relative bg-white dark:bg-gray-950 overflow-y-auto">
+    <div className="flex flex-col min-h-screen font-[family-name:var(--font-geist-sans)] bg-white dark:bg-gray-950 relative">
 
-      <div className="px-6 w-full flex justify-between items-center">
+      <div className="px-6 w-full flex justify-between items-center max-w-7xl mx-auto">
         <AnimatedLogo />
 
         <div className="flex items-center gap-2">
@@ -19,18 +19,7 @@ export default async function Home() {
         </div>
       </div>
 
-      {events?.length > 0 ? (
-        <EventsListSearch
-          eventsData={events}
-        />
-      ) : (
-        <div className="p-10 w-full flex justify-center items-center0">
-          <p className='text-gray-500 dark:text-gray-400 text-sm font-medium tracking-tight'>
-            No hay eventos
-          </p>
-        </div>
-      )}
-
+      <EventsListSearch eventsData={events} />
     </div>
   );
 

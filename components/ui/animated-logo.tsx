@@ -2,8 +2,10 @@
 
 import Image from 'next/image'
 import { motion, useScroll, useTransform } from 'framer-motion'
+import { useRouter } from 'next/navigation'
 
 const AnimatedLogo = () => {
+    const router = useRouter()
     const scrollYProgress = useScroll()
     const scale = useTransform(scrollYProgress.scrollYProgress, [0, 1], [1, 0.9])
 
@@ -19,9 +21,10 @@ const AnimatedLogo = () => {
             variants={variants}
             style={{ scale }}
             transition={{ duration: 0.5 }}
-            className="w-28 h-14 flex items-center justify-center relative"
+            className="w-20 md:w-28 h-14 flex items-center justify-center relative cursor-pointer"
+            onClick={() => router.push('/')}
         >
-            <Image src="/logo-timecontrol.png" alt="Time Control" width={128} height={128}
+            <Image src="/logo-timecontrol.png" alt="Time Control" width={120} height={120}
                 className="object-contain" />
         </motion.div>
     )
