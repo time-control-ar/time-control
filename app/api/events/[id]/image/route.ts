@@ -9,7 +9,7 @@ import { ObjectId } from "mongodb";
 
 export async function PUT(
  req: NextRequest,
- { params }: { params: { id: string } }
+ { params }: { params: Promise<{ id: string }> }
 ) {
  try {
   const session = await auth();
@@ -31,10 +31,11 @@ export async function PUT(
    );
   }
 
+  const resolvedParams = await params;
   // Verificar que el evento existe
   const { db } = await connectToDatabase();
   const existingEvent = await db.collection("events").findOne({
-   _id: new ObjectId(params.id),
+   _id: new ObjectId(resolvedParams.id),
   });
 
   if (!existingEvent) {
@@ -47,7 +48,7 @@ export async function PUT(
   // Reemplazar imagen
   const oldImageUrl = deleteOldImage ? existingEvent.image : undefined;
   const newImageUrl = await replaceEventImage(
-   params.id,
+   resolvedParams.id,
    imageFile,
    oldImageUrl
   );
@@ -68,7 +69,7 @@ export async function PUT(
 
 export async function DELETE(
  req: NextRequest,
- { params }: { params: { id: string } }
+ { params }: { params: Promise<{ id: string }> }
 ) {
  try {
   const session = await auth();
@@ -79,10 +80,11 @@ export async function DELETE(
    );
   }
 
+  const resolvedParams = await params;
   // Verificar que el evento existe y obtener la imagen actual
   const { db } = await connectToDatabase();
   const existingEvent = await db.collection("events").findOne({
-   _id: new ObjectId(params.id),
+   _id: new ObjectId(resolvedParams.id),
   });
 
   if (!existingEvent) {
@@ -105,7 +107,7 @@ export async function DELETE(
   if (deleted) {
    // Actualizar la base de datos para remover la referencia a la imagen
    await db.collection("events").updateOne(
-    { _id: new ObjectId(params.id) },
+    { _id: new ObjectId(resolvedParams.id) },
     {
      $set: {
       image: "",

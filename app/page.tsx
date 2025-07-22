@@ -10,10 +10,11 @@ import { obtainTicketServer } from '@/lib/server/ticketService';
 export default async function Home({
   searchParams,
 }: {
-  searchParams: { [key: string]: string | string[] | undefined }
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>
 }) {
-  const eventId = searchParams.eventId as string;
-  const dorsal = searchParams.dorsal as string;
+  const resolvedSearchParams = await searchParams;
+  const eventId = resolvedSearchParams.eventId as string;
+  const dorsal = resolvedSearchParams.dorsal as string;
   const events = await obtainEventsServer();
 
   const ticket = eventId && dorsal ? await obtainTicketServer(eventId, dorsal) : null;

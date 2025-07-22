@@ -39,7 +39,7 @@ const Toast = ({
         return () => {
             document.body.classList.remove('toast-open')
         }
-    }, [dismissible, onDismiss, isVisible])
+    }, [dismissible, onDismiss, isVisible, isMobile])
 
     const bgColor = {
         success: 'bg-green-100 border-green-200 text-green-800 dark:bg-green-900/20 dark:border-green-800 dark:text-green-400',

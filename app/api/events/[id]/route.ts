@@ -7,13 +7,14 @@ import { ObjectId } from "mongodb";
 
 export async function PUT(
  req: Request,
- { params }: { params: { id: string } }
+ { params }: { params: Promise<{ id: string }> }
 ) {
  try {
   const session = await auth();
   if (!session?.user)
    return NextResponse.json({ success: false, data: [] }, { status: 401 });
 
+  const resolvedParams = await params;
   const formData = await req.formData();
   let results: RaceCheckProps | undefined;
 
@@ -64,7 +65,7 @@ export async function PUT(
 
   // Check if event exists
   const existingEvent = await db.collection("events").findOne({
-   _id: new ObjectId(params.id),
+   _id: new ObjectId(resolvedParams.id),
   });
 
   if (!existingEvent) {
@@ -115,7 +116,7 @@ export async function PUT(
 
   const result = await db
    .collection("events")
-   .updateOne({ _id: new ObjectId(params.id) }, { $set: updateData });
+   .updateOne({ _id: new ObjectId(resolvedParams.id) }, { $set: updateData });
 
   if (result.matchedCount === 0) {
    return NextResponse.json(
@@ -126,7 +127,7 @@ export async function PUT(
 
   // Get the updated event
   const updatedEvent = await db.collection("events").findOne({
-   _id: new ObjectId(params.id),
+   _id: new ObjectId(resolvedParams.id),
   });
 
   if (!updatedEvent) {
@@ -169,17 +170,18 @@ export async function PUT(
 
 export async function DELETE(
  req: Request,
- { params }: { params: { id: string } }
+ { params }: { params: Promise<{ id: string }> }
 ) {
  try {
   const session = await auth();
   if (!session?.user)
    return NextResponse.json({ success: false, data: [] }, { status: 401 });
 
+  const resolvedParams = await params;
   const { db } = await connectToDatabase();
 
   const result = await db.collection("events").deleteOne({
-   _id: new ObjectId(params.id),
+   _id: new ObjectId(resolvedParams.id),
   });
 
   if (result.deletedCount === 0) {

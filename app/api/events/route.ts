@@ -3,7 +3,7 @@ import { connectToDatabase } from "@/lib/mongodb";
 import { EventResponse } from "@/services/eventService";
 import { obtainEventsServer } from "@/lib/server/eventService";
 import { NextResponse } from "next/server";
-import { uploadFile } from "../upload/route";
+import { uploadFile } from "@/lib/server/uploadService";
 import { RaceCheckProps } from "@/lib/schemas/racecheck.schema";
 import { ObjectId } from "mongodb";
 

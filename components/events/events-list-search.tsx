@@ -4,7 +4,6 @@ import { useState, useCallback, useEffect } from 'react'
 import { ArrowUp, CheckIcon, PlusIcon, SearchIcon, SlidersIcon, XIcon } from 'lucide-react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { EventCard } from './event-card'
-import { debounce } from 'lodash'
 import { EventResponse } from '@/services/eventService'
 import { useSession } from 'next-auth/react'
 import { adminEmails, eventTypes } from '@/lib/utils'
@@ -27,19 +26,16 @@ const EventsListSearch = ({ eventsData }: { eventsData: EventResponse[] }) => {
     const [search, setSearch] = useState('')
     const [selectedEventTypes, setSelectedEventTypes] = useState<string[]>([])
 
-    const handleSearch = useCallback(
-        debounce((searchTerm: string, selectedTypes: string[]) => {
-            const serializedSearch = serializeText(searchTerm)
-            const filteredEvents = eventsData.filter(event => {
-                const matchesSearch = serializeText(event.name).includes(serializedSearch) ||
-                    serializeText(event.description).includes(serializedSearch)
-                const matchesCategory = selectedTypes.length === 0 || event.type.some(type => selectedTypes.includes(type))
-                return matchesSearch && matchesCategory
-            })
-            setEvents(filteredEvents)
-        }, 300),
-        [eventsData]
-    )
+    const handleSearch = useCallback((searchTerm: string, selectedTypes: string[]) => {
+        const serializedSearch = serializeText(searchTerm)
+        const filteredEvents = eventsData.filter(event => {
+            const matchesSearch = serializeText(event.name).includes(serializedSearch) ||
+                serializeText(event.description).includes(serializedSearch)
+            const matchesCategory = selectedTypes.length === 0 || event.type.some(type => selectedTypes.includes(type))
+            return matchesSearch && matchesCategory
+        })
+        setEvents(filteredEvents)
+    }, [eventsData])
 
     const handleCategoryToggle = (category: string) => {
         setSelectedEventTypes(prev => {
