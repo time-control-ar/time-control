@@ -2,7 +2,6 @@ import { auth } from "@/auth";
 import { connectToDatabase } from "@/lib/mongodb";
 import { EventResponse } from "@/services/eventService";
 import { NextResponse } from "next/server";
-import { uploadFile } from "../../upload/route";
 import { RaceCheckProps } from "@/lib/schemas/racecheck.schema";
 import { ObjectId } from "mongodb";
 
@@ -33,12 +32,32 @@ export async function PUT(
   }
 
   // Handle image upload if a new image is provided
-  let imageUrl = "";
   const eventImage = formData.get("image") as File;
   if (eventImage && eventImage.size > 0) {
-   const eventName = formData.get("name")?.toString() || "events";
+   // Para eventos existentes, usar la API específica de imágenes
+   // Las imágenes se manejan por separado para mejor control
+   console.log(
+    "Imagen detectada en actualización de evento - usar API de imágenes"
+   );
+  }
 
-   imageUrl = (await uploadFile(eventImage, eventName)) || "";
+  // Parse location as object
+  let location = { lat: -34.397, lng: 150.644 };
+  try {
+   const locationData = formData.get("location");
+   if (locationData) {
+    location = JSON.parse(locationData as string);
+   }
+  } catch (error) {
+   console.error("Error parsing location:", error);
+  }
+
+  // Parse types array
+  const types: string[] = [];
+  for (const [key, value] of formData.entries()) {
+   if (key.startsWith("type[") && key.endsWith("]")) {
+    types.push(value as string);
+   }
   }
 
   const { db } = await connectToDatabase();
@@ -59,31 +78,39 @@ export async function PUT(
   const updateData: {
    name: FormDataEntryValue | null;
    date: FormDataEntryValue | null;
-   time: FormDataEntryValue | null;
-   location: FormDataEntryValue | null;
+   startTime: FormDataEntryValue | null;
+   endTime: FormDataEntryValue | null;
+   location: { lat: number; lng: number };
+   locationName: FormDataEntryValue | null;
    description: FormDataEntryValue | null;
    maxParticipants: number;
    updatedAt: string;
    image?: string;
    results?: RaceCheckProps;
+   type?: string[];
   } = {
    name: formData.get("name"),
    date: formData.get("date"),
-   time: formData.get("time"),
-   location: formData.get("location"),
+   startTime: formData.get("startTime"),
+   endTime: formData.get("endTime"),
+   location: location,
+   locationName: formData.get("locationName"),
    description: formData.get("description"),
    maxParticipants: parseInt(formData.get("maxParticipants") as string) || 0,
    updatedAt: new Date().toISOString(),
   };
 
-  // Only update image if a new one was uploaded
-  if (imageUrl) {
-   updateData.image = imageUrl;
-  }
+  // Las imágenes se manejan por separado en la API específica de imágenes
+  // No actualizar imagen aquí
 
   // Only update results if new results were provided
   if (results) {
    updateData.results = results;
+  }
+
+  // Update types if provided
+  if (types.length > 0) {
+   updateData.type = types;
   }
 
   const result = await db
@@ -113,8 +140,10 @@ export async function PUT(
    _id: updatedEvent._id.toString(),
    name: updatedEvent.name,
    date: updatedEvent.date,
-   time: updatedEvent.time,
+   startTime: updatedEvent.startTime,
+   endTime: updatedEvent.endTime,
    location: updatedEvent.location,
+   locationName: updatedEvent.locationName,
    description: updatedEvent.description,
    maxParticipants: updatedEvent.maxParticipants,
    image: updatedEvent.image,
@@ -122,6 +151,7 @@ export async function PUT(
    createdBy: updatedEvent.createdBy,
    createdAt: updatedEvent.createdAt,
    updatedAt: updatedEvent.updatedAt,
+   type: updatedEvent.type,
   };
 
   return NextResponse.json({

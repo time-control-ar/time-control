@@ -40,7 +40,7 @@ export default function SafeImage({
     }
 
     return (
-        <motion.div className={`flex items-center justify-center w-full z-10 min-h-[200px] relative ${className}`}
+        <motion.div className={`flex items-center justify-center w-full z-10 min-h-[200px] relative rounded-3xl ${className}`}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.3 }}

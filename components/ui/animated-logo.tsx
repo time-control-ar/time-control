@@ -24,8 +24,13 @@ const AnimatedLogo = () => {
             className="w-20 md:w-28 h-14 flex items-center justify-center relative cursor-pointer"
             onClick={() => router.push('/')}
         >
-            <Image src="/logo-timecontrol.png" alt="Time Control" width={120} height={120}
-                className="object-contain" />
+            <Image src="/logo-timecontrol.png"
+                alt="Time Control"
+                width={120}
+                height={120}
+                className="object-contain"
+                priority
+            />
         </motion.div>
     )
 }

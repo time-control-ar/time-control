@@ -175,7 +175,7 @@
 
 .input {
   @apply w-full px-4 rounded-[12px] h-12 border border-gray-200 dark:border-gray-800 focus:border-gray-400 dark:focus:border-gray-700
-  bg-gradient-to-t from-white to-white dark:from-gray-800 dark:to-gray-900
+  bg-gradient-to-b from-white to-white dark:from-gray-800 dark:to-gray-900
   outline-none ring-0 transition-all duration-75 shadow-sm md:hover:shadow-md placeholder:text-gray-500 dark:placeholder:text-gray-400 placeholder:text-sm font-medium tracking-tight;
 }
 .file-input {
@@ -193,7 +193,7 @@
 .rounded-search-input {
   @apply w-full rounded-full px-10 h-10 
   border border-gray-200 dark:border-gray-800 focus:border-gray-400 dark:focus:border-gray-700
-  bg-gradient-to-t from-white to-white dark:from-gray-800 dark:to-gray-900
+  bg-gradient-to-t from-white to-white dark:from-gray-950 dark:to-gray-950
   outline-none ring-0 transition-all duration-75 shadow-sm md:hover:shadow-md placeholder:text-gray-500 dark:placeholder:text-gray-400 placeholder:text-sm font-medium tracking-tight;
 }
 
@@ -203,13 +203,13 @@
 
 /* Modern Table Styles */
 .modern-table {
-  @apply w-full h-full bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800;
+  @apply w-full h-full bg-white dark:bg-gray-950 rounded-xl border border-gray-200 dark:border-gray-900;
 }
 
 .modern-table-header {
   @apply sticky top-0 z-20 w-full backdrop-blur-xl rounded-t-xl
   bg-gradient-to-b from-white via-white to-transparent 
-  dark:from-gray-900 dark:via-gray-900/90 dark:to-transparent;
+  dark:from-gray-950 dark:via-gray-950/90 dark:to-transparent;
 }
 
 .modern-table-header th {

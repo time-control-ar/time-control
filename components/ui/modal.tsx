@@ -41,7 +41,7 @@ const Modal = ({
     const renderModalContent = () => (
         <>
             {(title || showCloseButton) && (
-                <div className="flex items-center justify-between px-6 pt-6 pb-3 sticky top-0 z-10">
+                <div className="flex items-center justify-between px-4 md:px-6 pt-6 sticky top-0 z-10">
                     {title && (
                         <h1 className="text-gray-950 dark:text-gray-50 text-xl font-semibold tracking-tight">
                             {title}
@@ -50,13 +50,12 @@ const Modal = ({
                     {showCloseButton && (
                         <button
                             type="button"
-                            className={`h-10 rounded-full w-10 flex items-center justify-center
-                           relative select-none gap-2
-                           bg-gradient-to-t from-white to-white dark:from-gray-800 dark:to-gray-900
-                           border border-gray-200 dark:border-gray-800 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors`}
+                            className={`rounded-full flex items-center justify-center h-10 w-10 bg-white dark:bg-gray-950
+                                border border-gray-200 dark:border-gray-800
+                              outline-none ring-0 transition-all duration-75 shadow-sm md:hover:shadow-md`}
                             onClick={onClose}
                         >
-                            <XIcon className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+                            <XIcon strokeWidth={2.5} className="w-4 h-4 text-gray-500 dark:text-gray-400 z-20" />
                         </button>
                     )}
                 </div>
@@ -75,7 +74,7 @@ const Modal = ({
                     exit={{ opacity: 0 }}
                     transition={{ duration: 0.2, ease: 'easeInOut' }}
                     onClick={onClose}
-                    className="fixed top-0 left-0 z-50 h-full w-full bg-black/30 backdrop-blur-md flex items-center justify-center overflow-hidden"
+                    className="fixed inset-0 z-50 bg-black/30 backdrop-blur-md flex items-center justify-center overflow-hidden"
                 >
                     <motion.div
                         layout
@@ -86,9 +85,9 @@ const Modal = ({
                         className={`
                             ${isMobile ?
                                 'h-full w-full' :
-                                'w-full md:max-w-[700px] h-full max-h-[80%] m-auto rounded-3xl top-[10%] left-1/2 -translate-x-1/2'} 
-                            z-[9999] absolute overflow-y-auto md:shadow-xl flex flex-col
-                            md:border border-gray-200 dark:border-gray-900 mx-auto bg-white dark:bg-gray-950
+                                'w-full md:max-w-[700px] h-full max-h-[80vh] rounded-3xl'} 
+                            z-[9999] relative overflow-y-auto flex flex-col
+                            md:border border-gray-200 dark:border-gray-900 bg-white dark:bg-gray-950
                             ${className}
                             `}
                         onClick={(e) => e.stopPropagation()}

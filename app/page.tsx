@@ -1,26 +1,39 @@
 import EventsListSearch from '@/components/events/events-list-search';
 import { ModeToggle } from '@/components/mode-toggle';
 import AnimatedLogo from "@/components/ui/animated-logo";
+import RunnerTicket from '@/components/ui/runner-ticket';
 import { SignInButton } from '@/components/ui/sign-in-button';
 import { obtainEventsServer } from '@/lib/server/eventService';
+import { obtainTicketServer } from '@/lib/server/ticketService';
 
-export default async function Home() {
+
+export default async function Home({
+  searchParams,
+}: {
+  searchParams: { [key: string]: string | string[] | undefined }
+}) {
+  const eventId = searchParams.eventId as string;
+  const dorsal = searchParams.dorsal as string;
   const events = await obtainEventsServer();
 
+  const ticket = eventId && dorsal ? await obtainTicketServer(eventId, dorsal) : null;
+
   return (
-    <div className="flex flex-col min-h-screen font-[family-name:var(--font-geist-sans)] bg-white dark:bg-gray-950 relative">
+    <>
+      <div className="flex flex-col gap-4 font-[family-name:var(--font-geist-sans)] bg-white dark:bg-gray-950 min-h-screen">
+        <div className="px-6 w-full flex justify-between items-center max-w-7xl mx-auto">
+          <AnimatedLogo />
 
-      <div className="px-6 w-full flex justify-between items-center max-w-7xl mx-auto">
-        <AnimatedLogo />
-
-        <div className="flex items-center gap-2">
-          <ModeToggle />
-          <SignInButton />
+          <div className="flex items-center gap-2">
+            <ModeToggle />
+            <SignInButton />
+          </div>
         </div>
+
+        {ticket ? <RunnerTicket runner={ticket.ticket} event={ticket.event} /> : <EventsListSearch eventsData={events} />}
       </div>
 
-      <EventsListSearch eventsData={events} />
-    </div>
+    </>
   );
 
 }

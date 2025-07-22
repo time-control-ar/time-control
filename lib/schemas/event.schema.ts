@@ -49,9 +49,46 @@ export const eventCreateSchema = z.object({
    );
   }, "La hora no es válida."),
  location: z
+  .object(
+   {
+    lat: z
+     .number({
+      required_error: "La latitud es obligatoria.",
+      invalid_type_error: "La latitud debe ser un número válido.",
+     })
+     .min(-90, "La latitud debe estar entre -90 y 90 grados.")
+     .max(90, "La latitud debe estar entre -90 y 90 grados."),
+    lng: z
+     .number({
+      required_error: "La longitud es obligatoria.",
+      invalid_type_error: "La longitud debe ser un número válido.",
+     })
+     .min(-180, "La longitud debe estar entre -180 y 180 grados.")
+     .max(180, "La longitud debe estar entre -180 y 180 grados."),
+   },
+   {
+    required_error: "Debe seleccionar una ubicación en el mapa.",
+    invalid_type_error:
+     "La ubicación debe ser un objeto válido con latitud y longitud.",
+   }
+  )
+  .refine(
+   (location) => {
+    // Evitar la ubicación por defecto (Australia)
+    return !(location.lat === -34.397 && location.lng === 150.644);
+   },
+   {
+    message:
+     "Debe seleccionar una ubicación específica en el mapa. La ubicación por defecto no es válida.",
+   }
+  ),
+ locationName: z
   .string()
-  .min(1, "La ubicación es obligatoria.")
-  .max(200, "La ubicación no puede exceder 200 caracteres."),
+  .optional()
+  .refine(
+   (name) => !name || name.trim().length > 0,
+   "El nombre de la ubicación no puede estar vacío si se proporciona."
+  ),
  description: z.string().optional(),
  maxParticipants: z
   .number()

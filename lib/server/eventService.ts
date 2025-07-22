@@ -1,6 +1,7 @@
 import { connectToDatabase } from "@/lib/mongodb";
 import { RaceCheckProps } from "@/lib/schemas/racecheck.schema";
 import { BlobServiceClient } from "@azure/storage-blob";
+import { ObjectId } from "mongodb";
 
 export interface EventResponse {
  _id: string;
@@ -8,7 +9,10 @@ export interface EventResponse {
  date: string;
  startTime: string;
  endTime: string;
- location: string;
+ location: {
+  lat: number;
+  lng: number;
+ };
  description: string;
  maxParticipants: number;
  image: string;
@@ -16,6 +20,8 @@ export interface EventResponse {
  createdBy: string;
  createdAt: string;
  updatedAt: string;
+ type: string[];
+ locationName: string;
 }
 
 export async function obtainEventsServer(): Promise<EventResponse[]> {
@@ -35,16 +41,19 @@ export async function obtainEventsServer(): Promise<EventResponse[]> {
    blobs.push(blobClient.url);
   }
 
-  console.log("blobs");
-  console.log(blobs);
-
   const serializedEvents = events.map((event) => ({
    _id: event._id.toString(), // Convertir ObjectId a string
    name: event.name,
    date: event.date,
    startTime: event.startTime,
    endTime: event.endTime,
-   location: event.location,
+   location:
+    event.location &&
+    typeof event.location === "object" &&
+    "lat" in event.location &&
+    "lng" in event.location
+     ? event.location
+     : { lat: -34.397, lng: 150.644 },
    description: event.description,
    maxParticipants: event.maxParticipants,
    image: event.image,
@@ -52,11 +61,31 @@ export async function obtainEventsServer(): Promise<EventResponse[]> {
    createdBy: event.createdBy,
    createdAt: event.createdAt,
    updatedAt: event.updatedAt,
+   type: event.type || [],
+   locationName: event.locationName || "",
   }));
 
   return serializedEvents;
  } catch (e) {
   console.error("Error al obtener eventos:", e);
   return [];
+ }
+}
+
+export async function getEventServer(
+ id: string
+): Promise<{ event: EventResponse | null }> {
+ try {
+  console.log("id", id);
+
+  const { db } = await connectToDatabase();
+  const event = (await db
+   .collection("events")
+   .findOne({ _id: new ObjectId(id) })) as EventResponse | null;
+
+  return { event };
+ } catch (e) {
+  console.error("Error al obtener evento:", e);
+  return { event: null };
  }
 }
