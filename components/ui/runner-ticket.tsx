@@ -44,7 +44,10 @@ const RunnerTicket = ({ runner, event }: { runner: Runner, event: EventResponse 
         <div className="bg-white dark:bg-gray-950 flex flex-col justify-center items-center h-full py-6">
 
             <div className="mb-6 text-center flex items-center justify-between gap-2">
-                <button type='button' className='rounded-full flex items-center gap-2 bg-white px-6 py-3 border border-gray-200 dark:border-gray-800' onClick={() => router.back()}>
+                <button
+                    type='button'
+                    className='rounded-full flex items-center gap-2 bg-white px-6 py-3 border border-gray-200 dark:border-gray-800'
+                    onClick={() => router.push('/')}>
                     <ArrowLeftIcon className="w-4 h-4 text-gray-800" />
                     <p className="text-sm font-medium tracking-tight text-gray-800">
                         Volver
