@@ -69,7 +69,7 @@ export async function textToJsonRaceResults(
 
 export const adminEmails = [
  "jeronimodonato@gmail.com",
- "info@timecontrol.com.ar",
+ "timenoetinger@gmail.com",
 ];
 
 // Función para validar y limpiar URLs de imágenes

@@ -109,7 +109,7 @@ export const EventCard = ({ event, previewMode = false }: { event: EventResponse
 
     return (
         <>
-            <div className="mx-auto w-full group relative max-w-[300px]">
+            <div className="mx-auto w-full group relative max-w-[300px] h-max">
                 <div
                     className={`w-full mx-auto border border-gray-200 dark:border-gray-800 rounded-3xl select-none overflow-hidden shadow-lg dark:shadow-gray-950/50 cursor-pointer relative`}
                     onClick={() => setIsOpen(true)}
@@ -119,11 +119,7 @@ export const EventCard = ({ event, previewMode = false }: { event: EventResponse
                         className="absolute top-2 right-2 z-20 md:opacity-0 group-hover:opacity-100 transition-all duration-300"
                     >
                         {isAdmin && !previewMode && (
-                            <motion.div
-                                initial={{ opacity: 0, y: 10 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0, y: 10 }}
-                                transition={{ duration: 0.2 }}
+                            <div
                                 className="flex items-center gap-2 relative -inset-0"
                             >
                                 <button
@@ -141,9 +137,11 @@ export const EventCard = ({ event, previewMode = false }: { event: EventResponse
                                     <PencilIcon className="w-4 h-4 text-gray-500" strokeWidth={2.5} />
                                 </button>
                                 <div className="absolute -top-2 -right-2 w-[50px] h-[40px] blur-lg bg-gray-950/80 -z-10" />
-                            </motion.div>
+                            </div>
                         )}
+
                     </div>
+
                     <motion.div
                         className={`w-full  overflow-hidden flex flex-col h-max mx-auto bg-white dark:bg-gray-800 relative`}
                     >
@@ -161,7 +159,7 @@ export const EventCard = ({ event, previewMode = false }: { event: EventResponse
                         />
                     </motion.div>
 
-                    <div className="flex flex-col w-full px-4 py-6 mx-auto bg-gradient-to-t from-white to-white dark:from-gray-900 dark:to-gray-800">
+                    <div className="flex flex-col w-full px-4 py-6 mx-auto bg-gradient-to-t from-white to-white dark:from-gray-900 dark:to-gray-800 min-h-[300px]">
                         <div className="flex flex-col gap-1 items-start justify-between w-full">
                             <h2 className="text-gray-950 dark:text-gray-50 text-xl font-semibold tracking-tight line-clamp-1">
                                 {event?.name || 'Nombre'}
