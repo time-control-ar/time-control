@@ -159,7 +159,7 @@ export const EventCard = ({ event, previewMode = false }: { event: EventResponse
                         />
                     </motion.div>
 
-                    <div className="flex flex-col w-full px-4 py-6 mx-auto bg-gradient-to-t from-white to-white dark:from-gray-900 dark:to-gray-800 min-h-[300px]">
+                    <div className="flex flex-col w-full px-4 py-6 mx-auto bg-gradient-to-t from-white to-white dark:from-gray-900 dark:to-gray-800 min-h-[200px]">
                         <div className="flex flex-col gap-1 items-start justify-between w-full">
                             <h2 className="text-gray-950 dark:text-gray-50 text-xl font-semibold tracking-tight line-clamp-1">
                                 {event?.name || 'Nombre'}
