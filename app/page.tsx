@@ -13,11 +13,12 @@ export default async function Home({
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>
 }) {
   const resolvedSearchParams = await searchParams;
-  const eventId = resolvedSearchParams.eventId as string;
-  const dorsal = resolvedSearchParams.dorsal as string;
+  const eventId = resolvedSearchParams?.eventId as string;
+  const dorsal = resolvedSearchParams?.dorsal as string;
   const events = await obtainEventsServer();
 
   const ticket = eventId && dorsal ? await obtainTicketServer(eventId, dorsal) : null;
+  console.log(eventId, dorsal)
 
   return (
     <>

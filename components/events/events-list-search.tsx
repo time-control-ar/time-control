@@ -65,7 +65,7 @@ const EventsListSearch = ({ eventsData }: { eventsData: EventResponse[] }) => {
                 }}
                 transition={{ duration: 0.2 }}
                 className={`
-                    sticky top-0 z-30 pt-3 pb-2 mb-6 max-w-screen-lg mx-auto backdrop-blur-md
+                    sticky top-0 z-30 pt-3 pb-2 mb-6 mx-auto backdrop-blur-md
                     w-full flex flex-col items-start justify-between gap-3
                     bg-gradient-to-b
                     from-white via-white to-white/90
@@ -132,7 +132,7 @@ const EventsListSearch = ({ eventsData }: { eventsData: EventResponse[] }) => {
                                 className='flex flex-col gap-2 w-full '
                             >
                                 <div className="w-full pt-3">
-                                    <div className="flex justify-between items-center gap-2 mb-2 px-6">
+                                    <div className="flex justify-between items-center gap-2 mb-2 px-3 md:px-6">
                                         <p className='text-gray-500 dark:text-gray-400 text-sm font-medium tracking-tight'>
                                             Filtrar
                                         </p>
@@ -181,7 +181,7 @@ const EventsListSearch = ({ eventsData }: { eventsData: EventResponse[] }) => {
                 </motion.div>
             </motion.div>
 
-            <motion.div className="max-w-max mx-auto w-full h-max grid grid-cols-1 lg:grid-cols-3 2xl:grid-cols-4 gap-4 pb-20">
+            <motion.div className="max-w-max mx-auto w-full h-max grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-4 pb-20">
                 {isAdmin && (
                     <button
                         type="button"

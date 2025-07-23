@@ -6,7 +6,7 @@ import React, { useRef } from 'react'
 import html2canvas from 'html2canvas'
 import { ArrowLeftIcon, CalendarIcon, ClockIcon, DownloadIcon, MapPinIcon } from 'lucide-react'
 import { useRouter } from 'next/navigation'
-import AnimatedLogo from './animated-logo'
+import Image from 'next/image'
 
 const RunnerTicket = ({ runner, event }: { runner: Runner, event: EventResponse }) => {
     const { name, sex, category, time, position, positionSex, positionCategory, dorsal } = runner;
@@ -74,11 +74,13 @@ const RunnerTicket = ({ runner, event }: { runner: Runner, event: EventResponse 
                                 <p className="text-gray-500 text-sm font-normal tracking-tight font-mono">
                                     Tiempo
                                 </p>
-                                <div className="font-mono text-[45px] text-gray-700">
-                                    {time?.split('.')[0]}
-                                    <span className="text-gray-500 text-xl">
+                                <div className=" flex justify-end gap-1">
+                                    <p className="font-mono text-[45px] text-gray-700">
+                                        {time?.split('.')[0]}
+                                    </p>
+                                    <p className="text-gray-500 text-xl mt-auto">
                                         ,{time?.split('.')[1]}
-                                    </span>
+                                    </p>
                                 </div>
 
                             </div>
@@ -121,7 +123,7 @@ const RunnerTicket = ({ runner, event }: { runner: Runner, event: EventResponse 
 
                         <div className="flex flex-col items-start gap-2 px-8 pb-8 pt-4">
                             <div className="flex items-center gap-2">
-                                <p className="text-lg font-normal tracking-tight text-gray-800 italic">
+                                <p className="text-lg font-medium tracking-tight text-gray-800">
                                     {event.name}
                                 </p>
                             </div>
@@ -143,15 +145,20 @@ const RunnerTicket = ({ runner, event }: { runner: Runner, event: EventResponse 
                                     {event?.startTime} a {event?.endTime} hs
                                 </p>
                             </div>
-                            <div className="flex items-center justify-end gap-2 w-full -mb-4">
-                                <AnimatedLogo />
-                            </div>
-                        </div>
 
+                            <Image src="/logo-timecontrol.png"
+                                alt="Time Control"
+                                width={100}
+                                height={20}
+                                className="p-4"
+                                priority
+                            />
+
+                        </div>
                     </div>
                 </div>
-            </div>
-        </div >
+            </div >
+        </div>
     )
 }
 

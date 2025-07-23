@@ -102,7 +102,7 @@ export default function EventForm({ event }: EventFormProps) {
     ],
     editorProps: {
       attributes: {
-        class: 'w-full h-full p-3.5 rounded-xl border border-gray-200 dark:border-gray-800 bg-gradient-to-b from-white to-white dark:from-gray-800 dark:to-gray-900 outline-none min-h-32'
+        class: 'w-full h-full p-3.5 rounded-xl border border-gray-200 dark:border-gray-800 bg-gradient-to-b from-white to-white dark:from-gray-950 dark:to-gray-950 outline-none min-h-32'
       }
     },
     content: defaultValues.description,
@@ -203,6 +203,7 @@ export default function EventForm({ event }: EventFormProps) {
       setImageFile(undefined)
       setEventFile(undefined)
       setParsedResults(undefined)
+      setValue('results', undefined)
       router.push('/')
     } catch (error) {
       console.error('Error procesando evento:', error)
@@ -326,8 +327,9 @@ export default function EventForm({ event }: EventFormProps) {
       setEventFile(file)
 
       const results = await textToJsonRaceResults(await file.text())
-      console.log(results)
+      console.log(file)
       setParsedResults(results)
+      setValue('results', results)
 
       setToast({
         message: 'Archivo parseado exitosamente',
@@ -344,6 +346,7 @@ export default function EventForm({ event }: EventFormProps) {
   useEffect(() => {
     setIsMounted(true)
   }, [])
+
 
   if (!isMounted) return null
 
@@ -411,7 +414,7 @@ export default function EventForm({ event }: EventFormProps) {
                 type="button"
                 className={`h-10 rounded-full w-10 flex items-center justify-center
                            relative select-none gap-2
-                           bg-gradient-to-b from-white to-white dark:from-gray-800 dark:to-gray-900
+                           bg-gradient-to-b from-white to-white dark:from-gray-950 dark:to-gray-950
                            border border-gray-200 dark:border-gray-800 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors`}
                 onClick={() => router.push('/')}
               >
@@ -576,20 +579,9 @@ export default function EventForm({ event }: EventFormProps) {
                       </div>
                     </div>
                     <div className="flex-1">
-                      <p className="text-sm text-red-600 dark:text-red-400 font-medium">
-                        Error de ubicación:
-                      </p>
-                      <p className="text-sm text-red-600 dark:text-red-400 mt-1">
+                      <p className="text-sm text-red-600 dark:text-red-400">
                         {errors.location.message}
                       </p>
-                      <div className="mt-2 p-2 bg-red-100 dark:bg-red-800/30 rounded text-xs text-red-700 dark:text-red-300">
-                        <p className="font-medium">💡 Cómo solucionarlo:</p>
-                        <ul className="mt-1 space-y-1">
-                          <li>• Usa el buscador en el mapa para encontrar la ubicación</li>
-                          <li>• Asegúrate de seleccionar una ubicación específica</li>
-                          <li>• La ubicación por defecto no es válida</li>
-                        </ul>
-                      </div>
                     </div>
                   </div>
                 </div>
@@ -683,7 +675,7 @@ export default function EventForm({ event }: EventFormProps) {
             <div className='w-full flex flex-col gap-1'>
               <label className="label-input">Archivo de resultados (.racecheck o .xlsx)</label>
               <div className="file-input">
-                {eventFile?.name || event?.results ? (
+                {parsedResults ? (
                   <div className="flex items-center justify-between w-full px-2">
                     <div className="flex items-center gap-3 w-full">
                       <File size={20} className="text-blue-500" />
@@ -695,9 +687,14 @@ export default function EventForm({ event }: EventFormProps) {
                       onClick={() => {
                         setEventFile(undefined)
                         setParsedResults(undefined)
-                        setValue('results', undefined)
+                        setValue('results', { categories: [], participants: [] })
+                        const fileInput = document.getElementById('race-check-file') as HTMLInputElement
+                        if (fileInput) {
+                          fileInput.value = ''
+                        }
                       }}
                       className="p-1 hover:bg-red-50 rounded"
+                      title={eventFile?.name ? "Eliminar archivo seleccionado" : "Eliminar resultados actuales"}
                     >
                       <Trash size={16} className="text-red-500 hover:text-red-600" />
                     </button>
@@ -745,7 +742,7 @@ export default function EventForm({ event }: EventFormProps) {
           </div >
 
           {/* preview pc  */}
-          < div className="w-full flex flex-col gap-3 h-full overflow-hidden items-center justify-start p-3" >
+          < div className="w-full flex flex-col gap-3 h-full items-center justify-start p-3 overflow-y-auto" >
             <div className="flex items-center gap-2 w-full justify-center">
               <EyeIcon className="w-4 h-4 text-gray-500 dark:text-gray-400" />
               <p className="text-sm font-medium tracking-tight text-gray-600 dark:text-gray-400">
@@ -766,7 +763,7 @@ export default function EventForm({ event }: EventFormProps) {
                   description: watch('description') as string,
                   maxParticipants: parseInt(watch('maxParticipants') as unknown as string) || 0,
                   image: imageUrl,
-                  results: parsedResults || event?.results || {} as RaceCheckProps,
+                  results: parsedResults || {} as RaceCheckProps,
                   createdBy: session?.user?.email || '',
                   createdAt: event?.createdAt || new Date().toISOString(),
                   updatedAt: new Date().toISOString(),

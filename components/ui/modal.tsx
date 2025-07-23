@@ -42,21 +42,26 @@ const Modal = ({
         <>
             {(title || showCloseButton) && (
                 <div className="flex items-center justify-between px-4 md:px-6 pt-6 sticky top-0 z-10">
-                    {title && (
+                    {title ? (
                         <h1 className="text-gray-950 dark:text-gray-50 text-xl font-semibold tracking-tight">
                             {title}
                         </h1>
+                    ) : (
+                        <div className="w-full h-10" />
                     )}
                     {showCloseButton && (
-                        <button
-                            type="button"
-                            className={`rounded-full flex items-center justify-center h-10 w-10 bg-white dark:bg-gray-950
+                        <div>
+
+                            <button
+                                type="button"
+                                className={`rounded-full flex items-center justify-center h-10 w-10 bg-white dark:bg-gray-950
                                 border border-gray-200 dark:border-gray-800
                               outline-none ring-0 transition-all duration-75 shadow-sm md:hover:shadow-md`}
-                            onClick={onClose}
-                        >
-                            <XIcon strokeWidth={2.5} className="w-4 h-4 text-gray-500 dark:text-gray-400 z-20" />
-                        </button>
+                                onClick={onClose}
+                            >
+                                <XIcon strokeWidth={2.5} className="w-4 h-4 text-gray-500 dark:text-gray-400 z-20" />
+                            </button>
+                        </div>
                     )}
                 </div>
             )}
@@ -80,12 +85,12 @@ const Modal = ({
                         layout
                         initial={{ overflow: 'hidden' }}
                         animate={{ overflow: 'hidden' }}
-                        exit={{ overflow: 'hidden' }}
+                        exit={{ overflow: 'hidden', transition: { duration: 0.1, delay: 0 } }}
                         transition={{ duration: 0.1, delay: 0.1 }}
                         className={`
                             ${isMobile ?
                                 'h-full w-full' :
-                                'w-full md:max-w-[700px] h-full max-h-[80vh] rounded-3xl'} 
+                                'w-full md:max-w-[700px] h-auto max-h-[80vh] rounded-3xl'} 
                             z-[9999] relative overflow-y-auto flex flex-col
                             md:border border-gray-200 dark:border-gray-900 bg-white dark:bg-gray-950
                             ${className}

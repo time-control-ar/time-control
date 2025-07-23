@@ -21,11 +21,11 @@ const Toast = ({
 
     useEffect(() => {
         // Add body class to prevent scroll on mobile when toast is visible
-        if (isVisible) {
-            document.body.classList.add('toast-open')
-        } else {
-            document.body.classList.remove('toast-open')
-        }
+        // if (isVisible) {
+        //     document.body.classList.add('toast-open')
+        // } else {
+        //     document.body.classList.remove('toast-open')
+        // }
 
         if (!dismissible) {
             const timer = setTimeout(() => {
