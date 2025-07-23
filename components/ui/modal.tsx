@@ -41,7 +41,7 @@ const Modal = ({
     const renderModalContent = () => (
         <>
             {(title || showCloseButton) && (
-                <div className="flex items-center justify-between px-4 md:px-6 pt-6 sticky top-0 z-10">
+                <div className="flex items-center justify-between px-4 md:px-6 pt-6 pb-2 sticky top-0 z-10 overflow-visible">
                     {title ? (
                         <h1 className="text-gray-950 dark:text-gray-50 text-xl font-semibold tracking-tight">
                             {title}
@@ -54,7 +54,7 @@ const Modal = ({
 
                             <button
                                 type="button"
-                                className={`rounded-full flex items-center justify-center h-10 w-10 bg-white dark:bg-gray-950
+                                className={`rounded-full flex items-center justify-center h-10 w-10 bg-white dark:bg-gray-900
                                 border border-gray-200 dark:border-gray-800
                               outline-none ring-0 transition-all duration-75 shadow-sm md:hover:shadow-md`}
                                 onClick={onClose}
@@ -79,7 +79,7 @@ const Modal = ({
                     exit={{ opacity: 0 }}
                     transition={{ duration: 0.2, ease: 'easeInOut' }}
                     onClick={onClose}
-                    className="fixed inset-0 z-50 bg-black/30 backdrop-blur-md flex items-center justify-center overflow-hidden"
+                    className="fixed inset-0 z-50 bg-black/5  backdrop-blur-md flex items-center justify-center overflow-hidden"
                 >
                     <motion.div
                         layout

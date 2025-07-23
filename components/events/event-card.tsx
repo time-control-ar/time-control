@@ -61,11 +61,11 @@ export const EventDate = ({ event }: { event: EventResponse }) => {
         : 'Día'
 
     return (
-        <div className="flex flex-col rounded-2xl bg-gradient-to-t w-[60px] dark:from-gray-800 dark:to-gray-700 from-gray-100 to-white backdrop-blur-sm px-3 py-2 items-center border border-gray-200 dark:border-gray-700">
-            <p className="text-gray-950 dark:text-white text-3xl font-bold tracking-tight -mb-1">
+        <div className="flex flex-col items-center justify-center rounded-lg bg-gradient-to-t w-[50px] h-[60px] dark:from-gray-900 dark:to-gray-800 from-gray-100 to-white">
+            <p className="text-gray-950 dark:text-white text-3xl tracking-tighter font-bold -mb-1">
                 {eventDay}
             </p>
-            <p className="text-gray-950 dark:text-white text-sm tracking-tight font-medium capitalize">
+            <p className="text-gray-950 dark:text-white text-[11px] tracking-tight font-medium capitalize truncate">
                 {eventMonth}
             </p>
         </div>
@@ -111,7 +111,7 @@ export const EventCard = ({ event, previewMode = false }: { event: EventResponse
         <>
             <div className="mx-auto group relative w-[300px] h-max">
                 <div
-                    className={`w-full mx-auto border border-gray-200 dark:border-gray-800 rounded-3xl select-none overflow-hidden shadow-lg dark:shadow-gray-950/50 cursor-pointer relative`}
+                    className={`w-full mx-auto rounded-3xl select-none shadow-lg dark:shadow-gray-950/50 bg-white dark:bg-gray-900 cursor-pointer relative overflow-hidden`}
                     onClick={() => setIsOpen(true)}
                 >
                     <div
@@ -136,40 +136,42 @@ export const EventCard = ({ event, previewMode = false }: { event: EventResponse
                                 >
                                     <PencilIcon className="w-4 h-4 text-gray-500" strokeWidth={2.5} />
                                 </button>
-                                <div className="absolute -top-2 -right-2 w-[50px] h-[40px] blur-lg bg-gray-950/80 -z-10" />
+                                <div className="absolute -top-2 -right-2 w-[80px] h-[40px] blur-xl bg-gray-950/80 dark:bg-gray-950 -z-10" />
                             </div>
                         )}
 
                     </div>
 
                     <motion.div
-                        className={`w-full  overflow-hidden flex flex-col h-max mx-auto bg-white dark:bg-gray-800 relative`}
+                        className={`w-full  overflow-hidden flex flex-col h-max mx-auto relative`}
                     >
-                        <div className="z-20 absolute bottom-0 left-0 p-2 flex flex-col gap-1 scale-90 md:scale-100">
+                        <div className="z-20 absolute bottom-1.5 left-1.5 p-2 flex flex-col gap-1 ">
                             <EventDate event={event} />
                         </div>
 
                         <SafeImage
                             src={event?.image || ''}
                             alt={event?.name || ''}
-                            className="z-10 object-cover rounded-bl-3xl "
+                            className="z-10 object-cover rounded-t-3xl rounded-b-xl"
                             fill
                             priority
                             fallbackText="Imagen"
                         />
                     </motion.div>
 
-                    <div className="flex flex-col w-full px-4 py-6 mx-auto bg-gradient-to-t from-white to-white dark:from-gray-900 dark:to-gray-800 h-[200px]">
+                    <div className="flex flex-col w-full px-6 py-6 mx-auto bg-gradient-to-t from-white to-white dark:from-gray-900 dark:to-gray-900 h-[200px] rounded-b-3xl">
                         <div className="flex flex-col gap-1 items-start justify-between w-full">
-                            <h2 className="text-gray-950 dark:text-gray-50 text-xl font-semibold tracking-tight line-clamp-1">
+
+                            <h2 className="text-gray-950 dark:text-gray-50 text-xl font-semibold tracking-tight -mt-2">
                                 {event?.name || 'Nombre'}
                             </h2>
+
                             <div className="flex flex-col gap-2 mb-6">
                                 <EventSpaceTime event={event} />
                             </div>
 
                             <div
-                                className="whitespace-pre-wrap break-words text-base text-gray-700 dark:text-gray-300 line-clamp-2" dangerouslySetInnerHTML={{ __html: event?.description }}
+                                className="whitespace-pre-wrap break-words text-sm text-gray-700 dark:text-gray-300 line-clamp-2" dangerouslySetInnerHTML={{ __html: event?.description }}
                             />
                         </div>
                     </div>
@@ -182,17 +184,15 @@ export const EventCard = ({ event, previewMode = false }: { event: EventResponse
                 title={event?.name}
                 showCloseButton={true}
             >
-                <div className={`flex flex-col h-full w-full ${selectedTab === 'results' ? 'overflow-y-hidden' : 'overflow-y-auto'}`}>
+                <div className={`flex flex-col h-full w-full overflow-y-hidden gap-2`}>
 
-                    <div className="flex w-full items-center justify-start px-4 md:px-6 gap-2 sticky top-0 z-20 pt-3 pb-2
-                    bg-gradient-to-b from-white via-white to-white/90
-                    dark:from-gray-950 dark:via-gray-950 dark:to-gray-950/40 backdrop-blur-sm">
+                    <div className="flex w-full items-center justify-start px-4 md:px-6 gap-2 ">
                         {tabs.map((tab) => (
                             <button
                                 key={tab.value}
                                 type="button"
                                 onClick={() => handleTabChange(tab.value)}
-                                className={` transition-colors rounded-full px-4 py-2
+                                className={` transition-colors rounded-full px-4 py-3
                           ${selectedTab === tab.value ? 'bg-gray-950 dark:bg-white text-white dark:text-gray-950' : 'bg-gray-100 dark:bg-gray-950 text-gray-800 dark:text-white'}`}
                             >
                                 <div className={`${selectedTab === tab.value ? 'opacity-100' : 'opacity-60'} flex items-center justify-center gap-2`}>
@@ -213,10 +213,10 @@ export const EventCard = ({ event, previewMode = false }: { event: EventResponse
                                 animate={{ opacity: 1, y: 0 }}
                                 exit={{ opacity: 0, y: 10 }}
                                 transition={{ duration: 0.2 }}
-                                className="flex flex-col gap-3 px-4 md:px-6 h-max pb-4"
+                                className="flex flex-col gap-3 px-4 md:px-6 h-max pb-4 overflow-y-auto"
                             >
 
-                                <div className="flex flex-col gap-3 pb-6">
+                                <div className="flex flex-col gap-3 pb-6 relative">
                                     <div className="rounded-xl overflow-hidden relative border-[0.4px] border-gray-200 dark:border-gray-800">
                                         <SafeImage
                                             src={event?.image || ''}
@@ -228,26 +228,14 @@ export const EventCard = ({ event, previewMode = false }: { event: EventResponse
                                         />
                                     </div>
 
-                                    <div className="flex items-end justify-start max-w-max gap-3">
-
-
-                                        <div className="flex flex-col gap-1 py-1">
-                                            <div className="flex gap-2 items-center w-full">
-                                                <ClockIcon className="w-5 h-5 text-gray-500 dark:text-gray-400" />
-                                                <p className="text-black dark:text-white text-sm tracking-tight">
-                                                    {event?.startTime} a {event?.endTime} hs
-                                                </p>
-                                            </div>
-
-                                            <div className="flex gap-2 items-center w-full">
-                                                <MapPinIcon className="w-5 h-5 text-red-500 dark:text-red-500" />
-                                                <p className="text-black dark:text-white text-sm tracking-tight">
-                                                    {event?.locationName || 'Ubicación'}
-                                                </p>
-                                            </div>
-
-                                        </div>
+                                    <div className="absolute top-1 left-1 z-10 scale-90">
+                                        <EventDate event={event} />
                                     </div>
+
+                                    <div className="grid grid-cols-2 gap-1 px-3">
+                                        <EventSpaceTime event={event} />
+                                    </div>
+
                                     <div className="px-3 pt-4">
                                         <div
                                             className="whitespace-pre-wrap break-words text-base text-gray-700 dark:text-gray-300" dangerouslySetInnerHTML={{ __html: event?.description || '' }}
@@ -286,7 +274,7 @@ export const EventCard = ({ event, previewMode = false }: { event: EventResponse
                     </p>
 
                     <div className="flex justify-end gap-2 mt-auto">
-                        <button className="rounded-full bg-red-500 dark:bg-red-800 px-4 py-2 text-sm font-medium text-white hover:bg-red-600 dark:hover:bg-red-700 transition-all duration-75" onClick={handleConfirm}>
+                        <button className="rounded-full bg-red-500 dark:bg-red-800 px-4 py-3 text-sm font-medium text-white hover:bg-red-600 dark:hover:bg-red-700 transition-all duration-75" onClick={handleConfirm}>
                             Si, eliminar
                         </button>
                     </div>

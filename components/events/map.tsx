@@ -7,7 +7,7 @@ import { XIcon } from 'lucide-react';
 
 const mapContainerStyle = {
     width: '100%',
-    height: '400px',
+    height: '300px',
 };
 
 const libraries: ("places" | "geometry" | "drawing" | "visualization")[] = ['places'];

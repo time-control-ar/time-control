@@ -407,7 +407,7 @@ export default function EventForm({ event }: EventFormProps) {
         {/* content */}
         <div className="flex flex-col md:flex-row gap-4 mx-auto w-full h-max overflow-hidden relative">
           {/* form content */}
-          <div className="flex flex-col gap-6 max-w-xl mx-auto w-full h-full px-3 md:pb-10 overflow-y-auto relative">
+          <div className="flex flex-col gap-6 max-w-xl mx-auto w-full h-full px-3 md:pb-10 overflow-y-auto relative md:pr-12">
 
             <div className="flex w-full items-center gap-3 py-2">
               <button

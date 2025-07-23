@@ -132,7 +132,7 @@ const EventsListSearch = ({ eventsData }: { eventsData: EventResponse[] }) => {
                                 className='flex flex-col gap-2 w-full '
                             >
                                 <div className="w-full pt-3">
-                                    <div className="flex justify-between items-center gap-2 mb-2 px-3 md:px-6">
+                                    <div className="flex justify-between items-center gap-2 mb-4 px-3 md:px-6">
                                         <p className='text-gray-500 dark:text-gray-400 text-sm font-medium tracking-tight'>
                                             Filtrar
                                         </p>
