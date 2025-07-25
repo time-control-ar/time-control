@@ -1,12 +1,12 @@
 'use client'
 
-import { RaceCheckProps } from '@/lib/schemas/racecheck.schema'
+import { Category, Modality, ParsedRace } from '@/lib/utils'
 import { ArrowLeftIcon, ArrowRightIcon, SearchIcon, TicketIcon, CheckIcon, SlidersIcon, ArrowUp, XIcon } from 'lucide-react'
 import { useState, useMemo } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useRouter } from 'next/navigation'
 
-const RaceCheckTable = ({ results, eventId, hideTicketButton }: { results: RaceCheckProps | undefined, eventId: string, hideTicketButton?: boolean }) => {
+const RaceCheckTable = ({ results, eventId, hideTicketButton }: { results: ParsedRace | undefined, eventId: string, hideTicketButton?: boolean }) => {
     const router = useRouter()
     const [searchTerm, setSearchTerm] = useState('')
     const [selectedCategories, setSelectedCategories] = useState<string[]>([])
@@ -15,24 +15,11 @@ const RaceCheckTable = ({ results, eventId, hideTicketButton }: { results: RaceC
     const [itemsPerPage] = useState(100)
     const [isFilterOpen, setIsFilterOpen] = useState(true)
 
-    // Obtener categorías únicas
-    const uniqueCategories = useMemo(() => {
-        if (!results?.participants) return []
-        const categories = results.participants.map(p => p.category)
-        return Array.from(new Set(categories)).sort()
-    }, [results?.participants])
-
-    const uniqueModalities = useMemo(() => {
-        if (!results?.participants) return []
-        const modalities = results.participants.map(p => p.modality)
-        return Array.from(new Set(modalities)).sort()
-    }, [results?.participants])
-
     // Filtrar participantes basado en el término de búsqueda y categorías seleccionadas
     const filteredParticipants = useMemo(() => {
-        if (!results?.participants) return []
+        if (!results?.runners) return []
 
-        return results.participants.filter(participant => {
+        return results.runners.filter(participant => {
             const matchesSearch =
                 participant.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                 participant.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -45,7 +32,7 @@ const RaceCheckTable = ({ results, eventId, hideTicketButton }: { results: RaceC
 
             return matchesSearch && matchesCategory && matchesModality
         })
-    }, [results?.participants, searchTerm, selectedCategories, selectedModalities])
+    }, [results?.runners, searchTerm, selectedCategories, selectedModalities])
 
     // Calcular paginación
     const totalPages = Math.ceil(filteredParticipants.length / itemsPerPage)
@@ -59,30 +46,30 @@ const RaceCheckTable = ({ results, eventId, hideTicketButton }: { results: RaceC
     }
 
     // Función para manejar la selección de categorías
-    const handleModalityToggle = (modality: string) => {
+    const handleModalityToggle = (modality: Modality) => {
         setSelectedModalities(prev => {
-            if (prev.includes(modality)) {
-                return prev.filter(c => c !== modality)
+            if (prev.includes(modality.name)) {
+                return prev.filter(c => c !== modality.name)
             } else {
-                return [...prev, modality]
+                return [...prev, modality.name]
             }
         })
         setCurrentPage(1)
     }
-    const handleCategoryToggle = (category: string) => {
+    const handleCategoryToggle = (category: Category) => {
         setSelectedCategories(prev => {
-            if (prev.includes(category)) {
-                return prev.filter(c => c !== category)
+            if (prev.includes(category.name)) {
+                return prev.filter(c => c !== category.name)
             } else {
-                return [...prev, category]
+                return [...prev, category.name]
             }
         })
         setCurrentPage(1)
     }
 
-    if (!results?.participants || results?.participants.length === 0 || !results?.categories) {
+    if (!results?.runners || results?.runners.length === 0 || !results?.categories) {
         return (
-            <div className="w-full flex flex-col items-center justify-center h-20">
+            <div className="w-full flex flex-col items-center justify-center mb-36 mt-12">
                 <div className="text-gray-500 dark:text-gray-400 text-sm font-medium tracking-tight">
                     No hay datos disponibles
                 </div>
@@ -126,7 +113,7 @@ const RaceCheckTable = ({ results, eventId, hideTicketButton }: { results: RaceC
                         <button
                             type="button"
                             className={`rounded-full flex items-center justify-center h-10 w-10 bg-white dark:bg-gray-950
-                            border border-gray-200 dark:border-gray-800
+                            border-2 border-gray-200 dark:border-gray-800
                           outline-none ring-0 transition-all duration-75 shadow-sm md:hover:shadow-md`}
                             onClick={() => setIsFilterOpen(!isFilterOpen)}
                         >
@@ -168,13 +155,13 @@ const RaceCheckTable = ({ results, eventId, hideTicketButton }: { results: RaceC
 
 
                                 <div className="flex items-center gap-2 w-full h-max overflow-auto scrollbar-hide pb-1 px-3 md:px-6">
-                                    {uniqueModalities.map((modality) => {
-                                        const isSelected = selectedModalities.includes(modality)
+                                    {results?.modalities.map((modality) => {
+                                        const isSelected = selectedModalities.includes(modality.name)
 
                                         return (
                                             <motion.button
                                                 type='button'
-                                                key={modality}
+                                                key={modality.name}
                                                 className={`min-w-max flex items-center gap-2 pr-2 pl-1 py-1 rounded-xl border border-gray-200 dark:border-gray-700 ${isSelected ? "" : "opacity-50"}`}
                                                 onClick={() => handleModalityToggle(modality)}
                                                 whileTap={{ scale: 0.95 }}
@@ -189,20 +176,20 @@ const RaceCheckTable = ({ results, eventId, hideTicketButton }: { results: RaceC
 
                                                 </div>
                                                 <p className={`text-xs font-medium ${isSelected ? "text-gray-950 dark:text-white" : "text-gray-500 dark:text-gray-400"}`}>
-                                                    {modality}
+                                                    {modality.name}
                                                 </p>
                                             </motion.button>
                                         )
                                     })}
                                 </div>
                                 <div className="flex items-center gap-2 w-full h-max overflow-auto scrollbar-hide pb-1 px-3 md:px-6">
-                                    {uniqueCategories.map((category) => {
-                                        const isSelected = selectedCategories.includes(category)
+                                    {results?.categories.map((category) => {
+                                        const isSelected = selectedCategories.includes(category.name)
 
                                         return (
                                             <motion.button
                                                 type='button'
-                                                key={category}
+                                                key={category.name}
                                                 className={`min-w-max flex items-center gap-2 pr-2 pl-1 py-1 rounded-xl border border-gray-200 dark:border-gray-700 ${isSelected ? "" : "opacity-50"}`}
                                                 onClick={() => handleCategoryToggle(category)}
                                                 whileTap={{ scale: 0.95 }}
@@ -217,7 +204,7 @@ const RaceCheckTable = ({ results, eventId, hideTicketButton }: { results: RaceC
 
                                                 </div>
                                                 <p className={`text-xs font-medium ${isSelected ? "text-gray-950 dark:text-white" : "text-gray-500 dark:text-gray-400"}`}>
-                                                    {category}
+                                                    {category.name}
                                                 </p>
                                             </motion.button>
                                         )

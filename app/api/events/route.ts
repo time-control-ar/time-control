@@ -1,11 +1,9 @@
-import { auth } from "@/auth";
-import { connectToDatabase } from "@/lib/mongodb";
-import { EventResponse } from "@/services/eventService";
 import { obtainEventsServer } from "@/lib/server/eventService";
+import { connectToDatabase } from "@/lib/mongodb";
 import { NextResponse } from "next/server";
-import { uploadFile } from "@/lib/server/uploadService";
-import { RaceCheckProps } from "@/lib/schemas/racecheck.schema";
 import { ObjectId } from "mongodb";
+import { auth } from "@/auth";
+import { ParsedRace } from "@/lib/utils";
 
 export async function GET() {
  try {
@@ -33,7 +31,7 @@ export async function POST(req: Request) {
    );
 
   const formData = await req.formData();
-  let results: RaceCheckProps | undefined;
+  let results: ParsedRace | undefined;
 
   try {
    const resultsData = formData.get("results");
@@ -41,7 +39,7 @@ export async function POST(req: Request) {
     const parsedResults = JSON.parse(resultsData as string);
     // Validate the parsed results has the expected shape
     if (typeof parsedResults === "object" && parsedResults !== null) {
-     results = parsedResults as RaceCheckProps;
+     results = parsedResults as ParsedRace;
     }
    }
   } catch (error) {
@@ -49,11 +47,11 @@ export async function POST(req: Request) {
    results = undefined;
   }
 
-  // Handle image upload if provided
+  // Handle image URL if provided
   let imageUrl = "";
-  const eventImage = formData.get("image") as File;
-  if (eventImage && eventImage.size > 0) {
-   imageUrl = (await uploadFile(eventImage, "events")) || "";
+  const imageUrlData = formData.get("imageUrl");
+  if (imageUrlData) {
+   imageUrl = imageUrlData as string;
   }
 
   // Parse location as object
@@ -106,30 +104,9 @@ export async function POST(req: Request) {
    );
   }
 
-  const serializedEvent: EventResponse = {
-   _id: createdEvent._id.toString(),
-   name: createdEvent.name,
-   date: createdEvent.date,
-   startTime: createdEvent.startTime,
-   endTime: createdEvent.endTime,
-   location: {
-    lat: createdEvent.location.lat,
-    lng: createdEvent.location.lng,
-   },
-   locationName: createdEvent.locationName,
-   description: createdEvent.description,
-   maxParticipants: createdEvent.maxParticipants,
-   image: createdEvent.image,
-   results: createdEvent.results,
-   createdBy: createdEvent.createdBy,
-   createdAt: createdEvent.createdAt,
-   updatedAt: createdEvent.updatedAt,
-   type: createdEvent.type,
-  };
-
   return NextResponse.json({
    success: true,
-   data: [serializedEvent],
+   data: createdEvent,
   });
  } catch (error) {
   console.error("Error al crear evento:", error);

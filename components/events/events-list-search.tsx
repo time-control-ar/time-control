@@ -109,7 +109,7 @@ const EventsListSearch = ({ eventsData }: { eventsData: EventResponse[] }) => {
                             <button
                                 type="button"
                                 className={`rounded-full flex items-center justify-center h-10 w-10 bg-white dark:bg-gray-950
-                            border border-gray-200 dark:border-gray-800
+                            border-2 border-gray-200 dark:border-gray-800
                           outline-none ring-0 transition-all duration-75 shadow-sm md:hover:shadow-md`}
                                 onClick={() => setFiltersOpen(!filtersOpen)}
                             >
@@ -154,7 +154,7 @@ const EventsListSearch = ({ eventsData }: { eventsData: EventResponse[] }) => {
                                                 <motion.button
                                                     type='button'
                                                     key={`${type.value}-${index}`}
-                                                    className={`min-w-max flex items-center gap-2 pr-2 pl-1 py-1 rounded-xl border border-gray-200 dark:border-gray-700 ${isSelected ? "" : "opacity-50"}`}
+                                                    className={`min-w-max flex items-center gap-2 pr-2 pl-1 py-1 rounded-xl border-2 border-gray-100 dark:border-gray-800 ${isSelected ? "" : "opacity-50"}`}
                                                     onClick={() => handleCategoryToggle(type.value)}
                                                     whileTap={{ scale: 0.95 }}
                                                     transition={{ type: "spring", stiffness: 400, damping: 17 }}
@@ -185,7 +185,7 @@ const EventsListSearch = ({ eventsData }: { eventsData: EventResponse[] }) => {
                 {isAdmin && (
                     <button
                         type="button"
-                        className="bg-gray-50 dark:bg-gray-900 rounded-3xl overflow-hidden hover:shadow-lg  dark:shadow-gray-950/50 flex items-center justify-center gap-2 h-full flex-col min-w-[300px] mx-auto w-full min-h-[300px] cursor-pointer select-none border-2 border-dashed border-gray-300 dark:border-gray-700 transition-all duration-75"
+                        className="hover:bg-gray-50 dark:hover:bg-gray-900 rounded-3xl overflow-hidden hover:shadow-lg  dark:shadow-gray-950/50 flex items-center justify-center gap-2 h-full flex-col min-w-[300px] mx-auto w-full min-h-[400px] cursor-pointer select-none border-2 border-dashed border-gray-300 dark:border-gray-700 transition-all duration-75"
                         onClick={() => router.push('/eventos/nuevo')}
                     >
                         <PlusIcon className="w-4 h-4 text-gray-500 dark:text-white" />
@@ -194,7 +194,7 @@ const EventsListSearch = ({ eventsData }: { eventsData: EventResponse[] }) => {
                 )}
 
                 {events && events?.length > 0 ? (
-                    <AnimatePresence mode="wait">
+                    <>
                         {events?.map((event, index) => (
                             <motion.div
                                 key={event._id}
@@ -208,7 +208,7 @@ const EventsListSearch = ({ eventsData }: { eventsData: EventResponse[] }) => {
                                 <EventCard event={event} />
                             </motion.div>
                         ))}
-                    </AnimatePresence>
+                    </>
                 ) : (
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}

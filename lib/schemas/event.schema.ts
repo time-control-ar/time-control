@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { raceCheckSchema } from "./racecheck.schema";
+import { Category, Modality, ParsedRace, Runner } from "../utils";
 
 export const eventCreateSchema = z.object({
  name: z
@@ -95,7 +95,63 @@ export const eventCreateSchema = z.object({
   .min(1, "Debe tener al menos 1 participante.")
   .optional(),
  image: z.any().optional(),
- results: raceCheckSchema.optional(),
+ results: z.any().optional(),
+ categories: z
+  .array(
+   z.object({
+    name: z.string(),
+    matchsWith: z.string(),
+   })
+  )
+  .optional(),
+ modalities: z
+  .array(
+   z.object({
+    name: z.string(),
+    matchsWith: z.string(),
+   })
+  )
+  .optional(),
+ runners: z
+  .array(
+   z.object({
+    sex: z.string(),
+    name: z.string(),
+    chip: z.string(),
+    dorsal: z.number(),
+    modality: z.string(),
+    category: z.string(),
+    time: z.string(),
+    position: z.number(),
+    positionSex: z.number(),
+    positionCategory: z.number(),
+    pace: z.string(),
+   })
+  )
+  .optional(),
 });
 
 export type EventFormData = z.infer<typeof eventCreateSchema>;
+
+export interface EventResponse {
+ _id: string;
+ name: string;
+ date: string;
+ startTime: string;
+ endTime: string;
+ description: string;
+ maxParticipants: number;
+ image: string;
+ createdBy: string;
+ createdAt: string;
+ updatedAt: string;
+ type: string[];
+ location: {
+  lat: number;
+  lng: number;
+ };
+ locationName: string;
+ categories: Category[];
+ modalities: Modality[];
+ runners: Runner[];
+}

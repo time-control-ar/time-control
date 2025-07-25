@@ -1,34 +1,14 @@
 import { connectToDatabase } from "@/lib/mongodb";
-import { RaceCheckProps } from "@/lib/schemas/racecheck.schema";
 import { BlobServiceClient } from "@azure/storage-blob";
 import { ObjectId } from "mongodb";
-
-export interface EventResponse {
- _id: string;
- name: string;
- date: string;
- startTime: string;
- endTime: string;
- location: {
-  lat: number;
-  lng: number;
- };
- description: string;
- maxParticipants: number;
- image: string;
- results: RaceCheckProps;
- createdBy: string;
- createdAt: string;
- updatedAt: string;
- type: string[];
- locationName: string;
-}
+import { EventResponse } from "../schemas/event.schema";
 
 export async function obtainEventsServer(): Promise<EventResponse[]> {
  try {
   const { db } = await connectToDatabase();
   const events = await db.collection("events").find({}).toArray();
 
+  console.log("events", events);
   const blobServiceClient = BlobServiceClient.fromConnectionString(
    process.env.AZURE_STORAGE_CONNECTION_STRING || ""
   );
@@ -63,6 +43,9 @@ export async function obtainEventsServer(): Promise<EventResponse[]> {
    updatedAt: event.updatedAt,
    type: event.type || [],
    locationName: event.locationName || "",
+   categories: event.categories || [],
+   modalities: event.modalities || [],
+   runners: event.runners || [],
   }));
 
   return serializedEvents;

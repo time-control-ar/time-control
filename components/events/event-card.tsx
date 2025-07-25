@@ -1,5 +1,5 @@
 import { ChartBarIcon, ClockIcon, InfoIcon, MapPinIcon, PencilIcon, TrashIcon } from 'lucide-react'
-import { EventResponse } from '@/lib/server/eventService'
+import { EventResponse } from '@/lib/schemas/event.schema'
 import { motion } from "framer-motion"
 import SafeImage from '@/components/ui/safe-image'
 import { useRouter } from 'next/navigation'
@@ -61,11 +61,11 @@ export const EventDate = ({ event }: { event: EventResponse }) => {
         : 'Día'
 
     return (
-        <div className="flex flex-col items-center justify-center rounded-lg bg-gradient-to-t w-[50px] h-[60px] dark:from-gray-900 dark:to-gray-800 from-gray-100 to-white">
+        <div className="flex flex-col items-center justify-center rounded-lg bg-gradient-to-t w-[50px] h-[60px] dark:from-gray-900 dark:to-gray-800 from-gray-100 to-white max-w-[50px] overflow-hidden">
             <p className="text-gray-950 dark:text-white text-3xl tracking-tighter font-bold -mb-1">
                 {eventDay}
             </p>
-            <p className="text-gray-950 dark:text-white text-[11px] tracking-tight font-medium capitalize truncate">
+            <p className="text-gray-950 dark:text-white text-[11px] tracking-tight font-medium capitalize truncate w-full">
                 {eventMonth}
             </p>
         </div>
@@ -228,11 +228,11 @@ export const EventCard = ({ event, previewMode = false }: { event: EventResponse
                                         />
                                     </div>
 
-                                    <div className="absolute top-1 left-1 z-10 scale-90">
+                                    <div className="absolute top-2 left-2 z-10">
                                         <EventDate event={event} />
                                     </div>
 
-                                    <div className="grid grid-cols-2 gap-1 px-3">
+                                    <div className="grid grid-cols-1 gap-1 px-3">
                                         <EventSpaceTime event={event} />
                                     </div>
 
@@ -252,7 +252,13 @@ export const EventCard = ({ event, previewMode = false }: { event: EventResponse
                                 transition={{ duration: 0.2 }}
                                 className="h-max flex flex-col relative overflow-y-auto"
                             >
-                                <RaceCheckTable results={event?.results} eventId={event._id} />
+                                <RaceCheckTable
+                                    results={{
+                                        eventName: event?.name || '',
+                                        categories: event?.categories || [],
+                                        modalities: event?.modalities || [],
+                                        runners: event?.runners || []
+                                    }} eventId={event._id} hideTicketButton={previewMode} />
                             </motion.div>
                         )}
                     </AnimatePresence>

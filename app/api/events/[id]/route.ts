@@ -32,14 +32,11 @@ export async function PUT(
    results = undefined;
   }
 
-  // Handle image upload if a new image is provided
-  const eventImage = formData.get("image") as File;
-  if (eventImage && eventImage.size > 0) {
-   // Para eventos existentes, usar la API específica de imágenes
-   // Las imágenes se manejan por separado para mejor control
-   console.log(
-    "Imagen detectada en actualización de evento - usar API de imágenes"
-   );
+  // Handle image URL if provided
+  const imageUrlData = formData.get("imageUrl");
+  let imageUrl: string | undefined;
+  if (imageUrlData) {
+   imageUrl = imageUrlData as string;
   }
 
   // Parse location as object
@@ -101,8 +98,10 @@ export async function PUT(
    updatedAt: new Date().toISOString(),
   };
 
-  // Las imágenes se manejan por separado en la API específica de imágenes
-  // No actualizar imagen aquí
+  // Update image if provided
+  if (imageUrl !== undefined) {
+   updateData.image = imageUrl;
+  }
 
   // Only update results if new results were provided
   if (results) {

@@ -30,15 +30,16 @@ export function SignInButton() {
                         <Image src={session.user?.image || ''} alt="User" width={40} height={40} className="object-cover" />
                     </div>
                 </button>
+
                 <Modal
                     isOpen={isOpenSignOutModal}
                     onClose={handleCloseSignOutModal}
                     title=""
                     className="!max-w-[440px]"
                 >
-                    <div className="flex flex-col items-center justify-center h-min gap-6 p-6">
-                        <div className="relative h-10 w-10 md:w-12 md:h-12 overflow-hidden rounded-full">
-                            <Image src={session.user?.image || ''} alt="User" width={40} height={40} className="object-cover" />
+                    <div className="flex flex-col items-center justify-center h-min gap-6 px-6 pb-6">
+                        <div className="relative h-12 w-12 md:w-16 md:h-16 overflow-hidden rounded-full">
+                            <Image src={session.user?.image || ''} alt="User" layout='fill' className="object-cover" />
                         </div>
                         <p className="text-sm text-gray-500 dark:text-gray-400">
                             ¿Desea cerrar sesión de <span className="font-medium">{session.user?.name}</span>?

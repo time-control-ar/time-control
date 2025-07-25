@@ -28,7 +28,13 @@ if (process.env.NODE_ENV === "development") {
 }
 
 export async function connectToDatabase() {
- const client = await clientPromise;
- const db = client.db(process.env.MONGODB_DB || "TimeControl");
- return { client, db };
+ try {
+  const client = await clientPromise;
+  const db = client.db(process.env.MONGODB_CLIENT_NAME || "TimeControl");
+
+  return { client, db };
+ } catch (e) {
+  console.error("Error al conectar a la base de datos:", e);
+  throw e;
+ }
 }

@@ -18,12 +18,11 @@ export default async function Home({
   const events = await obtainEventsServer();
 
   const ticket = eventId && dorsal ? await obtainTicketServer(eventId, dorsal) : null;
-  console.log(eventId, dorsal)
 
   return (
     <>
       <div className="flex flex-col gap-4 font-[family-name:var(--font-geist-sans)] bg-white dark:bg-gray-950 min-h-screen">
-        <div className="px-6 w-full flex justify-between items-center max-w-7xl mx-auto">
+        <div className="px-6 w-full flex justify-between items-center max-w-5xl mx-auto">
           <AnimatedLogo />
 
           <div className="flex items-center gap-2">
@@ -32,7 +31,15 @@ export default async function Home({
           </div>
         </div>
 
-        {ticket ? <RunnerTicket runner={ticket.ticket} event={ticket.event} /> : <EventsListSearch eventsData={events} />}
+        <div className="w-full overflow-x-hidden flex flex-col gap-4 overflow-y-auto">
+          {ticket ?
+            <RunnerTicket
+              runner={ticket.ticket}
+              event={ticket.event}
+            /> :
+            <EventsListSearch eventsData={events} />
+          }
+        </div>
       </div>
 
     </>

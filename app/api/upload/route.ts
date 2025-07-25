@@ -13,5 +13,8 @@ export async function POST(req: NextRequest) {
   );
 
  const blobUrl = await uploadFile(file, eventId);
- return NextResponse.json({ url: blobUrl });
+ return NextResponse.json({
+  success: true,
+  data: { url: blobUrl },
+ });
 }

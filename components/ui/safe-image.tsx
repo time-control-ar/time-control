@@ -3,8 +3,8 @@
 import Image from 'next/image'
 import { useState } from 'react'
 import { ImageIcon, Loader } from 'lucide-react'
-import { getImageUrl } from '@/lib/utils'
 import { motion } from 'framer-motion'
+import { validateImageUrl } from '@/lib/utils'
 
 interface SafeImageProps {
     src: string
@@ -26,11 +26,11 @@ export default function SafeImage({
     const [imageError, setImageError] = useState(false)
     const [imageLoading, setImageLoading] = useState(true)
 
-    const validSrc = getImageUrl(src)
+    const validSrc = validateImageUrl(src)
 
     if (!validSrc || imageError) {
         return (
-            <div className={`flex flex-col min-h-[200px] items-center justify-center w-full h-full ${className}`}>
+            <div className={`flex flex-col min-h-[200px] items-center bg-gray-50 dark:bg-gray-500/10 border-t border-gray-100 dark:border-gray-800 justify-center w-full h-full ${className}`}>
                 <ImageIcon className="w-6 h-6 text-gray-500 dark:text-gray-400" strokeWidth={1.5} />
                 <p className="text-gray-500 dark:text-gray-400 text-sm tracking-tight text-center font-medium">
                     {imageError ? 'Error al cargar imagen' : fallbackText}
@@ -64,5 +64,5 @@ export default function SafeImage({
                 }}
             />
         </motion.div>
-    )
-} 
+    );
+}

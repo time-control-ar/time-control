@@ -8,6 +8,8 @@ import { XIcon } from 'lucide-react';
 const mapContainerStyle = {
     width: '100%',
     height: '300px',
+    padding: '10px',
+    borderRadius: '10px',
 };
 
 const libraries: ("places" | "geometry" | "drawing" | "visualization")[] = ['places'];
@@ -48,7 +50,7 @@ const Map = ({
 
     if (loadError) {
         return (
-            <div className="rounded-2xl mt-3 overflow-hidden bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800">
+            <div className="rounded-2xl mt-3 overflow-hidden bg-white dark:bg-gray-950 border border-gray-100 dark:border-gray-800">
                 <div className="text-red-500 dark:text-red-400 text-sm tracking-tight p-3">
                     Error al cargar el mapa. Inténtalo de nuevo.
                 </div>
@@ -58,7 +60,7 @@ const Map = ({
 
     if (!isLoaded) {
         return (
-            <div className="rounded-2xl mt-3 overflow-hidden bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800">
+            <div className="rounded-2xl mt-3 overflow-hidden bg-white dark:bg-gray-950 border border-gray-100 dark:border-gray-800">
                 <div className="text-gray-500 dark:text-gray-400 text-sm tracking-tight p-3">
                     Cargando mapa...
                 </div>
@@ -67,14 +69,14 @@ const Map = ({
     }
 
     return (
-        <div className="rounded-2xl mt-3 overflow-hidden bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800">
+        <div className="rounded-3xl mt-3 overflow-hidden border-2 border-gray-50 dark:border-gray-800 p-3">
             <Autocomplete
                 onLoad={(autocomplete) => (autocompleteRef.current = autocomplete)}
                 onPlaceChanged={handlePlaceChanged}
             >
-                <div className="p-3">
+                <div className="pb-3">
                     <div className="flex relative">
-                        <SearchIcon className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-white z-20" />
+                        <SearchIcon className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-white" />
                         <input
                             type="text"
                             placeholder="Buscar"
@@ -98,10 +100,11 @@ const Map = ({
                 </div>
             </Autocomplete>
 
+
             <GoogleMap
                 mapContainerStyle={mapContainerStyle}
                 center={markerPosition}
-                zoom={10}
+                zoom={15}
             >
                 <Marker position={markerPosition} />
             </GoogleMap>

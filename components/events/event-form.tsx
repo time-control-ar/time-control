@@ -1,21 +1,18 @@
 'use client'
 
-import { useForm } from 'react-hook-form'
+import { useFieldArray, useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { eventCreateSchema, EventFormData } from '@/lib/schemas/event.schema'
-import { File, Trash, Loader2, ArrowLeftIcon, EyeIcon, CheckIcon, ListIcon, ListOrderedIcon, UnderlineIcon, BoldIcon, ItalicIcon } from 'lucide-react'
+import { eventCreateSchema, EventFormData, EventResponse } from '@/lib/schemas/event.schema'
+import { File, Loader2, ArrowLeftIcon, EyeIcon, CheckIcon, ListIcon, ListOrderedIcon, UnderlineIcon, BoldIcon, ItalicIcon, TrashIcon, PlusIcon } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 
 const MAX_IMAGE_SIZE = 15 * 1024 * 1024 // 15MB
 const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10MB
 const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp']
-const ALLOWED_FILE_EXTENSIONS = ['.racecheck', '.xlsx']
+const ALLOWED_FILE_EXTENSIONS = ['.racecheck']
 
-import { EventResponse, createEvent, updateEvent, updateEventImage, deleteEventImage } from '@/services/eventService'
-import { adminEmails, eventTypes, textToJsonRaceResults } from '@/lib/utils'
-import { RaceCheckProps } from '@/lib/schemas/racecheck.schema'
+import { adminEmails, eventTypes, validateFile, parseRacechecks, Category, Modality, ParsedRace } from '@/lib/utils'
 import { SignInButton } from '../ui/sign-in-button'
-import { AnimatedText } from '../ui/animated-text'
 import { useEffect, useState, useMemo } from 'react'
 import { useSession } from 'next-auth/react'
 import Toast from '../ui/toast'
@@ -35,6 +32,112 @@ import ListItem from "@tiptap/extension-list-item";
 import OrderedList from "@tiptap/extension-ordered-list";
 import Map from './map'
 import { EventCard } from './event-card'
+import QRGenerator from './qr-generator'
+import { z } from 'zod'
+import { createEvent, updateEvent, uploadImageToAzure } from '@/services/eventService'
+
+const NewCategoryForm = ({ append }: { append: (category: Category) => void }) => {
+  const { register, handleSubmit, reset, formState: { errors } } = useForm<Category>({
+    resolver: zodResolver(z.object({
+      name: z.string().min(1, "Campo requerido"),
+      matchsWith: z.string().min(1, "Campo requerido")
+    }))
+  })
+
+  const onSubmit = (data: any) => {
+    append(data)
+    reset()
+  }
+
+  return (
+    <div className='flex items-end gap-2 w-full mt-4'>
+      <div className='grid grid-cols-2 gap-2 w-full'>
+        <div className='flex flex-col gap-1'>
+          <input
+            type="text"
+            className='input w-full'
+            placeholder='ej. 10K'
+            {...register('name')}
+          />
+          {errors.name && (
+            <p className="error-input">{errors.name.message}</p>
+          )}
+        </div>
+
+        <div className='flex flex-col gap-1 w-full'>
+          <input
+            type="text"
+            className='input w-full'
+            placeholder='ej. 10K L'
+            {...register('matchsWith')}
+          />
+          {errors.matchsWith && (
+            <p className="error-input">{errors.matchsWith.message}</p>
+          )}
+        </div>
+      </div>
+
+      <button
+        type='button'
+        className='rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center p-2 hover:bg-gray-200 dark:hover:bg-gray-700 transition-all duration-75 w-max h-max mb-2'
+        onClick={handleSubmit(onSubmit)}
+      >
+        <PlusIcon className='w-4 h-4 text-gray-500 dark:text-gray-400' />
+      </button>
+    </div >
+  )
+}
+const NewModalityForm = ({ append }: { append: (modality: Modality) => void }) => {
+  const { register, handleSubmit, reset, formState: { errors } } = useForm<Modality>({
+    resolver: zodResolver(z.object({
+      name: z.string().min(1, "Campo requerido"),
+      matchsWith: z.string().min(1, "Campo requerido")
+    }))
+  })
+
+  const onSubmit = (data: any) => {
+    append(data)
+    reset()
+  }
+
+  return (
+    <div className='flex items-end gap-2 w-full mt-4'>
+      <div className='grid grid-cols-2 gap-2 w-full'>
+        <div className='flex flex-col gap-1'>
+          <input
+            type="text"
+            className='input w-full'
+            placeholder='ej. 10K'
+            {...register('name')}
+          />
+          {errors.name && (
+            <p className="error-input">{errors.name.message}</p>
+          )}
+        </div>
+
+        <div className='flex flex-col gap-1 w-full'>
+          <input
+            type="text"
+            className='input w-full'
+            placeholder='ej. 10K L'
+            {...register('matchsWith')}
+          />
+          {errors.matchsWith && (
+            <p className="error-input">{errors.matchsWith.message}</p>
+          )}
+        </div>
+      </div>
+
+      <button
+        type='button'
+        className='rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center p-2 hover:bg-gray-200 dark:hover:bg-gray-700 transition-all duration-75 w-max h-max mb-2'
+        onClick={handleSubmit(onSubmit)}
+      >
+        <PlusIcon className='w-4 h-4 text-gray-500 dark:text-gray-400' />
+      </button>
+    </div >
+  )
+}
 
 interface EventFormProps {
   event?: EventResponse | null;
@@ -43,9 +146,12 @@ interface EventFormProps {
 export default function EventForm({ event }: EventFormProps) {
   const router = useRouter()
   const { data: session, status } = useSession()
+  const [stayAfterCreation, setStayAfterCreation] = useState(false)
+  const [parsedResults, setParsedResults] = useState<ParsedRace | null>(null)
 
   const defaultValues = useMemo(() => event ? {
     name: event.name,
+    image: event.image,
     date: event.date,
     startTime: event.startTime,
     endTime: event.endTime,
@@ -53,9 +159,13 @@ export default function EventForm({ event }: EventFormProps) {
     location: event.location,
     description: event.description || "",
     maxParticipants: event.maxParticipants,
+    categories: event.categories || [],
+    modalities: event.modalities || [],
+    runners: event.runners || [],
     type: event.type || [],
   } : {
     name: "",
+    image: "",
     date: new Date().toISOString().split('T')[0],
     startTime: "09:00",
     endTime: "10:00",
@@ -63,6 +173,9 @@ export default function EventForm({ event }: EventFormProps) {
     location: { lat: -34.397, lng: 150.644 },
     description: "",
     maxParticipants: 100,
+    categories: [],
+    modalities: [],
+    runners: [],
     type: [],
   }, [event])
 
@@ -72,12 +185,23 @@ export default function EventForm({ event }: EventFormProps) {
     reset,
     watch,
     setValue,
+    control,
     formState: { errors, isSubmitting }
   } = useForm<EventFormData>({
     resolver: zodResolver(eventCreateSchema),
     mode: 'onBlur',
     defaultValues
   })
+
+  const { fields: modalities, append: appendModality, remove: removeModality } = useFieldArray({
+    control,
+    name: 'modalities'
+  })
+  const { fields: categories, append: appendCategory, remove: removeCategory } = useFieldArray({
+    control,
+    name: 'categories'
+  })
+
 
   const editor = useEditor({
     extensions: [
@@ -102,7 +226,7 @@ export default function EventForm({ event }: EventFormProps) {
     ],
     editorProps: {
       attributes: {
-        class: 'w-full h-full p-3.5 rounded-xl border border-gray-200 dark:border-gray-800 bg-gradient-to-b from-white to-white dark:from-gray-950 dark:to-gray-950 outline-none min-h-32'
+        class: 'w-full h-full p-3.5 rounded-2xl border-2 border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-950 outline-none min-h-32 focus:border-gray-400 dark:focus:border-gray-700'
       }
     },
     content: defaultValues.description,
@@ -119,10 +243,6 @@ export default function EventForm({ event }: EventFormProps) {
     }
   }, [editor, defaultValues.description])
 
-  const [isMounted, setIsMounted] = useState(false)
-  const [eventFile, setEventFile] = useState<File | undefined>(undefined)
-  const [imageFile, setImageFile] = useState<File | undefined>(undefined)
-  const [parsedResults, setParsedResults] = useState<RaceCheckProps | undefined>(event?.results)
   const [isUpdatingImage, setIsUpdatingImage] = useState(false)
   const [currentImageUrl, setCurrentImageUrl] = useState<string>(event?.image || '')
   const [toast, setToast] = useState<{
@@ -135,76 +255,54 @@ export default function EventForm({ event }: EventFormProps) {
     show: false
   });
 
-  const imageUrl = useMemo(() => {
-    if (imageFile) {
-      return URL.createObjectURL(imageFile)
-    }
-    return currentImageUrl || ''
-  }, [imageFile, currentImageUrl])
-
-  // Limpiar URLs de objetos cuando cambie el archivo
-  useEffect(() => {
-    let objectUrl: string | undefined
-
-    if (imageFile) {
-      objectUrl = URL.createObjectURL(imageFile)
-    }
-
-    return () => {
-      if (objectUrl) {
-        URL.revokeObjectURL(objectUrl)
-      }
-    }
-  }, [imageFile])
-
   const onSubmit = async (data: EventFormData) => {
     try {
       const formData = new FormData();
-      formData.append('name', data.name);
-      formData.append('date', data.date);
-      formData.append('startTime', data.startTime);
-      formData.append('endTime', data.endTime);
-      formData.append('locationName', data.locationName || "");
-      formData.append('location', JSON.stringify({ lat: data.location.lat, lng: data.location.lng }));
-      formData.append('description', data.description || '');
-      formData.append('maxParticipants', data.maxParticipants?.toString() || '0');
+      return console.log(data)
+      // formData.append('name', data.name);   
+      // formData.append('date', data.date);
+      // formData.append('startTime', data.startTime);
+      // formData.append('endTime', data.endTime);
+      // formData.append('locationName', data.locationName || "");
+      // formData.append('location', JSON.stringify({ lat: data.location.lat, lng: data.location.lng }));
+      // formData.append('description', data.description || '');
+      // formData.append('maxParticipants', data.maxParticipants?.toString() || '0');
 
-      // Corregir el envío del array de tipos
-      if (data.type && data.type.length > 0) {
-        data.type.forEach((type, index) => {
-          formData.append(`type[${index}]`, type);
-        });
-      }
+      // // Corregir el envío del array de tipos
+      // if (data.type && data.type.length > 0) {
+      //   data.type.forEach((type, index) => {
+      //     formData.append(`type[${index}]`, type);
+      //   });
+      // }
 
-      if (parsedResults) {
-        formData.append('results', JSON.stringify(parsedResults));
-      }
-      if (imageFile) {
-        formData.append('image', imageFile);
-      }
+      // // Solo enviar la URL de la imagen, no el archivo
+      // if (currentImageUrl) {
+      //   formData.append('imageUrl', currentImageUrl);
+      // }
 
-      if (event?._id) {
-        await updateEvent(event._id, formData);
-        setToast({
-          message: 'Evento actualizado exitosamente',
-          type: 'success',
-          show: true
-        })
-      } else {
-        await createEvent(formData);
-        setToast({
-          message: 'Evento creado exitosamente',
-          type: 'success',
-          show: true
-        })
-      }
+      // if (event?._id) {
+      //   await updateEvent(event._id, formData);
+      //   setToast({
+      //     message: 'Evento actualizado exitosamente',
+      //     type: 'success',
+      //     show: true
+      //   })
+      // } else {
+      //   await createEvent(formData);
+      //   setToast({
+      //     message: 'Evento creado exitosamente',
+      //     type: 'success',
+      //     show: true
+      //   })
+      // }
 
-      reset()
-      setImageFile(undefined)
-      setEventFile(undefined)
-      setParsedResults(undefined)
-      setValue('results', undefined)
-      router.push('/')
+      // reset()
+      // if (!stayAfterCreation) {
+      //   router.push('/')
+      // } else {
+      //   setStayAfterCreation(false)
+      // }
+
     } catch (error) {
       console.error('Error procesando evento:', error)
       setToast({
@@ -220,27 +318,6 @@ export default function EventForm({ event }: EventFormProps) {
     setValue('locationName', locationName);
   };
 
-  const validateFile = (file: File, options: {
-    maxSize: number,
-    allowedTypes?: string[],
-    allowedExtensions?: string[]
-  }) => {
-    if (options.allowedTypes && !options.allowedTypes.includes(file.type)) {
-      throw new Error('Tipo de archivo no válido')
-    }
-
-    if (options.allowedExtensions &&
-      !options.allowedExtensions.some(ext => file.name.toLowerCase().endsWith(ext))) {
-      throw new Error('Extensión de archivo no válida')
-    }
-
-    if (file.size > options.maxSize) {
-      throw new Error(`El archivo excede el tamaño máximo de ${options.maxSize / 1024 / 1024}MB`)
-    }
-
-    return true
-  }
-
   const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
@@ -251,61 +328,27 @@ export default function EventForm({ event }: EventFormProps) {
         allowedTypes: ALLOWED_IMAGE_TYPES
       })
 
-      // Si estamos editando un evento existente, actualizar la imagen inmediatamente
-      if (event?._id) {
-        setIsUpdatingImage(true)
-        try {
-          const result = await updateEventImage(event._id, file, true)
-          setToast({
-            message: 'Imagen actualizada exitosamente',
-            type: 'success',
-            show: true
-          })
-          // Actualizar la URL de la imagen en el estado sin recargar la página
-          setCurrentImageUrl(result.data.imageUrl)
-          setImageFile(undefined) // Limpiar el archivo temporal
-        } catch (error) {
-          console.error('Error actualizando imagen:', error)
-          setToast({
-            message: 'Error al actualizar la imagen',
-            type: 'error',
-            show: true
-          })
-        } finally {
-          setIsUpdatingImage(false)
-        }
-      } else {
-        // Para nuevos eventos, solo guardar el archivo temporalmente
-        setImageFile(file)
-      }
-    } catch (error) {
-      if (error instanceof Error) {
+      setIsUpdatingImage(true)
+
+      // Subir imagen a Azure inmediatamente
+      const result = await uploadImageToAzure(file, event?._id)
+
+      if (result.success) {
+        setCurrentImageUrl(result.data.url)
+        setValue('image', result.data.url)
+
         setToast({
-          message: error.message,
-          type: 'error',
+          message: 'Imagen subida exitosamente',
+          type: 'success',
           show: true
         })
+      } else {
+        throw new Error('Error al subir la imagen')
       }
-    }
-  }
-
-  const handleDeleteImage = async () => {
-    if (!event?._id) return
-
-    setIsUpdatingImage(true)
-    try {
-      await deleteEventImage(event._id)
-      setToast({
-        message: 'Imagen eliminada exitosamente',
-        type: 'success',
-        show: true
-      })
-      // Actualizar el estado sin recargar la página
-      setCurrentImageUrl('')
     } catch (error) {
-      console.error('Error eliminando imagen:', error)
+      console.error('Error subiendo imagen:', error)
       setToast({
-        message: 'Error al eliminar la imagen',
+        message: error instanceof Error ? error.message : 'Error al subir la imagen',
         type: 'error',
         show: true
       })
@@ -319,36 +362,39 @@ export default function EventForm({ event }: EventFormProps) {
     if (!file) return
 
     try {
+      // Validar el archivo antes de procesarlo
       validateFile(file, {
         maxSize: MAX_FILE_SIZE,
         allowedExtensions: ALLOWED_FILE_EXTENSIONS
       })
 
-      setEventFile(file)
+      const fileContent = await file.text()
+      console.log('Contenido del archivo:', fileContent.substring(0, 200) + '...')
+      console.log('Categorías actuales:', categories)
+      console.log('Modalidades actuales:', modalities)
 
-      const results = await textToJsonRaceResults(await file.text())
-      console.log(file)
-      setParsedResults(results)
-      setValue('results', results)
+      const parsedResults = parseRacechecks(fileContent, categories, modalities)
+      console.log('Resultados parseados:', parsedResults)
+
+      setParsedResults(parsedResults)
+      setValue('runners', parsedResults?.runners || [])
+      setValue('categories', parsedResults?.categories || [])
+      setValue('modalities', parsedResults?.modalities || [])
 
       setToast({
-        message: 'Archivo parseado exitosamente',
+        message: 'Archivo procesado exitosamente',
         type: 'success',
         show: true
       })
     } catch (error) {
-      if (error instanceof Error) {
-        Toast({ message: error.message, type: 'error' })
-      }
+      console.error('Error al procesar el archivo:', error)
+      setToast({
+        message: error instanceof Error ? error.message : 'Error al procesar el archivo',
+        type: 'error',
+        show: true
+      })
     }
   }
-
-  useEffect(() => {
-    setIsMounted(true)
-  }, [])
-
-
-  if (!isMounted) return null
 
   if (!session?.user?.email && status === 'unauthenticated') return (
     <div className="h-screen w-full flex items-center justify-center">
@@ -392,8 +438,8 @@ export default function EventForm({ event }: EventFormProps) {
   )
 
   return (
-    <div className='w-full flex flex-col h-full overflow-hidden md:h-screen'>
-      <div className="px-6 w-full flex justify-between items-center max-w-7xl mx-auto">
+    <div className='flex flex-col w-full h-screen overflow-auto relative'>
+      <div className="px-6 w-full flex justify-between items-center max-w-5xl mx-auto">
         <AnimatedLogo />
 
         <div className="flex items-center gap-2">
@@ -402,29 +448,34 @@ export default function EventForm({ event }: EventFormProps) {
         </div>
       </div>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col font-geist-sans w-full max-h-full overflow-hidden relative max-w-7xl mx-auto">
-
-        {/* content */}
-        <div className="flex flex-col md:flex-row gap-4 mx-auto w-full h-max overflow-hidden relative">
-          {/* form content */}
-          <div className="flex flex-col gap-6 max-w-xl mx-auto w-full h-full px-3 md:pb-10 overflow-y-auto relative md:pr-12">
-
-            <div className="flex w-full items-center gap-3 py-2">
-              <button
-                type="button"
-                className={`h-10 rounded-full w-10 flex items-center justify-center
+      <div className="px-6 w-full flex items-center max-w-5xl mx-auto my-6 gap-3">
+        <button
+          type="button"
+          className={`h-8 rounded-full w-8 flex items-center justify-center
                            relative select-none gap-2
                            bg-gradient-to-b from-white to-white dark:from-gray-950 dark:to-gray-950
-                           border border-gray-200 dark:border-gray-800 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors`}
-                onClick={() => router.push('/')}
-              >
-                <ArrowLeftIcon className="w-5 h-5 text-gray-500 dark:text-gray-400" />
-              </button >
-              <AnimatedText text={event ? "Editar evento" : "Nuevo evento"} className='!text-2xl font-semibold text-start' />
-            </div >
+                           border-2 border-gray-100 dark:border-gray-800 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors`}
+          onClick={() => router.push('/')}
+        >
+          <ArrowLeftIcon className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+        </button >
 
-            <div>
-              <label className="label-input">Título del evento *</label>
+        <h1 className='text-2xl font-semibold text-start tracking-tight'>
+          {event ? "Editar evento" : "Nuevo evento"}
+        </h1>
+      </div>
+
+
+      <form
+        onSubmit={handleSubmit(onSubmit)}
+        className="flex flex-col gap-12 md:flex-row mx-auto h-max w-full max-w-5xl"
+      >
+
+        <div className="flex flex-col gap-8 px-6 max-w-md h-max md:pb-12">
+
+          <div className="flex h-max gap-1 w-full">
+            <div className="flex flex-col items-start gap-1 w-full">
+              <label className="label-input">Título *</label>
               <input
                 {...register("name")}
                 className="input"
@@ -433,174 +484,16 @@ export default function EventForm({ event }: EventFormProps) {
               {errors.name && (
                 <p className="error-input">{errors.name.message}</p>
               )}
-            </div>
-
-            <div>
-              <label className="label-input">Descripción</label>
-              <div className="flex flex-col w-full gap-2">
-                <div className="flex gap-2">
-                  <button
-                    type="button"
-                    className={`p-2 rounded ${editor?.isActive('bold') ? 'bg-gray-200 dark:bg-gray-700' : 'bg-transparent'}`}
-                    onClick={() => editor?.chain().focus().toggleBold().run()}
-                  >
-                    <BoldIcon className="w-4 h-4 text-gray-500 dark:text-gray-400" />
-                  </button>
-
-                  <button
-                    type="button"
-                    className={`p-2 rounded ${editor?.isActive('italic') ? 'bg-gray-200 dark:bg-gray-700' : 'bg-transparent'}`}
-                    onClick={() => editor?.chain().focus().toggleItalic().run()}
-                  >
-                    <ItalicIcon className="w-4 h-4 text-gray-500 dark:text-gray-400" />
-                  </button>
-
-                  <button
-                    type="button"
-                    className={`p-2 rounded ${editor?.isActive('underline') ? 'bg-gray-200 dark:bg-gray-700' : 'bg-transparent'}`}
-                    onClick={() => editor?.chain().focus().toggleMark('underline').run()}
-                  >
-                    <UnderlineIcon className="w-4 h-4 text-gray-500 dark:text-gray-400" />
-                  </button>
-
-                  <button
-                    type="button"
-                    className={`p-2 rounded ${editor?.isActive('bulletList') ? 'bg-gray-200 dark:bg-gray-700' : 'bg-transparent'}`}
-                    onClick={() => editor?.chain().focus().toggleBulletList().run()}
-                    title="Lista con viñetas"
-                  >
-                    <ListIcon className="w-4 h-4 text-gray-500 dark:text-gray-400" />
-                  </button>
-
-                  <button
-                    type="button"
-                    className={`p-2 rounded ${editor?.isActive('orderedList') ? 'bg-gray-200 dark:bg-gray-700' : 'bg-transparent'}`}
-                    onClick={() => editor?.chain().focus().toggleOrderedList().run()}
-                    title="Lista numerada"
-                  >
-                    <ListOrderedIcon className="w-4 h-4 text-gray-500 dark:text-gray-400" />
-                  </button>
-                </div>
-
-                <EditorContent editor={editor} />
-              </div>
-            </div>
-
-            <div className="flex flex-col gap-2">
-              <label className="label-input">Tipo de evento *</label>
-              <div className="flex items-center gap-2 w-full">
-                <div className="flex gap-2 w-full flex-wrap">
-                  {eventTypes?.map((type) => {
-                    const isSelected = watch("type")?.includes(type.value)
-                    return (
-                      <button type='button' key={type.value} className={`rounded-btn !bg-transparent ${isSelected ? "" : "opacity-50"}`}
-                        onClick={() => {
-                          const currentTypes = watch("type") || []
-                          if (isSelected) {
-                            setValue("type", currentTypes.filter((t) => t !== type.value))
-                          } else {
-                            setValue("type", [...currentTypes, type.value])
-                          }
-                        }}
-                      >
-                        <div className="rounded-xl p-1 h-6 w-6 bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
-                          {isSelected && (
-                            <CheckIcon className="w-5 h-5 text-gray-950 dark:text-white" />
-                          )}
-                        </div>
-                        <p className={`text-base font-medium tracking-tight ${isSelected ? "text-gray-950 dark:text-white" : "text-gray-500 dark:text-gray-400"}`}>
-                          {type.name}
-                        </p>
-                      </button>
-                    )
-                  })}
-                </div>
-              </div>
-              {errors.type && (
-                <p className="error-input">{errors.type.message}</p>
+              {errors.maxParticipants && (
+                <p className="error-input">Cupos inválidos, debe ser un número mayor a 0</p>
               )}
             </div>
 
-            <div className="flex items-start gap-4 max-w-full w-full flex-col">
-              <div className="w-full max-w-md flex flex-col">
-                <label className="label-input">Fecha *</label>
-                <input
-                  type="date"
-                  {...register("date")}
-                  className="input w-full"
-                />
-                {errors.date && (
-                  <p className="error-input">{errors.date.message}</p>
-                )}
-              </div>
+            <div className="w-[150px] flex flex-col items-start gap-1">
+              <label className="label-input">
+                Cupos
+              </label>
 
-              <div className="w-full max-w-md flex flex-col">
-                <label className="label-input">Hora *</label>
-                <div className="flex items-center gap-2 w-full">
-                  <div className="w-full">
-                    <input
-                      type="time"
-                      {...register("startTime")}
-                      className="input w-full"
-                    />
-                    {errors.startTime && (
-                      <p className="error-input">{errors.startTime.message}</p>
-                    )}
-                  </div>
-                  <p className="text-gray-500 dark:text-gray-400">a</p>
-                  <div className="w-full">
-                    <input
-                      type="time"
-                      {...register("endTime")}
-                      className="input w-full"
-                    />
-                    {errors.endTime && (
-                      <p className="error-input">{errors.endTime.message}</p>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div>
-              <label className="label-input">Ubicación *</label>
-
-              <Map
-                onLocationSelect={handleLocationSelect}
-                value={watch('location')}
-              />
-
-              {errors.location && (
-                <div className="mt-2 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
-                  <div className="flex items-start gap-3">
-                    <div className="flex-shrink-0">
-                      <div className="w-5 h-5 bg-red-100 dark:bg-red-800 rounded-full flex items-center justify-center">
-                        <span className="text-red-600 dark:text-red-400 text-xs font-medium">!</span>
-                      </div>
-                    </div>
-                    <div className="flex-1">
-                      <p className="text-sm text-red-600 dark:text-red-400">
-                        {errors.location.message}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {errors.locationName && (
-                <div className="mt-2 p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
-                  <p className="text-sm text-yellow-600 dark:text-yellow-400 font-medium">
-                    Advertencia de ubicación:
-                  </p>
-                  <p className="text-sm text-yellow-600 dark:text-yellow-400 mt-1">
-                    {errors.locationName.message}
-                  </p>
-                </div>
-              )}
-            </div>
-
-            <div>
-              <label className="label-input">Máximo de participantes</label>
               <input
                 type="number"
                 {...register("maxParticipants", { valueAsNumber: true })}
@@ -608,190 +501,441 @@ export default function EventForm({ event }: EventFormProps) {
                 placeholder="Ej: 100"
                 min="1"
               />
-              {errors.maxParticipants && (
-                <p className="error-input">{errors.maxParticipants.message}</p>
-              )}
             </div>
+          </div>
 
-            <div className='w-full flex flex-col gap-1'>
-              <label className="label-input">Imagen del evento</label>
-              <div className="file-input">
-                {isUpdatingImage ? (
-                  <div className="flex items-center justify-center w-full py-4">
-                    <Loader2 size={20} className="animate-spin text-blue-500" />
-                    <span className="text-sm font-medium ml-2">Actualizando imagen...</span>
+          <div className='w-full flex flex-col gap-1'>
+            <label className="label-input">Imagen del evento</label>
+            <div
+              className={`w-full h-max rounded-2xl shadow-lg md:shadow-none p-3 border-2 
+                ${!currentImageUrl ? "border-dashed" : ""} 
+                border-gray-100 dark:border-gray-800`}
+            >
+              {isUpdatingImage ? (
+                <div className="flex items-center justify-center w-full gap-2">
+                  <Loader2 size={20} className="animate-spin text-black dark:text-white" />
+                  <span className="text-sm font-medium ml-2">Actualizando imagen...</span>
+                </div>
+              ) : currentImageUrl ? (
+                <div className="flex items-center justify-between w-full">
+                  <div className="flex items-center gap-3 w-full">
+                    <File size={20} className="text-black dark:text-white" />
+                    <span className="text-sm font-medium truncate">Imagen actual</span>
                   </div>
-                ) : imageFile?.name || currentImageUrl ? (
-                  <div className="flex items-center justify-between w-full">
-                    <div className="flex items-center gap-3 w-full">
-                      <File size={20} className="text-blue-500" />
-                      <span className="text-sm font-medium truncate">{imageFile?.name || "Imagen actual"}</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      {event?._id && currentImageUrl && (
-                        <button
-                          type="button"
-                          onClick={handleDeleteImage}
-                          className="p-1 hover:bg-red-50 rounded"
-                          title="Eliminar imagen actual"
-                        >
-                          <Trash size={16} className="text-red-500" />
-                        </button>
-                      )}
-                      {imageFile && (
-                        <button
-                          type="button"
-                          onClick={() => setImageFile(undefined)}
-                          className="p-1 hover:bg-red-50 rounded"
-                          title="Cancelar nueva imagen"
-                        >
-                          <Trash size={16} className="text-red-500" />
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                ) : (
-                  <div className="text-center">
-                    <input
-                      accept={ALLOWED_IMAGE_TYPES.join(',')}
-                      onChange={handleImageChange}
-                      className="hidden"
-                      type="file"
-                      id="image-upload"
-                      disabled={isUpdatingImage}
-                    />
-                    <label htmlFor="image-upload" className={`cursor-pointer ${isUpdatingImage ? 'opacity-50' : ''}`}>
-                      <div className="text-gray-500 flex flex-col items-center justify-center">
-                        <File size={24} className="mx-auto mb-2" />
-                        <p className='text-sm'>Haz clic para seleccionar una imagen</p>
-                        <p className="text-xs">PNG, JPG hasta 15MB</p>
-                      </div>
-                    </label>
-                  </div>
-                )}
-              </div>
-            </div>
 
-            <div className='w-full flex flex-col gap-1'>
-              <label className="label-input">Archivo de resultados (.racecheck o .xlsx)</label>
-              <div className="file-input">
-                {parsedResults ? (
-                  <div className="flex items-center justify-between w-full px-2">
-                    <div className="flex items-center gap-3 w-full">
-                      <File size={20} className="text-blue-500" />
-                      <p className="text-sm w-full font-medium truncate">{eventFile?.name || "Resultados actuales"}</p>
-                    </div>
-
+                  <div className="flex items-center gap-1">
                     <button
                       type="button"
+                      className="rounded-full bg-red-600 flex items-center justify-center p-2 hover:bg-red-700 transition-all duration-75 w-max"
                       onClick={() => {
-                        setEventFile(undefined)
-                        setParsedResults(undefined)
-                        setValue('results', { categories: [], participants: [] })
-                        const fileInput = document.getElementById('race-check-file') as HTMLInputElement
-                        if (fileInput) {
-                          fileInput.value = ''
-                        }
+                        setCurrentImageUrl('')
+                        setValue('image', '')
                       }}
-                      className="p-1 hover:bg-red-50 rounded"
-                      title={eventFile?.name ? "Eliminar archivo seleccionado" : "Eliminar resultados actuales"}
                     >
-                      <Trash size={16} className="text-red-500 hover:text-red-600" />
+                      <TrashIcon className="w-4 h-4 text-white" strokeWidth={2.5} />
                     </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="text-center p-3">
+                  <input
+                    accept={ALLOWED_IMAGE_TYPES.join(',')}
+                    onChange={handleImageChange}
+                    disabled={isUpdatingImage}
+                    className="hidden"
+                    id="image-upload"
+                    type="file"
+                  />
+                  <label htmlFor="image-upload" className={`cursor-pointer ${isUpdatingImage ? 'opacity-50' : ''}`}>
+                    <div className="text-gray-500 flex flex-col items-center justify-center">
+                      <File size={24} className="mx-auto mb-2" />
+                      <p className='text-sm'>Haz clic para seleccionar una imagen</p>
+                      <p className="text-xs">PNG, JPG hasta 15MB</p>
+                    </div>
+                  </label>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-1">
+            <label className='label-input'>
+              Modalidades ({modalities.length})
+            </label>
+
+            <div className='rounded-3xl overflow-hidden border-2 border-gray-50 dark:border-gray-800 p-3'>
+
+              <div className='flex px-2' >
+                <label className='label-input w-full'>Nombre</label>
+                <label className='label-input w-full -ml-3'>Empieza con <br />
+                  <span className='text-xs text-gray-500 dark:text-gray-400'>(en .racecheck)</span>
+                </label>
+              </div>
+
+              <div className="flex flex-col gap-3 divide divide-gray-100 dark:divide-y-800">
+
+                {modalities?.map((modality: Modality, index: number) => (
+                  <div className='flex items-end gap-2 w-full' key={index}>
+                    <div className="px-3 w-full">
+                      {modality.name}
+                    </div>
+                    <div className="px-3 w-full">
+                      {modality.matchsWith}
+                    </div>
+                    <button type='button' className='rounded-full bg-red-600 flex items-center justify-center p-2 hover:bg-red-700 transition-all duration-75 w-max h-max' onClick={() => removeModality(index)}>
+                      <TrashIcon className='w-4 h-4 text-white' strokeWidth={2.5} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+
+              <NewModalityForm append={appendModality} />
+            </div>
+
+          </div>
+
+          <div className="flex flex-col gap-1">
+            <label className='label-input'>
+              Categorías ({categories.length})
+            </label>
+
+            <div className='rounded-3xl overflow-hidden border-2 border-gray-50 dark:border-gray-800 p-3'>
+              <div className='flex px-2' >
+                <label className='label-input w-full'>Nombre</label>
+                <label className='label-input w-full -ml-3'>Empieza con <br />
+                  <span className='text-xs text-gray-500 dark:text-gray-400'>(en .racecheck)</span>
+                </label>
+              </div>
+
+              <div className="flex flex-col gap-3 divide divide-gray-100 dark:divide-y-800">
+
+                {categories?.map((category: Category, index: number) => (
+                  <div className='flex items-end gap-2 w-full' key={index}>
+                    <div className="px-3 w-full">
+                      {category.name}
+                    </div>
+                    <div className="px-3 w-full">
+                      {category.matchsWith}
+                    </div>
+                    <button type='button' className='rounded-full bg-red-600 flex items-center justify-center p-2 hover:bg-red-700 transition-all duration-75 w-max h-max' onClick={() => removeCategory(index)}>
+                      <TrashIcon className='w-4 h-4 text-white' strokeWidth={2.5} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+
+              <NewCategoryForm append={appendCategory} />
+            </div>
+
+          </div>
+
+          {categories.length > 0 && modalities.length > 0 && (
+            <div className='flex flex-col gap-1 mt-4'>
+              <label className="label-input">Archivo de resultados (.racecheck)</label>
+
+              <div className={`w-full h-max rounded-2xl shadow-lg md:shadow-none p-3 border-2 ${parsedResults?.runners?.length === 0 ? "border-dashed" : ""} border-gray-100 dark:border-gray-800`}>
+
+                {parsedResults?.runners && parsedResults.runners.length > 0 ? (
+                  <div className="flex gap-3 relative -mx-3">
+                    <div className="flex items-center gap-2 w-full px-3">
+                      <div>
+                        <File className="text-black dark:text-white w-5 h-5" />
+                      </div>
+                      <p className="text-sm w-full font-medium truncate">
+                        {parsedResults?.eventName || "Resultados actuales"}
+                      </p>
+
+                      <button
+                        type="button"
+                        className="rounded-full bg-red-600 flex items-center justify-center p-2 hover:bg-red-700 transition-all duration-75 w-max"
+                        onClick={() => {
+                          setParsedResults(null)
+                          setValue('runners', [])
+                          setValue('categories', [])
+                          setValue('modalities', [])
+                        }}
+                      >
+                        <TrashIcon className="w-4 h-4 text-white" strokeWidth={2.5} />
+                      </button>
+                    </div>
                   </div>
                 ) : (
                   <div className="text-center">
                     <input
                       accept={ALLOWED_FILE_EXTENSIONS.join(',')}
                       onChange={handleFileChange}
+                      disabled={isSubmitting}
                       className="hidden"
                       id="race-check-file"
                       type="file"
-                      disabled={isSubmitting}
                     />
+
                     <label htmlFor="race-check-file" className={`cursor-pointer ${isSubmitting ? 'opacity-50' : ''}`}>
                       <div className="text-gray-500 flex flex-col items-center justify-center">
                         <File size={24} className="mx-auto mb-2" />
                         <p className='text-sm'>Haz clic para seleccionar archivo de resultados</p>
-                        <p className="text-xs">Archivos .racecheck o .xlsx hasta 10MB</p>
+                        <p className="text-xs">Archivos .racecheck hasta 10MB</p>
                       </div>
                     </label>
                   </div>
                 )}
               </div>
             </div>
+          )}
 
-            <div className="md:flex items-center justify-end hidden">
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className="rounded-2xl px-5 py-3 !bg-gray-950 dark:!bg-white"
-              >
-                <div className="flex items-center gap-2">
-                  <p className='text-sm font-medium tracking-tight text-white dark:text-gray-950'>
-                    {isSubmitting ? 'Procesando...' : (event ? 'Guardar cambios' : 'Crear evento')}
-                  </p>
-                  {isSubmitting ? (
-                    <Loader2 size={18} className="animate-spin" />
-                  ) : (
-                    <CheckIcon className="w-4 h-4 text-white dark:text-gray-950" />
+          <div>
+            <label className="label-input">Descripción</label>
+            <div className="flex flex-col w-full gap-2">
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  className={`p-2 rounded ${editor?.isActive('bold') ? 'bg-gray-200 dark:bg-gray-700' : 'bg-transparent'}`}
+                  onClick={() => editor?.chain().focus().toggleBold().run()}
+                >
+                  <BoldIcon className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                </button>
+
+                <button
+                  type="button"
+                  className={`p-2 rounded ${editor?.isActive('italic') ? 'bg-gray-200 dark:bg-gray-700' : 'bg-transparent'}`}
+                  onClick={() => editor?.chain().focus().toggleItalic().run()}
+                >
+                  <ItalicIcon className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                </button>
+
+                <button
+                  type="button"
+                  className={`p-2 rounded ${editor?.isActive('underline') ? 'bg-gray-200 dark:bg-gray-700' : 'bg-transparent'}`}
+                  onClick={() => editor?.chain().focus().toggleMark('underline').run()}
+                >
+                  <UnderlineIcon className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                </button>
+
+                <button
+                  type="button"
+                  className={`p-2 rounded ${editor?.isActive('bulletList') ? 'bg-gray-200 dark:bg-gray-700' : 'bg-transparent'}`}
+                  onClick={() => editor?.chain().focus().toggleBulletList().run()}
+                  title="Lista con viñetas"
+                >
+                  <ListIcon className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                </button>
+
+                <button
+                  type="button"
+                  className={`p-2 rounded ${editor?.isActive('orderedList') ? 'bg-gray-200 dark:bg-gray-700' : 'bg-transparent'}`}
+                  onClick={() => editor?.chain().focus().toggleOrderedList().run()}
+                  title="Lista numerada"
+                >
+                  <ListOrderedIcon className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                </button>
+              </div>
+
+              <EditorContent editor={editor} />
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <label className="label-input">Tipo de evento *</label>
+            <div className="flex items-center gap-2 w-full">
+              <div className="flex gap-2 w-full flex-wrap">
+                {eventTypes?.map((type) => {
+                  const isSelected = watch("type")?.includes(type.value)
+                  return (
+                    <button type='button' key={type.value} className={`rounded-btn !bg-transparent ${isSelected ? "" : "opacity-50"}`}
+                      onClick={() => {
+                        const currentTypes = watch("type") || []
+                        if (isSelected) {
+                          setValue("type", currentTypes.filter((t: string) => t !== type.value))
+                        } else {
+                          setValue("type", [...currentTypes, type.value])
+                        }
+                      }}
+                    >
+                      <div className="rounded-xl p-1 h-6 w-6 bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+                        {isSelected && (
+                          <CheckIcon className="w-5 h-5 text-gray-950 dark:text-white" />
+                        )}
+                      </div>
+                      <p className={`text-base font-medium tracking-tight ${isSelected ? "text-gray-950 dark:text-white" : "text-gray-500 dark:text-gray-400"}`}>
+                        {type.name}
+                      </p>
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+            {errors.type && (
+              <p className="error-input">{errors.type.message}</p>
+            )}
+          </div>
+
+          <div className="flex items-start w-full flex-col gap-4">
+            <div className="w-full max-w-md flex flex-col">
+              <label className="label-input">Fecha *</label>
+              <input
+                type="date"
+                {...register("date")}
+                className="input w-full"
+              />
+              {errors.date && (
+                <p className="error-input">{errors.date.message}</p>
+              )}
+            </div>
+
+            <div className="w-full max-w-md flex flex-col">
+              <label className="label-input">Hora *</label>
+              <div className="flex items-center gap-2 w-full">
+                <div className="w-full">
+                  <input
+                    type="time"
+                    {...register("startTime")}
+                    className="input w-full"
+                  />
+                  {errors.startTime && (
+                    <p className="error-input">{errors.startTime.message}</p>
                   )}
                 </div>
-              </button>
+                <p className="text-gray-500 dark:text-gray-400">a</p>
+                <div className="w-full">
+                  <input
+                    type="time"
+                    {...register("endTime")}
+                    className="input w-full"
+                  />
+                  {errors.endTime && (
+                    <p className="error-input">{errors.endTime.message}</p>
+                  )}
+                </div>
+              </div>
             </div>
-          </div >
+          </div>
 
-          {/* preview pc  */}
-          < div className="w-full flex flex-col gap-3 h-full items-center justify-start p-3 overflow-y-auto" >
+          <div className='w-full'>
+            <label className="label-input">Ubicación *</label>
+
+            <Map
+              onLocationSelect={handleLocationSelect}
+              value={watch('location')}
+            />
+
+            {errors.location && (
+              <div className="mt-2 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+                <div className="flex items-start gap-3">
+                  <div className="flex-shrink-0">
+                    <div className="w-5 h-5 bg-red-100 dark:bg-red-800 rounded-full flex items-center justify-center">
+                      <span className="text-red-600 dark:text-red-400 text-xs font-medium">!</span>
+                    </div>
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm text-red-600 dark:text-red-400">
+                      {errors.location.message}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {errors.locationName && (
+              <div className="mt-2 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                <p className="text-sm text-yellow-600 font-medium">
+                  Advertencia de ubicación:
+                </p>
+                <p className="text-sm text-yellow-600 mt-1">
+                  {errors.locationName.message}
+                </p>
+              </div>
+            )}
+          </div>
+
+          <div className="max-w-sm w-full flex flex-col gap-6 mx-auto">
+
+            <QRGenerator
+              eventId={event?._id || ''}
+              eventName={watch('name') as string}
+              maxParticipants={parseInt(watch('maxParticipants') as unknown as string) || 0}
+              stayAfterCreation={stayAfterCreation}
+              setStayAfterCreation={setStayAfterCreation}
+            />
+
+          </div>
+
+          <div className="md:flex items-center justify-end hidden">
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="rounded-2xl px-5 py-3 !bg-gray-950 dark:!bg-white"
+            >
+              <div className="flex items-center gap-2">
+                <p className='text-sm font-medium tracking-tight text-white dark:text-gray-950'>
+                  {isSubmitting ? 'Procesando...' : (event ? 'Guardar cambios' : 'Crear evento')}
+                </p>
+                {isSubmitting ? (
+                  <Loader2 size={18} className="animate-spin" />
+                ) : (
+                  <CheckIcon className="w-4 h-4 text-white dark:text-gray-950" />
+                )}
+              </div>
+            </button>
+          </div>
+        </div >
+
+        <div className="flex flex-col gap-3 sticky top-0 max-w-2xl w-full h-max pb-6">
+          <div className="flex flex-col gap-6 px-6 max-w-max m-auto pt-16">
+
             <div className="flex items-center gap-2 w-full justify-center">
-              <EyeIcon className="w-4 h-4 text-gray-500 dark:text-gray-400" />
-              <p className="text-sm font-medium tracking-tight text-gray-600 dark:text-gray-400">
+              <EyeIcon className="w-4 h-4 text-gray-400 dark:text-gray-700" />
+              <p className="text-base font-medium tracking-tight text-gray-400 dark:text-gray-700">
                 Vista previa
               </p>
             </div>
 
-            <div className="flex flex-col gap-6 w-full max-w-[300px] items-end justify-center mx-auto pb-10">
-              <EventCard
-                event={{
-                  _id: event?._id || Date.now().toString(),
-                  name: watch('name') as string,
-                  date: watch('date') ? new Date(watch('date')).toISOString() : '',
-                  startTime: watch('startTime'),
-                  endTime: watch('endTime'),
-                  location: watch('location'),
-                  locationName: watch('locationName') as string,
-                  description: watch('description') as string,
-                  maxParticipants: parseInt(watch('maxParticipants') as unknown as string) || 0,
-                  image: imageUrl,
-                  results: parsedResults || {} as RaceCheckProps,
-                  createdBy: session?.user?.email || '',
-                  createdAt: event?.createdAt || new Date().toISOString(),
-                  updatedAt: new Date().toISOString(),
-                  type: watch('type') as string[],
-                }}
-                previewMode={true}
-              />
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className="md:hidden block rounded-btn !bg-gray-950 dark:!bg-white"
-              >
-                <div className="flex items-center gap-2">
-                  <p className='text-sm font-medium tracking-tight text-white dark:text-gray-950'>
-                    {isSubmitting ? 'Procesando...' : (event ? 'Guardar cambios' : 'Crear evento')}
-                  </p>
-                  {isSubmitting ? (
-                    <Loader2 size={18} className="animate-spin" />
-                  ) : (
-                    <CheckIcon className="w-4 h-4 text-white dark:text-gray-950" />
-                  )}
-                </div>
-              </button>
 
-            </div>
+
+            <EventCard
+              event={{
+                _id: event?._id || Date.now().toString(),
+                name: watch('name') as string,
+                date: watch('date') ? new Date(watch('date')).toISOString() : '',
+                startTime: watch('startTime'),
+                endTime: watch('endTime'),
+                location: watch('location'),
+                locationName: watch('locationName') as string,
+                description: watch('description') as string,
+                maxParticipants: parseInt(watch('maxParticipants') as unknown as string) || 0,
+                image: currentImageUrl,
+                createdBy: session?.user?.email || '',
+                createdAt: event?.createdAt || new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
+                type: watch('type') as string[],
+                categories: parsedResults?.categories || [],
+                modalities: parsedResults?.modalities || [],
+                runners: parsedResults?.runners || []
+              }}
+              previewMode={true}
+            />
+
           </div>
 
-        </div >
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            className="md:hidden block rounded-btn !bg-gray-950 dark:!bg-white max-w-max mx-auto my-6"
+          >
+            <div className="flex items-center gap-2">
+              <p className='text-sm font-medium tracking-tight text-white dark:text-gray-950'>
+                {isSubmitting ? 'Procesando...' : (event ? 'Guardar cambios' : 'Crear evento')}
+              </p>
+              {isSubmitting ? (
+                <Loader2 size={18} className="animate-spin w-4 h-4 text-white dark:text-gray-950" />
+              ) : (
+                <CheckIcon className="w-4 h-4 text-white dark:text-gray-950" />
+              )}
+            </div>
+          </button>
+
+
+        </div>
+
       </form >
 
 

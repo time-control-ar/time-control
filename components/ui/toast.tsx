@@ -63,7 +63,7 @@ const Toast = ({
                     transition={{ duration: 0.2, ease: "easeOut" }}
                     className="fixed top-4 left-4 right-4 z-[9999] md:top-5 md:left-1/2 md:-translate-x-1/2 md:right-auto md:w-auto md:max-w-md toast-container"
                 >
-                    <div className={`${bgColor} px-4 py-3 md:px-6 md:py-4 rounded-lg shadow-lg border flex items-center gap-3 backdrop-blur-sm`}>
+                    <div className={`${bgColor} px-4 py-3 md:px-6 md:py-4 rounded-2xl shadow-lg border flex items-center gap-3 backdrop-blur-sm`}>
                         <Icon className="w-5 h-5 flex-shrink-0" />
                         <span className="font-medium text-sm md:text-base flex-1 break-words">{message}</span>
                         {dismissible && (
