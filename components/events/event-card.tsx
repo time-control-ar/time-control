@@ -61,7 +61,7 @@ export const EventDate = ({ event }: { event: EventResponse }) => {
         : 'Día'
 
     return (
-        <div className="flex flex-col items-center justify-center rounded-lg bg-gradient-to-t w-[50px] h-[60px] dark:from-gray-900 dark:to-gray-800 from-gray-100 to-white max-w-[50px] overflow-hidden">
+        <div className="flex flex-col items-center justify-center rounded-xl bg-gradient-to-t w-[50px] h-[60px] dark:from-gray-900 dark:to-gray-800 from-gray-100 to-white max-w-[50px] overflow-hidden">
             <p className="text-gray-950 dark:text-white text-3xl tracking-tighter font-bold -mb-1">
                 {eventDay}
             </p>

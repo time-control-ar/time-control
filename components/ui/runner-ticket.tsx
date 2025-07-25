@@ -8,7 +8,7 @@ import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 
 const RunnerTicket = ({ runner, event }: { runner: Runner, event: EventResponse }) => {
-    const { name, sex, category, time, position, positionSex, positionCategory, dorsal } = runner;
+    const { name, sex, category, time, position, positionSex, positionCategory, dorsal, pace } = runner;
     const router = useRouter()
     const ticketRef = useRef<HTMLDivElement>(null);
     const eventMonth = event?.date
@@ -46,61 +46,59 @@ const RunnerTicket = ({ runner, event }: { runner: Runner, event: EventResponse 
                     <div className="flex flex-col">
                         <div className="px-8 pt-4 pb-8 border-b-2 border-dashed border-gray-200">
                             {/* Logo TimeControl */}
-                            <div className="flex justify-center mb-8 mt-3">
+                            <div className="flex justify-center mb-8 mt-3 relative h-8 w-20">
                                 <Image
                                     src="/logo-timecontrol.png"
                                     alt="TimeControl Logo"
-                                    width={32}
-                                    height={32}
-                                    className="h-8 w-auto"
+                                    layout='fill'
+                                    className=" max-h-8 max-w-auto"
                                 />
                             </div>
 
-                            <div className="flex flex-col items-center justify-center gap-4 mb-6">
-                                <div className="flex gap-4">
-                                    <div className="flex flex-col items-center justify-center bg-white dark:bg-gray-100 border border-gray-100 rounded-xl overflow-hidden h-[60px] w-[80px] relative shadow">
-                                        <div className="w-full h-4 absolute top-0 left-0 bg-red-400 dark:bg-slate-800">
+                            <div className="flex flex-col items-center justify-between gap-4 mb-6">
+
+                                <p className="text-gray-800 text-2xl font-semibold tracking-tight text-start w-full">
+                                    {name}
+                                </p>
+
+                                <div className="flex gap-4 h-full">
+                                    <div className="flex flex-col justify-between items-center bg-white dark:bg-gray-100 border border-gray-100 rounded-xl overflow-hidden h-[60px] w-[80px] shadow">
+                                        <div className="w-full h-4 bg-red-400 dark:bg-slate-800">
                                             <div className="justify-between flex items-center py-1.5 px-3">
                                                 <div className="w-1.5 h-1.5 rounded-full bg-white dark:bg-gray-100"></div>
                                                 <div className="w-1.5 h-1.5 rounded-full bg-white dark:bg-gray-100"></div>
                                             </div>
                                         </div>
 
-                                        <p
-                                            className="border-b-2 border-gray-300 rounded-md p-3 w-full bg-transparent font-bold text-2xl h-16 mt-4 text-gray-700 dark:text-gray-800 text-center placeholder:text-gray-400 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none focus:outline-none !px-0"
-                                        >
-                                            {dorsal}
-                                        </p>
+                                        <div className="mb-1">
+                                            <p className="font-bold text-2xl text-gray-700 dark:text-gray-800 text-center">
+                                                {dorsal}
+                                            </p>
+                                        </div>
                                     </div>
+
                                     <div className="flex flex-col items-start max-w-max mx-auto">
                                         <p className="text-gray-500 text-sm font-normal tracking-tight font-mono">
                                             Tiempo
                                         </p>
 
                                         <div className="flex items-end justify-end">
-                                            <p className="font-mono text-[35px] text-gray-700">
+                                            <p className="font-mono font-medium tracking-tight text-[38px] text-gray-700">
                                                 {time?.split('.')[0] || '00'}
                                             </p>
 
-                                            <p className="text-gray-500 text-lg mb-2 ml-1">
+                                            <p className="text-gray-500 text-base mb-2 -ml-1 font-mono">
                                                 ,{time?.split('.')[1]}
                                             </p>
                                         </div>
                                     </div>
-
                                 </div>
-                                <p className="text-gray-800 text-2xl font-semibold tracking-tight text-start w-full">
-                                    {name}
-                                </p>
                             </div>
 
 
 
-                            <div className="grid grid-cols-2 gap-4 pt-4">
-                                <div className='max-w-max flex flex-col'>
-                                    <p className="text-gray-500 text-xs font-normal tracking-tight font-mono">
-                                        Pos. {category}
-                                    </p>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className='max-w-max mx-auto'>
                                     <div className="flex flex-col items-center">
                                         <h1 className="text-[40px] -mt-2 font-normal tracking-tight text-gray-700 italic font-mono">
                                             {positionCategory} <span className="text-gray-400 text-xl font-mono -ml-3">
@@ -108,12 +106,12 @@ const RunnerTicket = ({ runner, event }: { runner: Runner, event: EventResponse 
                                             </span>
                                         </h1>
                                     </div>
+                                    <p className="text-gray-500 text-xs font-normal tracking-tight font-mono">
+                                        Pos. {category}
+                                    </p>
                                 </div>
 
-                                <div className='max-w-max flex flex-col'>
-                                    <p className="text-gray-500 text-xs font-normal tracking-tight font-mono">
-                                        Pos. {sex === 'M' ? 'Masculino' : 'Femenino'}
-                                    </p>
+                                <div className='max-w-max mx-auto'>
                                     <div className="flex flex-col items-center">
                                         <h1 className="text-[40px] -mt-2 font-normal tracking-tight text-gray-700 italic font-mono">
                                             {positionSex} <span className="text-gray-400 text-xl font-mono -ml-3">
@@ -121,21 +119,33 @@ const RunnerTicket = ({ runner, event }: { runner: Runner, event: EventResponse 
                                             </span>
                                         </h1>
                                     </div>
+                                    <p className="text-gray-500 text-xs font-normal tracking-tight font-mono">
+                                        Pos. {sex === 'M' ? 'Masculino' : 'Femenino'}
+                                    </p>
                                 </div>
-                            </div>
 
-                            <div className='max-w-max flex flex-col  mt-3'>
-                                <p className="text-gray-500 text-xs font-normal tracking-tight font-mono">
-                                    Pos. General
-                                </p>
-                                <div className="flex flex-col items-center">
-                                    <h1 className="text-[40px] -mt-2 font-normal tracking-tight text-gray-700 italic font-mono">
-                                        {position} <span className="text-gray-400 text-xl font-mono -ml-3">
-                                            / {runnersAmount || 'N/A'}
-                                        </span>
+                                <div className='max-w-max mx-auto'>
+                                    <div className="flex flex-col items-center">
+                                        <h1 className="text-[40px] -mt-2 font-normal tracking-tight text-gray-700 italic font-mono">
+                                            {position} <span className="text-gray-400 text-xl font-mono -ml-3">
+                                                / {runnersAmount || 'N/A'}
+                                            </span>
+                                        </h1>
+                                    </div>
+                                    <p className="text-gray-500 text-xs font-normal tracking-tight font-mono">
+                                        Pos. General
+                                    </p>
+                                </div>
+                                <div className="flex flex-col items-start justify-end gap-1">
+                                    <p className="text-gray-500 text-xs font-normal tracking-tight font-mono">
+                                        Ritmo
+                                    </p>
+                                    <h1 className="text-base  font-normal tracking-tight text-gray-700 italic font-mono">
+                                        {pace}
                                     </h1>
                                 </div>
                             </div>
+
                         </div>
 
                         <div className="flex flex-col items-start gap-2 px-8 pb-8 pt-4">
@@ -167,7 +177,7 @@ const RunnerTicket = ({ runner, event }: { runner: Runner, event: EventResponse 
                     </div>
                 </div>
             </div >
-        </div>
+        </div >
     )
 }
 

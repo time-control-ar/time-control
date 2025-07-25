@@ -189,7 +189,7 @@ export default function QRGenerator({ eventId, eventName, maxParticipants, stayA
             )}
 
             <Modal
-                title={``}
+                title={`${eventName}`}
                 isOpen={openTestQR}
                 onClose={() => setOpenTestQR(false)}
                 className="md:!w-[350px] h-[600px]"
@@ -206,7 +206,7 @@ export default function QRGenerator({ eventId, eventName, maxParticipants, stayA
 
                         <input
                             type="number"
-                            className="border-b-2 border-gray-300 rounded-md p-3 w-full bg-transparent font-bold text-2xl h-16 mt-3 text-gray-700 dark:text-gray-800 text-center placeholder:text-gray-400 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none focus:outline-none !px-0"
+                            className="rounded-md p-3 w-full bg-transparent font-bold text-2xl h-16 mt-3 text-gray-700 dark:text-gray-800 text-center placeholder:text-gray-400 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none focus:outline-none !px-0"
                             placeholder=""
                             min={1}
                             max={maxParticipants}
@@ -257,15 +257,17 @@ export default function QRGenerator({ eventId, eventName, maxParticipants, stayA
                                 animate={{ opacity: 1 }}
                                 exit={{ opacity: 0 }}
                                 transition={{ duration: 0.2 }}
-                                className='flex flex-col gap-2 items-center justify-center w-full px-6'
+                                className='flex flex-col gap-3 items-center justify-center w-full px-6'
                             >
-                                <p className='text-sm font-medium mb-72 text-center'>
+                                <p className='text-base text-gray-500 dark:text-gray-400 font-normal mb-72 text-center'>
                                     Ingrese un número
                                     <br />
-                                    <span className="font-bold text-3xl">1 - {maxParticipants}
+                                    <span className="font-bold text-5xl text-gray-950 dark:text-gray-50">1 - {maxParticipants}
                                     </span>
                                     <br />
-                                    para ver el QR
+                                    <span className="text-xl">
+                                        para ver el QR
+                                    </span>
                                 </p>
                             </motion.div>
                         )}

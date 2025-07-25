@@ -170,8 +170,8 @@ const RaceCheckTable = ({ categories, modalities, racecheck, eventId, previewMod
                                         return (
                                             <motion.button
                                                 type='button'
-                                                key={index}
-                                                className={`min-w-max flex items-center gap-2 pr-2 pl-1 py-1 rounded-xl border border-gray-200 dark:border-gray-700 ${isSelected ? "" : "opacity-50"}`}
+                                                key={`${modality.name}-${index}`}
+                                                className={`min-w-max flex items-center gap-2 pr-2 pl-1 py-1 rounded-xl border-2 border-gray-100 dark:border-gray-800 ${isSelected ? "" : "opacity-50"}`}
                                                 onClick={() => handleModalityToggle(modality)}
                                                 whileTap={{ scale: 0.95 }}
                                                 transition={{ type: "spring", stiffness: 400, damping: 17 }}
@@ -179,7 +179,7 @@ const RaceCheckTable = ({ categories, modalities, racecheck, eventId, previewMod
                                                 <div className="rounded-xl p-1 h-5 w-5 bg-gray-100 dark:bg-gray-800 flex items-center justify-center transition-all duration-75">
                                                     {isSelected && (
                                                         <div>
-                                                            <CheckIcon className="w-5 h-5 text-gray-950 dark:text-white" />
+                                                            <CheckIcon className="w-5 h-5 text-green-500 dark:text-green-500" />
                                                         </div>
                                                     )}
 
@@ -198,8 +198,8 @@ const RaceCheckTable = ({ categories, modalities, racecheck, eventId, previewMod
                                         return (
                                             <motion.button
                                                 type='button'
-                                                key={index}
-                                                className={`min-w-max flex items-center gap-2 pr-2 pl-1 py-1 rounded-xl border border-gray-200 dark:border-gray-700 ${isSelected ? "" : "opacity-50"}`}
+                                                key={`${category.name}-${index}`}
+                                                className={`min-w-max flex items-center gap-2 pr-2 pl-1 py-1 rounded-xl border-2 border-gray-100 dark:border-gray-800 ${isSelected ? "" : "opacity-50"}`}
                                                 onClick={() => handleCategoryToggle(category)}
                                                 whileTap={{ scale: 0.95 }}
                                                 transition={{ type: "spring", stiffness: 400, damping: 17 }}
@@ -207,7 +207,7 @@ const RaceCheckTable = ({ categories, modalities, racecheck, eventId, previewMod
                                                 <div className="rounded-xl p-1 h-5 w-5 bg-gray-100 dark:bg-gray-800 flex items-center justify-center transition-all duration-75">
                                                     {isSelected && (
                                                         <div>
-                                                            <CheckIcon className="w-5 h-5 text-gray-950 dark:text-white" />
+                                                            <CheckIcon className="w-5 h-5 text-green-500 dark:text-green-500" />
                                                         </div>
                                                     )}
 
@@ -249,18 +249,19 @@ const RaceCheckTable = ({ categories, modalities, racecheck, eventId, previewMod
                                         </div>
                                     </td>
                                     <td className="!max-w-max flex items-start justify-start">
-                                        <div className="flex flex-col items-center justify-center bg-white dark:bg-gray-100 border border-gray-100 dark:border-gray-700 rounded-lg overflow-hidden h-10 w-14 relative">
-                                            <div className="w-full h-3 absolute top-0 left-0 bg-red-400 dark:bg-slate-800">
-                                                <div className="justify-between flex items-center py-1 px-2">
-                                                    <div className="w-1 h-1 rounded-full bg-white dark:bg-gray-950"></div>
-                                                    <div className="w-1 h-1 rounded-full bg-white dark:bg-gray-950"></div>
+                                        <div className="flex flex-col justify-between items-center rounded-lg overflow-hidden h-[50px] w-[70px] shadow">
+                                            <div className="w-full h-4 bg-red-400 dark:bg-slate-800">
+                                                <div className="justify-between flex items-center py-1.5 px-3">
+                                                    <div className="w-1 h-1 rounded-full bg-white dark:bg-gray-100"></div>
+                                                    <div className="w-1 h-1 rounded-full bg-white dark:bg-gray-100"></div>
                                                 </div>
                                             </div>
 
-                                            <span className="font-semibold text-base mt-2 text-gray-700 dark:text-gray-800">
-                                                {participant.dorsal}
-                                            </span>
-
+                                            <div className="bg-white dark:bg-gray-100 w-full h-full">
+                                                <p className="mb-1 font-bold text-xl text-gray-700 dark:text-gray-800 text-center">
+                                                    {participant.dorsal}
+                                                </p>
+                                            </div>
                                         </div>
                                     </td>
                                     <td className="!min-w-[150px] md:!max-w-max">
@@ -279,10 +280,10 @@ const RaceCheckTable = ({ categories, modalities, racecheck, eventId, previewMod
                                         </div>
                                     </td>
                                     <td>
-                                        <div className="flex items-center gap-1 w-max p-0.5 rounded-2xl border border-gray-200 dark:border-gray-800 pl-2 bg-gradient-to-r from-gray-100 to-gray-200 dark:from-gray-950 dark:to-gray-900 h-[38px]">
+                                        <div className="flex items-center gap-1 w-max rounded-2xl border-2 border-gray-200 dark:border-gray-800 pl-2 bg-gradient-to-r from-gray-100 to-gray-200 dark:from-gray-950 dark:to-gray-900 h-[38px]">
                                             <div className="font-mono text-base text-gray-700 dark:text-gray-300 pr-2">
                                                 {participant.time?.split('.')[0]}
-                                                <span className="text-gray-500 dark:text-gray-600 text-xs">
+                                                <span className="text-gray-500 dark:text-gray-600 text-xs font-mono">
                                                     .{participant.time?.split('.')[1]}
                                                 </span>
                                             </div>
@@ -291,7 +292,7 @@ const RaceCheckTable = ({ categories, modalities, racecheck, eventId, previewMod
                                                 <button
                                                     type='button'
                                                     onClick={() => {
-                                                        router.push(`/?eventId=${eventId}&dorsal=${participant.dorsal}`)
+                                                        router.push(`${process.env.NEXT_PUBLIC_QR_URL}/?eventId=${eventId}&dorsal=${participant.dorsal}`)
                                                     }}
                                                     className="w-max flex items-center gap-0.5 px-3 py-1.5 bg-blue-500 text-white rounded-xl hover:bg-blue-600 transition-all duration-75 ml-auto">
                                                     <TicketIcon className="w-5 h-5" />

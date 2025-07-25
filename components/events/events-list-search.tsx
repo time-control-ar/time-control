@@ -25,29 +25,44 @@ const EventsListSearch = ({ eventsData }: { eventsData: EventResponse[] }) => {
     const [events, setEvents] = useState(eventsData)
     const [search, setSearch] = useState('')
     const [selectedEventTypes, setSelectedEventTypes] = useState<string[]>([])
+    const [selectedLocations, setSelectedLocations] = useState<string[]>([])
 
-    const handleSearch = useCallback((searchTerm: string, selectedTypes: string[]) => {
+    const handleSearch = useCallback((searchTerm: string, selectedTypes: string[], selectedLocations: string[]) => {
         const serializedSearch = serializeText(searchTerm)
-        const filteredEvents = eventsData.filter(event => {
-            const matchesSearch = serializeText(event.name).includes(serializedSearch) ||
-                serializeText(event.description).includes(serializedSearch)
-            const matchesCategory = selectedTypes.length === 0 || selectedTypes.includes(event.type)
-            return matchesSearch && matchesCategory
+        const filteredEvents = eventsData.filter(e => {
+            const serializedName = serializeText(e.name)
+            const serializedDescription = serializeText(e.description)
+
+            const matchesSearch = serializedName.includes(serializedSearch) || serializedDescription.includes(serializedSearch)
+            const matchesCategory = selectedTypes.length === 0 || selectedTypes.includes(e.type)
+            const matchesLocation = selectedLocations.length === 0 || selectedLocations.includes(e.locationName)
+            return matchesSearch && matchesCategory && matchesLocation
         })
         setEvents(filteredEvents)
     }, [eventsData])
 
+    const uniqueLocations = Array.from(new Set(eventsData?.map(event => event.locationName)))
+
+    const handleLocationToggle = (location: string) => {
+
+        setSelectedLocations(prev => {
+            const newSelected = prev.includes(location) ? prev.filter(l => l !== location) : [...prev, location]
+            handleSearch(search, selectedEventTypes, newSelected)
+            return newSelected
+        })
+    }
+
     const handleCategoryToggle = (category: string) => {
         setSelectedEventTypes(prev => {
             const newSelected = prev.includes(category) ? prev.filter(c => c !== category) : [...prev, category]
-            handleSearch(search, newSelected)
+            handleSearch(search, newSelected, selectedLocations)
             return newSelected
         })
     }
 
     useEffect(() => {
-        handleSearch(search, selectedEventTypes)
-    }, [search, selectedEventTypes, handleSearch])
+        handleSearch(search, selectedEventTypes, selectedLocations)
+    }, [search, selectedEventTypes, handleSearch, selectedLocations])
 
     useEffect(() => {
         setIsMounted(true)
@@ -98,7 +113,7 @@ const EventsListSearch = ({ eventsData }: { eventsData: EventResponse[] }) => {
                             {search && (
                                 <button type="button" className="absolute right-3 top-1/2 -translate-y-1/2" onClick={() => {
                                     setSearch('')
-                                    handleSearch(search, selectedEventTypes)
+                                    handleSearch(search, selectedEventTypes, selectedLocations)
                                 }} disabled={!search}>
                                     <XIcon className="w-5 h-5 text-gray-500 z-20 hover:text-gray-700 dark:hover:text-gray-300 transition-all duration-75 disabled:opacity-50 disabled:cursor-not-allowed" />
                                 </button>
@@ -129,13 +144,15 @@ const EventsListSearch = ({ eventsData }: { eventsData: EventResponse[] }) => {
                                 animate={{ opacity: 1, y: 0, height: 'auto', overflow: 'hidden' }}
                                 exit={{ opacity: 0, y: -20, height: 0, overflow: 'hidden' }}
                                 transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                                className='flex flex-col gap-2 w-full '
+                                className='flex flex-col gap-2 w-full'
                             >
-                                <div className="w-full pt-3">
-                                    <div className="flex justify-between items-center gap-2 mb-4 px-3 md:px-6">
+
+                                <div className="flex flex-col gap-2 pt-3">
+                                    <div className="flex justify-between items-center gap-2 mb-2 px-3 md:px-6">
                                         <p className='text-gray-500 dark:text-gray-400 text-sm font-medium tracking-tight'>
                                             Filtrar
                                         </p>
+
 
                                         {selectedEventTypes.length > 0 && (
                                             <button type="button" className="text-gray-500 dark:text-gray-400 text-sm font-medium tracking-tight" onClick={() => {
@@ -162,7 +179,7 @@ const EventsListSearch = ({ eventsData }: { eventsData: EventResponse[] }) => {
                                                     <div className="rounded-xl p-1 h-5 w-5 bg-gray-100 dark:bg-gray-800 flex items-center justify-center transition-all duration-75">
                                                         {isSelected && (
                                                             <div>
-                                                                <CheckIcon className="w-5 h-5 text-gray-950 dark:text-white" />
+                                                                <CheckIcon className="w-5 h-5 text-green-500 dark:text-green-500" />
                                                             </div>
                                                         )}
 
@@ -174,7 +191,36 @@ const EventsListSearch = ({ eventsData }: { eventsData: EventResponse[] }) => {
                                             )
                                         })}
                                     </div>
+                                    <div className="flex items-center gap-2 w-full h-max overflow-auto scrollbar-hide pb-1 px-3 md:px-6">
+                                        {uniqueLocations.map((location, index) => {
+                                            const isSelected = selectedLocations.includes(location)
+
+                                            return (
+                                                <motion.button
+                                                    type='button'
+                                                    key={`${location}-${index}`}
+                                                    className={`min-w-max flex items-center gap-2 pr-2 pl-1 py-1 rounded-xl border-2 border-gray-100 dark:border-gray-800 ${isSelected ? "" : "opacity-50"}`}
+                                                    onClick={() => handleLocationToggle(location)}
+                                                    whileTap={{ scale: 0.95 }}
+                                                    transition={{ type: "spring", stiffness: 400, damping: 17 }}
+                                                >
+                                                    <div className="rounded-xl p-1 h-5 w-5 bg-gray-100 dark:bg-gray-800 flex items-center justify-center transition-all duration-75">
+                                                        {isSelected && (
+                                                            <div>
+                                                                <CheckIcon className="w-5 h-5 text-green-500 dark:text-green-500" />
+                                                            </div>
+                                                        )}
+
+                                                    </div>
+                                                    <p className={`text-xs font-medium ${isSelected ? "text-gray-950 dark:text-white" : "text-gray-500 dark:text-gray-400"}`}>
+                                                        {location}
+                                                    </p>
+                                                </motion.button>
+                                            )
+                                        })}
+                                    </div>
                                 </div>
+
                             </motion.div>
                         )}
                     </AnimatePresence>
