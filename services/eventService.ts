@@ -1,4 +1,4 @@
-import { EventResponse } from "@/lib/schemas/event.schema";
+import { EventFormData, EventResponse } from "@/lib/schemas/event.schema";
 import axios from "axios";
 
 export async function uploadImageToAzure(
@@ -24,13 +24,14 @@ export async function uploadImageToAzure(
 }
 
 export async function createEvent(
- formData: FormData
+ newEvent: EventFormData
 ): Promise<{ success: boolean; data: EventResponse[] }> {
  try {
+  console.log("newEvent", newEvent);
   const res = await axios({
    method: "POST",
    url: `/api/events`,
-   data: formData,
+   data: newEvent,
   });
 
   return res.data;
@@ -42,13 +43,15 @@ export async function createEvent(
 
 export async function updateEvent(
  id: string,
- formData: FormData
+ newEvent: EventFormData
 ): Promise<{ success: boolean; data: EventResponse[] }> {
  try {
+  console.log("newEvent", newEvent);
+  console.log("id", id);
   const res = await axios({
    method: "PUT",
    url: `/api/events/${id}`,
-   data: formData,
+   data: newEvent,
   });
 
   return res.data;
@@ -71,19 +74,5 @@ export async function deleteEvent(
  } catch (error) {
   console.error("Error en eventService:", error);
   throw error;
- }
-}
-
-export async function obtainEvents(): Promise<EventResponse[]> {
- try {
-  const res = await axios({
-   method: "GET",
-   url: `/api/events`,
-  });
-
-  return res.data.data || [];
- } catch (error) {
-  console.error("Error al obtener eventos:", error);
-  return [];
  }
 }

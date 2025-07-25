@@ -193,85 +193,85 @@ export default function QRGenerator({ eventId, eventName, maxParticipants, stayA
                 isOpen={openTestQR}
                 onClose={() => setOpenTestQR(false)}
                 className="md:!w-[350px] h-[600px]"
-                children={
-                    <div className="flex flex-col gap-5 w-full items-center justify-center py-6">
-                        <div className="flex flex-col items-center justify-center bg-white dark:bg-gray-300 border border-gray-100 dark:border-gray-700 rounded-xl overflow-hidden h-15 w-21 relative max-w-[100px]">
-                            <div className="w-full h-4.5 absolute top-0 left-0 bg-red-400 dark:bg-slate-800">
-                                <div className="justify-between flex items-center py-1.5 px-3">
-                                    <div className="w-1.5 h-1.5 rounded-full bg-white dark:bg-gray-300"></div>
-                                    <div className="w-1.5 h-1.5 rounded-full bg-white dark:bg-gray-300"></div>
-                                </div>
-                            </div>
 
-                            <input
-                                type="number"
-                                className="border-b-2 border-gray-300 rounded-md p-3 w-full bg-transparent font-bold text-2xl h-16 mt-3 text-gray-700 dark:text-gray-800 text-center placeholder:text-gray-400 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none focus:outline-none"
-                                placeholder=""
-                                min={1}
-                                max={maxParticipants}
-                                value={selectedDorsal ? selectedDorsal : ''}
-                                onChange={(e) => {
-                                    setSelectedDorsal(e.target.value ? Number(e.target.value) : null)
-                                }}
-                            />
+            >
+                <div className="flex flex-col gap-5 w-full items-center justify-center py-6">
+                    <div className="flex flex-col items-center justify-center bg-white dark:bg-gray-100 border border-gray-100 dark:border-gray-700 rounded-xl overflow-hidden h-[65px] w-[90px] relative mx-auto">
+                        <div className="w-full h-4.5 absolute top-0 left-0 bg-red-400 dark:bg-slate-800">
+                            <div className="justify-between flex items-center py-1.5 px-3">
+                                <div className="w-1.5 h-1.5 rounded-full bg-white dark:bg-gray-950"></div>
+                                <div className="w-1.5 h-1.5 rounded-full bg-white dark:bg-gray-950"></div>
+                            </div>
                         </div>
 
-                        <AnimatePresence mode="wait">
-                            {typeof selectedDorsal === 'number' && selectedDorsal > 0 ? (
-                                <motion.div
-                                    key={selectedDorsal}
-                                    initial={{ opacity: 0 }}
-                                    animate={{ opacity: 1 }}
-                                    exit={{ opacity: 0 }}
-                                    transition={{ duration: 0.2 }}
-                                    className='flex flex-col gap-2 items-center justify-center'
-                                >
-                                    <div className="h-60 w-60 rounded-xl overflow-hidden">
-                                        <QRCodeSVG
-                                            className="w-full h-full"
-                                            value={generateQRUrl(eventId, selectedDorsal)}
-                                            size={256}
-                                            level="H"
-                                            includeMargin={true}
-                                        />
-                                    </div>
-                                    <p className='text-xs text-gray-500 mt-3 text-wrap p-3 text-center max-w-md'>
-                                        {generateQRUrl(eventId, selectedDorsal)}
-                                    </p>
-
-                                    <button
-                                        type='button'
-                                        className='rounded-btn max-w-max flex items-center gap-2 w-full'
-                                        onClick={() => window.open(generateQRUrl(eventId, selectedDorsal), '_blank')}
-                                    >
-                                        <p className='text-sm font-medium'>
-                                            Ir al ticket
-                                        </p>
-                                        <ExternalLink className='w-4 h-4' />
-                                    </button>
-                                </motion.div>
-                            ) : (
-                                <motion.div
-                                    initial={{ opacity: 0 }}
-                                    animate={{ opacity: 1 }}
-                                    exit={{ opacity: 0 }}
-                                    transition={{ duration: 0.2 }}
-                                    className='flex flex-col gap-2 items-center justify-center w-full px-6'
-                                >
-                                    <p className='text-sm font-medium mb-72 text-center'>
-                                        Ingrese un número
-                                        <br />
-                                        <span className="font-bold text-3xl">1 - {maxParticipants}
-                                        </span>
-                                        <br />
-                                        para ver el QR
-                                    </p>
-                                </motion.div>
-                            )}
-                        </AnimatePresence>
+                        <input
+                            type="number"
+                            className="border-b-2 border-gray-300 rounded-md p-3 w-full bg-transparent font-bold text-2xl h-16 mt-3 text-gray-700 dark:text-gray-800 text-center placeholder:text-gray-400 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none focus:outline-none !px-0"
+                            placeholder=""
+                            min={1}
+                            max={maxParticipants}
+                            value={selectedDorsal ? selectedDorsal : ''}
+                            onChange={(e) => {
+                                setSelectedDorsal(e.target.value ? Number(e.target.value) : null)
+                            }}
+                        />
                     </div>
-                }
-            />
+
+                    <AnimatePresence mode="wait">
+                        {typeof selectedDorsal === 'number' && selectedDorsal > 0 ? (
+                            <motion.div
+                                key={selectedDorsal}
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                transition={{ duration: 0.2 }}
+                                className='flex flex-col gap-2 items-center justify-center'
+                            >
+                                <div className="h-60 w-60 rounded-xl overflow-hidden">
+                                    <QRCodeSVG
+                                        className="w-full h-full"
+                                        value={generateQRUrl(eventId, selectedDorsal)}
+                                        size={256}
+                                        level="H"
+                                        includeMargin={true}
+                                    />
+                                </div>
+                                <p className='text-xs text-gray-500 mt-3 text-wrap p-3 text-center max-w-md'>
+                                    {generateQRUrl(eventId, selectedDorsal)}
+                                </p>
+
+                                <button
+                                    type='button'
+                                    className='rounded-btn max-w-max flex items-center gap-2 w-full'
+                                    onClick={() => window.open(generateQRUrl(eventId, selectedDorsal), '_blank')}
+                                >
+                                    <p className='text-sm font-medium'>
+                                        Ir al ticket
+                                    </p>
+                                    <ExternalLink className='w-4 h-4' />
+                                </button>
+                            </motion.div>
+                        ) : (
+                            <motion.div
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                transition={{ duration: 0.2 }}
+                                className='flex flex-col gap-2 items-center justify-center w-full px-6'
+                            >
+                                <p className='text-sm font-medium mb-72 text-center'>
+                                    Ingrese un número
+                                    <br />
+                                    <span className="font-bold text-3xl">1 - {maxParticipants}
+                                    </span>
+                                    <br />
+                                    para ver el QR
+                                </p>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+                </div>
+            </Modal>
         </div >
     )
 }

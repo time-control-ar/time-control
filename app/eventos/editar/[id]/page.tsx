@@ -1,5 +1,5 @@
 import EventForm from '@/components/events/event-form'
-import { EventResponse } from '@/lib/server/eventService'
+import { EventResponse } from '@/lib/schemas/event.schema'
 import { connectToDatabase } from '@/lib/mongodb';
 import { ObjectId } from 'mongodb';
 

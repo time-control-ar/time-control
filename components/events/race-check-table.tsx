@@ -1,38 +1,47 @@
 'use client'
 
-import { Category, Modality, ParsedRace } from '@/lib/utils'
+import { Category, Modality, parseRacechecks, Runner } from '@/lib/utils'
 import { ArrowLeftIcon, ArrowRightIcon, SearchIcon, TicketIcon, CheckIcon, SlidersIcon, ArrowUp, XIcon } from 'lucide-react'
 import { useState, useMemo } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useRouter } from 'next/navigation'
+import { RaceCheckProps } from '@/lib/schemas/racecheck.schema'
 
-const RaceCheckTable = ({ results, eventId, hideTicketButton }: { results: ParsedRace | undefined, eventId: string, hideTicketButton?: boolean }) => {
+
+const RaceCheckTable = ({ categories, modalities, racecheck, eventId, previewMode = false }: RaceCheckProps & { eventId: string, previewMode?: boolean }) => {
     const router = useRouter()
-    const [searchTerm, setSearchTerm] = useState('')
-    const [selectedCategories, setSelectedCategories] = useState<string[]>([])
-    const [selectedModalities, setSelectedModalities] = useState<string[]>([])
+    const racecheckRunners: Runner[] = useMemo(() => {
+        return parseRacechecks(racecheck || '', categories, modalities)?.runners || []
+    }, [racecheck, categories, modalities])
+
     const [currentPage, setCurrentPage] = useState(1)
-    const [itemsPerPage] = useState(100)
     const [isFilterOpen, setIsFilterOpen] = useState(true)
+    const [searchTerm, setSearchTerm] = useState('')
+    const [selectedModalities, setSelectedModalities] = useState<Modality[]>([])
+    const [selectedCategories, setSelectedCategories] = useState<Category[]>([])
+    const [itemsPerPage] = useState(100)
+
 
     // Filtrar participantes basado en el término de búsqueda y categorías seleccionadas
     const filteredParticipants = useMemo(() => {
-        if (!results?.runners) return []
+        if (!racecheckRunners) return []
 
-        return results.runners.filter(participant => {
-            const matchesSearch =
-                participant.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                participant.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        const filteredBySearch = racecheckRunners.filter(participant => {
+            return participant.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                 participant.time.toLowerCase().includes(searchTerm.toLowerCase()) ||
                 participant.position.toString().includes(searchTerm) ||
                 participant.dorsal.toString().includes(searchTerm)
-
-            const matchesCategory = selectedCategories.length === 0 || selectedCategories.includes(participant.category)
-            const matchesModality = selectedModalities.length === 0 || selectedModalities.includes(participant.modality)
-
-            return matchesSearch && matchesCategory && matchesModality
         })
-    }, [results?.runners, searchTerm, selectedCategories, selectedModalities])
+        const filteredByCategories = filteredBySearch.filter(participant => {
+            return selectedCategories.length > 0 ? selectedCategories.some(category => participant.category.toLowerCase().includes(category.matchsWith.toLowerCase())) : true
+        })
+        const filteredByModalities = filteredByCategories.filter(participant => {
+            return selectedModalities.length > 0 ? selectedModalities.some(modality => participant.modality.toLowerCase().includes(modality.matchsWith.toLowerCase())) : true
+        })
+
+        return filteredByModalities
+
+    }, [racecheckRunners, searchTerm, selectedCategories, selectedModalities])
 
     // Calcular paginación
     const totalPages = Math.ceil(filteredParticipants.length / itemsPerPage)
@@ -48,26 +57,26 @@ const RaceCheckTable = ({ results, eventId, hideTicketButton }: { results: Parse
     // Función para manejar la selección de categorías
     const handleModalityToggle = (modality: Modality) => {
         setSelectedModalities(prev => {
-            if (prev.includes(modality.name)) {
-                return prev.filter(c => c !== modality.name)
+            if (prev.includes(modality)) {
+                return prev.filter(c => c !== modality)
             } else {
-                return [...prev, modality.name]
+                return [...prev, modality]
             }
         })
         setCurrentPage(1)
     }
     const handleCategoryToggle = (category: Category) => {
         setSelectedCategories(prev => {
-            if (prev.includes(category.name)) {
-                return prev.filter(c => c !== category.name)
+            if (prev.includes(category)) {
+                return prev.filter(c => c !== category)
             } else {
-                return [...prev, category.name]
+                return [...prev, category]
             }
         })
         setCurrentPage(1)
     }
 
-    if (!results?.runners || results?.runners.length === 0 || !results?.categories) {
+    if (!racecheckRunners) {
         return (
             <div className="w-full flex flex-col items-center justify-center mb-36 mt-12">
                 <div className="text-gray-500 dark:text-gray-400 text-sm font-medium tracking-tight">
@@ -155,13 +164,13 @@ const RaceCheckTable = ({ results, eventId, hideTicketButton }: { results: Parse
 
 
                                 <div className="flex items-center gap-2 w-full h-max overflow-auto scrollbar-hide pb-1 px-3 md:px-6">
-                                    {results?.modalities.map((modality) => {
-                                        const isSelected = selectedModalities.includes(modality.name)
+                                    {modalities.map((modality, index) => {
+                                        const isSelected = selectedModalities.includes(modality)
 
                                         return (
                                             <motion.button
                                                 type='button'
-                                                key={modality.name}
+                                                key={index}
                                                 className={`min-w-max flex items-center gap-2 pr-2 pl-1 py-1 rounded-xl border border-gray-200 dark:border-gray-700 ${isSelected ? "" : "opacity-50"}`}
                                                 onClick={() => handleModalityToggle(modality)}
                                                 whileTap={{ scale: 0.95 }}
@@ -183,13 +192,13 @@ const RaceCheckTable = ({ results, eventId, hideTicketButton }: { results: Parse
                                     })}
                                 </div>
                                 <div className="flex items-center gap-2 w-full h-max overflow-auto scrollbar-hide pb-1 px-3 md:px-6">
-                                    {results?.categories.map((category) => {
-                                        const isSelected = selectedCategories.includes(category.name)
+                                    {categories.map((category, index) => {
+                                        const isSelected = selectedCategories.includes(category)
 
                                         return (
                                             <motion.button
                                                 type='button'
-                                                key={category.name}
+                                                key={index}
                                                 className={`min-w-max flex items-center gap-2 pr-2 pl-1 py-1 rounded-xl border border-gray-200 dark:border-gray-700 ${isSelected ? "" : "opacity-50"}`}
                                                 onClick={() => handleCategoryToggle(category)}
                                                 whileTap={{ scale: 0.95 }}
@@ -240,11 +249,11 @@ const RaceCheckTable = ({ results, eventId, hideTicketButton }: { results: Parse
                                         </div>
                                     </td>
                                     <td className="!max-w-max flex items-start justify-start">
-                                        <div className="flex flex-col items-center justify-center bg-white dark:bg-gray-300 border border-gray-100 dark:border-gray-700 rounded-lg overflow-hidden h-10 w-14 relative">
+                                        <div className="flex flex-col items-center justify-center bg-white dark:bg-gray-100 border border-gray-100 dark:border-gray-700 rounded-lg overflow-hidden h-10 w-14 relative">
                                             <div className="w-full h-3 absolute top-0 left-0 bg-red-400 dark:bg-slate-800">
                                                 <div className="justify-between flex items-center py-1 px-2">
-                                                    <div className="w-1 h-1 rounded-full bg-white dark:bg-gray-300"></div>
-                                                    <div className="w-1 h-1 rounded-full bg-white dark:bg-gray-300"></div>
+                                                    <div className="w-1 h-1 rounded-full bg-white dark:bg-gray-950"></div>
+                                                    <div className="w-1 h-1 rounded-full bg-white dark:bg-gray-950"></div>
                                                 </div>
                                             </div>
 
@@ -270,7 +279,7 @@ const RaceCheckTable = ({ results, eventId, hideTicketButton }: { results: Parse
                                         </div>
                                     </td>
                                     <td>
-                                        <div className="flex items-center gap-1 w-max p-0.5 rounded-2xl border border-gray-200 dark:border-gray-800 pl-2 bg-gradient-to-r from-gray-100 to-gray-200 dark:from-gray-950 dark:to-gray-900">
+                                        <div className="flex items-center gap-1 w-max p-0.5 rounded-2xl border border-gray-200 dark:border-gray-800 pl-2 bg-gradient-to-r from-gray-100 to-gray-200 dark:from-gray-950 dark:to-gray-900 h-[38px]">
                                             <div className="font-mono text-base text-gray-700 dark:text-gray-300 pr-2">
                                                 {participant.time?.split('.')[0]}
                                                 <span className="text-gray-500 dark:text-gray-600 text-xs">
@@ -278,7 +287,7 @@ const RaceCheckTable = ({ results, eventId, hideTicketButton }: { results: Parse
                                                 </span>
                                             </div>
 
-                                            {eventId && !hideTicketButton && (
+                                            {!previewMode && (
                                                 <button
                                                     type='button'
                                                     onClick={() => {

@@ -120,27 +120,9 @@ export interface Runner {
 
 export interface ParsedRace {
  eventName: string;
- runners: Runner[];
  categories: Category[];
  modalities: Modality[];
-}
-
-function timeToMinutes(time: string): number {
- const [hours, minutes, seconds] = time
-  .split(":")
-  .map((part) => parseFloat(part));
- return hours * 60 + minutes + seconds / 60;
-}
-
-function calculatePace(time: string, distanceKm: number): string {
- if (distanceKm === 0) return "00:00 min/Km";
- const minutes = timeToMinutes(time);
- const pace = minutes / distanceKm;
- const paceMinutes = Math.floor(pace);
- const paceSeconds = Math.round((pace - paceMinutes) * 60);
- return `${paceMinutes.toString().padStart(2, "0")}:${paceSeconds
-  .toString()
-  .padStart(2, "0")} min/Km`;
+ runners: Runner[];
 }
 
 export function parseRacechecks(

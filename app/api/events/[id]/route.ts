@@ -1,9 +1,8 @@
-import { auth } from "@/auth";
+import { EventResponse } from "@/lib/schemas/event.schema";
 import { connectToDatabase } from "@/lib/mongodb";
-import { EventResponse } from "@/services/eventService";
 import { NextResponse } from "next/server";
-import { RaceCheckProps } from "@/lib/schemas/racecheck.schema";
 import { ObjectId } from "mongodb";
+import { auth } from "@/auth";
 
 export async function PUT(
  req: Request,
@@ -15,48 +14,8 @@ export async function PUT(
    return NextResponse.json({ success: false, data: [] }, { status: 401 });
 
   const resolvedParams = await params;
-  const formData = await req.formData();
-  let results: RaceCheckProps | undefined;
-
-  try {
-   const resultsData = formData.get("results");
-   if (resultsData) {
-    const parsedResults = JSON.parse(resultsData as string);
-    // Validate the parsed results has the expected shape
-    if (typeof parsedResults === "object" && parsedResults !== null) {
-     results = parsedResults as RaceCheckProps;
-    }
-   }
-  } catch (error) {
-   console.error("Error parsing results:", error);
-   results = undefined;
-  }
-
-  // Handle image URL if provided
-  const imageUrlData = formData.get("imageUrl");
-  let imageUrl: string | undefined;
-  if (imageUrlData) {
-   imageUrl = imageUrlData as string;
-  }
-
-  // Parse location as object
-  let location = { lat: -34.397, lng: 150.644 };
-  try {
-   const locationData = formData.get("location");
-   if (locationData) {
-    location = JSON.parse(locationData as string);
-   }
-  } catch (error) {
-   console.error("Error parsing location:", error);
-  }
-
-  // Parse types array
-  const types: string[] = [];
-  for (const [key, value] of formData.entries()) {
-   if (key.startsWith("type[") && key.endsWith("]")) {
-    types.push(value as string);
-   }
-  }
+  const newEvent = await req.json();
+  console.log("newEvent", newEvent);
 
   const { db } = await connectToDatabase();
 
@@ -72,50 +31,9 @@ export async function PUT(
    );
   }
 
-  // Prepare update data
-  const updateData: {
-   name: FormDataEntryValue | null;
-   date: FormDataEntryValue | null;
-   startTime: FormDataEntryValue | null;
-   endTime: FormDataEntryValue | null;
-   location: { lat: number; lng: number };
-   locationName: FormDataEntryValue | null;
-   description: FormDataEntryValue | null;
-   maxParticipants: number;
-   updatedAt: string;
-   image?: string;
-   results?: RaceCheckProps;
-   type?: string[];
-  } = {
-   name: formData.get("name"),
-   date: formData.get("date"),
-   startTime: formData.get("startTime"),
-   endTime: formData.get("endTime"),
-   location: location,
-   locationName: formData.get("locationName"),
-   description: formData.get("description"),
-   maxParticipants: parseInt(formData.get("maxParticipants") as string) || 0,
-   updatedAt: new Date().toISOString(),
-  };
-
-  // Update image if provided
-  if (imageUrl !== undefined) {
-   updateData.image = imageUrl;
-  }
-
-  // Only update results if new results were provided
-  if (results) {
-   updateData.results = results;
-  }
-
-  // Update types if provided
-  if (types.length > 0) {
-   updateData.type = types;
-  }
-
   const result = await db
    .collection("events")
-   .updateOne({ _id: new ObjectId(resolvedParams.id) }, { $set: updateData });
+   .updateOne({ _id: new ObjectId(resolvedParams.id) }, { $set: newEvent });
 
   if (result.matchedCount === 0) {
    return NextResponse.json(
@@ -147,7 +65,9 @@ export async function PUT(
    description: updatedEvent.description,
    maxParticipants: updatedEvent.maxParticipants,
    image: updatedEvent.image,
-   results: updatedEvent.results,
+   categories: updatedEvent.categories,
+   modalities: updatedEvent.modalities,
+   racecheck: updatedEvent.racecheck,
    createdBy: updatedEvent.createdBy,
    createdAt: updatedEvent.createdAt,
    updatedAt: updatedEvent.updatedAt,

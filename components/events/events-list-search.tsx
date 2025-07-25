@@ -4,7 +4,7 @@ import { useState, useCallback, useEffect } from 'react'
 import { ArrowUp, CheckIcon, PlusIcon, SearchIcon, SlidersIcon, XIcon } from 'lucide-react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { EventCard } from './event-card'
-import { EventResponse } from '@/services/eventService'
+import { EventResponse } from '@/lib/schemas/event.schema'
 import { useSession } from 'next-auth/react'
 import { adminEmails, eventTypes } from '@/lib/utils'
 import { useRouter } from 'next/navigation'
@@ -31,7 +31,7 @@ const EventsListSearch = ({ eventsData }: { eventsData: EventResponse[] }) => {
         const filteredEvents = eventsData.filter(event => {
             const matchesSearch = serializeText(event.name).includes(serializedSearch) ||
                 serializeText(event.description).includes(serializedSearch)
-            const matchesCategory = selectedTypes.length === 0 || event.type.some(type => selectedTypes.includes(type))
+            const matchesCategory = selectedTypes.length === 0 || selectedTypes.includes(event.type)
             return matchesSearch && matchesCategory
         })
         setEvents(filteredEvents)
@@ -205,7 +205,7 @@ const EventsListSearch = ({ eventsData }: { eventsData: EventResponse[] }) => {
                                 viewport={{ once: true }}
                                 className='relative'
                             >
-                                <EventCard event={event} />
+                                <EventCard event={event} previewMode={false} />
                             </motion.div>
                         ))}
                     </>

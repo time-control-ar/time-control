@@ -1,9 +1,9 @@
 "use server";
 
 import { ObjectId } from "mongodb";
-import { connectToDatabase } from "../mongodb";
-import { RaceCheckProps, Runner } from "../schemas/racecheck.schema";
-import { EventResponse } from "./eventService";
+import { connectToDatabase } from "@/lib/mongodb";
+import { parseRacechecks, Runner } from "../utils";
+import { EventResponse } from "../schemas/event.schema";
 
 export async function obtainTicketServer(
  eventId: string,
@@ -21,18 +21,22 @@ export async function obtainTicketServer(
    return null;
   }
 
-  const results: RaceCheckProps = event.results;
+  const { runners } = parseRacechecks(
+   event.racecheck || "",
+   event.categories || [],
+   event.modalities || []
+  );
 
-  const ticket = results.participants.find(
+  const ticket = runners?.find(
    (result: Runner) => result.dorsal === parseInt(dorsal)
   );
+
   if (!ticket) {
    return null;
   }
 
-  // Serializar el evento para que sea compatible con Server Components
   const serializedEvent: EventResponse = {
-   _id: event._id.toString(), // Convertir ObjectId a string
+   _id: event._id.toString(),
    name: event.name,
    date: event.date,
    startTime: event.startTime,
@@ -47,12 +51,14 @@ export async function obtainTicketServer(
    description: event.description,
    maxParticipants: event.maxParticipants,
    image: event.image,
-   results: event.results,
    createdBy: event.createdBy,
    createdAt: event.createdAt,
    updatedAt: event.updatedAt,
-   type: event.type || [],
+   type: event.type || "",
    locationName: event.locationName || "",
+   categories: event.categories || [],
+   modalities: event.modalities || [],
+   racecheck: event.racecheck || null,
   };
 
   return { ticket, event: serializedEvent };

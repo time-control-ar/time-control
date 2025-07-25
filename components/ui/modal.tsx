@@ -55,7 +55,7 @@ const Modal = ({
                             <button
                                 type="button"
                                 className={`rounded-full flex items-center justify-center h-10 w-10 bg-white dark:bg-gray-950
-                                border border-gray-200 dark:border-gray-800
+                                border-2 border-gray-200 dark:border-gray-800
                               outline-none ring-0 transition-all duration-75 shadow-sm md:hover:shadow-md`}
                                 onClick={onClose}
                             >

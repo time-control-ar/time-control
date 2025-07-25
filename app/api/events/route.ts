@@ -3,7 +3,6 @@ import { connectToDatabase } from "@/lib/mongodb";
 import { NextResponse } from "next/server";
 import { ObjectId } from "mongodb";
 import { auth } from "@/auth";
-import { ParsedRace } from "@/lib/utils";
 
 export async function GET() {
  try {
@@ -23,73 +22,10 @@ export async function GET() {
 
 export async function POST(req: Request) {
  try {
-  const session = await auth();
-  if (!session?.user)
-   return NextResponse.json(
-    { success: false, message: "No autorizado" },
-    { status: 401 }
-   );
-
-  const formData = await req.formData();
-  let results: ParsedRace | undefined;
-
-  try {
-   const resultsData = formData.get("results");
-   if (resultsData) {
-    const parsedResults = JSON.parse(resultsData as string);
-    // Validate the parsed results has the expected shape
-    if (typeof parsedResults === "object" && parsedResults !== null) {
-     results = parsedResults as ParsedRace;
-    }
-   }
-  } catch (error) {
-   console.error("Error parsing results:", error);
-   results = undefined;
-  }
-
-  // Handle image URL if provided
-  let imageUrl = "";
-  const imageUrlData = formData.get("imageUrl");
-  if (imageUrlData) {
-   imageUrl = imageUrlData as string;
-  }
-
-  // Parse location as object
-  let location = { lat: -34.397, lng: 150.644 };
-  try {
-   const locationData = formData.get("location");
-   if (locationData) {
-    location = JSON.parse(locationData as string);
-   }
-  } catch (error) {
-   console.error("Error parsing location:", error);
-  }
-
-  // Parse types array
-  const types: string[] = [];
-  for (const [key, value] of formData.entries()) {
-   if (key.startsWith("type[") && key.endsWith("]")) {
-    types.push(value as string);
-   }
-  }
-
-  const newEvent = {
-   name: formData.get("name"),
-   date: formData.get("date"),
-   startTime: formData.get("startTime"),
-   endTime: formData.get("endTime"),
-   location: location,
-   locationName: formData.get("locationName"),
-   description: formData.get("description"),
-   maxParticipants: parseInt(formData.get("maxParticipants") as string) || 0,
-   image: imageUrl,
-   results: results || {},
-   createdBy: session?.user?.email || "",
-   createdAt: new Date().toISOString(),
-   updatedAt: new Date().toISOString(),
-   type: types,
-  };
   const { db } = await connectToDatabase();
+  const newEvent = await req.json();
+  console.log("newEvent", newEvent);
+
   const result = await db.collection("events").insertOne(newEvent);
 
   // Get the created event to return it

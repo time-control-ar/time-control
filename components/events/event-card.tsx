@@ -65,12 +65,24 @@ export const EventDate = ({ event }: { event: EventResponse }) => {
             <p className="text-gray-950 dark:text-white text-3xl tracking-tighter font-bold -mb-1">
                 {eventDay}
             </p>
-            <p className="text-gray-950 dark:text-white text-[11px] tracking-tight font-medium capitalize truncate w-full">
+            <p className="text-gray-950 dark:text-white text-[11px] tracking-tight font-medium capitalize truncate w-full text-center">
                 {eventMonth}
             </p>
         </div>
     )
 }
+
+// export const EventTypeBadge = ({ event }: { event: EventResponse }) => {
+//     const eventType = eventTypes.find(type => type.value === event.type)
+
+//     return (
+//         <div className="flex items-center gap-2">
+//             <span className="inline-flex items-center px-2 py-1 rounded-lg text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
+//                 {eventType?.name || 'Tipo no especificado'}
+//             </span>
+//         </div>
+//     )
+// }
 
 // Event card component
 export const EventCard = ({ event, previewMode = false }: { event: EventResponse, previewMode?: boolean, selectedTab?: string }) => {
@@ -166,6 +178,8 @@ export const EventCard = ({ event, previewMode = false }: { event: EventResponse
                                 {event?.name || 'Nombre'}
                             </h2>
 
+                            {/* <EventTypeBadge event={event} /> */}
+
                             <div className="flex flex-col gap-2 mb-6">
                                 <EventSpaceTime event={event} />
                             </div>
@@ -253,12 +267,13 @@ export const EventCard = ({ event, previewMode = false }: { event: EventResponse
                                 className="h-max flex flex-col relative overflow-y-auto"
                             >
                                 <RaceCheckTable
-                                    results={{
-                                        eventName: event?.name || '',
-                                        categories: event?.categories || [],
-                                        modalities: event?.modalities || [],
-                                        runners: event?.runners || []
-                                    }} eventId={event._id} hideTicketButton={previewMode} />
+                                    eventId={event._id}
+                                    eventName={event?.name || ''}
+                                    categories={event?.categories || []}
+                                    modalities={event?.modalities || []}
+                                    racecheck={event?.racecheck || null}
+                                    previewMode={previewMode}
+                                />
                             </motion.div>
                         )}
                     </AnimatePresence>

@@ -1,6 +1,5 @@
 import { connectToDatabase } from "@/lib/mongodb";
 import { BlobServiceClient } from "@azure/storage-blob";
-import { ObjectId } from "mongodb";
 import { EventResponse } from "../schemas/event.schema";
 
 export async function obtainEventsServer(): Promise<EventResponse[]> {
@@ -8,7 +7,6 @@ export async function obtainEventsServer(): Promise<EventResponse[]> {
   const { db } = await connectToDatabase();
   const events = await db.collection("events").find({}).toArray();
 
-  console.log("events", events);
   const blobServiceClient = BlobServiceClient.fromConnectionString(
    process.env.AZURE_STORAGE_CONNECTION_STRING || ""
   );
@@ -37,38 +35,19 @@ export async function obtainEventsServer(): Promise<EventResponse[]> {
    description: event.description,
    maxParticipants: event.maxParticipants,
    image: event.image,
-   results: event.results,
    createdBy: event.createdBy,
    createdAt: event.createdAt,
    updatedAt: event.updatedAt,
-   type: event.type || [],
+   type: event.type || "",
    locationName: event.locationName || "",
    categories: event.categories || [],
    modalities: event.modalities || [],
-   runners: event.runners || [],
+   racecheck: event.racecheck || null,
   }));
 
   return serializedEvents;
  } catch (e) {
   console.error("Error al obtener eventos:", e);
   return [];
- }
-}
-
-export async function getEventServer(
- id: string
-): Promise<{ event: EventResponse | null }> {
- try {
-  console.log("id", id);
-
-  const { db } = await connectToDatabase();
-  const event = (await db
-   .collection("events")
-   .findOne({ _id: new ObjectId(id) })) as EventResponse | null;
-
-  return { event };
- } catch (e) {
-  console.error("Error al obtener evento:", e);
-  return { event: null };
  }
 }

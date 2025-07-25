@@ -1,18 +1,12 @@
 import { z } from "zod";
-import { Category, Modality, ParsedRace, Runner } from "../utils";
+import { Category, Modality } from "../utils";
 
 export const eventCreateSchema = z.object({
  name: z
   .string()
   .min(1, "El nombre es obligatorio.")
   .max(100, "El nombre no puede exceder 100 caracteres."),
- type: z
-  .array(z.string())
-  .min(1, "Debe seleccionar al menos un tipo de evento.")
-  .refine(
-   (types) => types.every((type) => type.length > 0),
-   "Los tipos de evento no pueden estar vacíos"
-  ),
+ type: z.string().min(1, "Debe seleccionar un tipo de evento."),
  date: z
   .string()
   .min(1, "La fecha es obligatoria.")
@@ -94,8 +88,7 @@ export const eventCreateSchema = z.object({
   .number()
   .min(1, "Debe tener al menos 1 participante.")
   .optional(),
- image: z.any().optional(),
- results: z.any().optional(),
+ image: z.string().optional(),
  categories: z
   .array(
    z.object({
@@ -112,23 +105,7 @@ export const eventCreateSchema = z.object({
    })
   )
   .optional(),
- runners: z
-  .array(
-   z.object({
-    sex: z.string(),
-    name: z.string(),
-    chip: z.string(),
-    dorsal: z.number(),
-    modality: z.string(),
-    category: z.string(),
-    time: z.string(),
-    position: z.number(),
-    positionSex: z.number(),
-    positionCategory: z.number(),
-    pace: z.string(),
-   })
-  )
-  .optional(),
+ racecheck: z.string().nullable(),
 });
 
 export type EventFormData = z.infer<typeof eventCreateSchema>;
@@ -145,7 +122,7 @@ export interface EventResponse {
  createdBy: string;
  createdAt: string;
  updatedAt: string;
- type: string[];
+ type: string;
  location: {
   lat: number;
   lng: number;
@@ -153,5 +130,5 @@ export interface EventResponse {
  locationName: string;
  categories: Category[];
  modalities: Modality[];
- runners: Runner[];
+ racecheck: string | null;
 }
