@@ -169,7 +169,7 @@ export default function QRGenerator({ eventId, eventName, maxParticipants, stayA
                                 {isGenerating && (
                                     <>
                                         <Loader2 className='w-4 h-4 animate-spin' />
-                                        <p className='text-sm font-medium'> {progress}%</p>
+                                        <p className='text-sm font-medium'> {progress.toFixed(2)}%</p>
                                     </>
                                 )}
                             </button>

@@ -3,9 +3,10 @@
 import { EventResponse } from '@/lib/schemas/event.schema'
 import { parseRacechecks, Runner } from '@/lib/utils'
 import React, { useRef } from 'react'
-import { ArrowLeftIcon, CalendarIcon, ClockIcon, MapPinIcon } from 'lucide-react'
+import { ArrowLeftIcon, CalendarIcon, ClockIcon, DownloadIcon, MapPinIcon } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
+import html2canvas from 'html2canvas'
 
 const RunnerTicket = ({ runner, event }: { runner: Runner, event: EventResponse }) => {
     const { name, sex, category, time, position, positionSex, positionCategory, dorsal, pace } = runner;
@@ -24,24 +25,50 @@ const RunnerTicket = ({ runner, event }: { runner: Runner, event: EventResponse 
     const runnersInThisCategory = parsedRacecheck?.runners?.filter((runner: Runner) => runner.category === category).length
     const runnersInThisSex = parsedRacecheck?.runners?.filter((runner: Runner) => runner.sex === sex).length
 
+    const handleDownload = async () => {
+        if (ticketRef.current) {
+            const canvas = await html2canvas(ticketRef.current)
+            const image = canvas.toDataURL('image/png')
+            const link = document.createElement('a')
+            link.href = image
+            link.download = `ticket-${dorsal}-${name}.png`
+            link.click()
+        }
+    }
+
     return (
         <div className="bg-white dark:bg-gray-950 flex flex-col justify-center items-center h-full py-6">
 
-            <div className="mb-6 text-center flex items-center justify-between gap-2 max-w-5xl mx-auto">
-                <button
-                    type="button"
-                    className={`h-8 rounded-full w-8 flex items-center justify-center relative select-none gap-2 bg-white dark:bg-gray-950 border-2 border-gray-100 dark:border-gray-800 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors`}
-                    onClick={() => router.push('/')}
-                >
-                    <ArrowLeftIcon className="w-5 h-5 text-gray-500 dark:text-gray-400" />
-                </button >
+
+            <div className="mb-6 text-center flex items-center gap-2 w-[90%] max-w-[350px] mx-auto">
+
+                <div>
+                    <button
+                        type="button"
+                        className={`h-10 rounded-full w-10 flex items-center justify-center relative select-none gap-2 bg-white dark:bg-gray-950 border-2 border-gray-100 dark:border-gray-800 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors`}
+                        onClick={() => router.push('/')}
+                    >
+                        <ArrowLeftIcon className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+                    </button >
+                </div>
 
                 <h1 className='text-2xl font-semibold text-start tracking-tight'>
                     {event.name}
                 </h1>
             </div>
 
-            <div className="w-[90%] max-w-[350px] border border-gray-200 dark:border-gray-800 shadow-xl overflow-hidden rounded-3xl" ref={ticketRef}>
+            <div className="w-[90%] max-w-[350px] border border-gray-200 dark:border-gray-800 shadow-xl overflow-hidden rounded-3xl relative" ref={ticketRef}>
+
+                <div className="absolute top-2 right-2 z-10">
+                    <button
+                        type="button"
+                        className={`h-10 rounded-full w-10 flex items-center justify-center relative select-none gap-2 bg-white border-2 border-gray-100 hover:bg-gray-100 transition-colors shadow-md`}
+                        onClick={handleDownload}
+                    >
+                        <DownloadIcon className="w-5 h-5 text-blue-500" />
+                    </button>
+                </div>
+
                 <div className="relative mx-auto h-full max-h-max max-w-[370px] shadow-xl bg-white">
                     <div className="flex flex-col">
                         <div className="px-8 pt-4 pb-8 border-b-2 border-dashed border-gray-200">
@@ -63,7 +90,7 @@ const RunnerTicket = ({ runner, event }: { runner: Runner, event: EventResponse 
 
                                 <div className="flex gap-4 h-full">
                                     <div className="flex flex-col justify-between items-center bg-white dark:bg-gray-100 border border-gray-100 rounded-xl overflow-hidden h-[60px] w-[80px] shadow">
-                                        <div className="w-full h-4 bg-red-400 dark:bg-slate-800">
+                                        <div className="w-full h-4 bg-gradient-to-r from-red-400 to-red-500 dark:from-slate-800 dark:to-slate-900">
                                             <div className="justify-between flex items-center py-1.5 px-3">
                                                 <div className="w-1.5 h-1.5 rounded-full bg-white dark:bg-gray-100"></div>
                                                 <div className="w-1.5 h-1.5 rounded-full bg-white dark:bg-gray-100"></div>
@@ -83,11 +110,11 @@ const RunnerTicket = ({ runner, event }: { runner: Runner, event: EventResponse 
                                         </p>
 
                                         <div className="flex items-end justify-end h-[50px]">
-                                            <p className="font-mono tracking-tight text-[38px] text-gray-700">
+                                            <p className="font-mono tracking-tight text-[30px] text-gray-700">
                                                 {time?.split('.')[0] || '00'}
                                             </p>
 
-                                            <p className="text-gray-500 text-base mb-2 font-mono">
+                                            <p className="text-gray-500 text-base mb-1 font-mono">
                                                 ,{time?.split('.')[1]}
                                             </p>
                                         </div>

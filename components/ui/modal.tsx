@@ -39,7 +39,7 @@ const Modal = ({
     const renderModalContent = () => (
         <>
             {(title || showCloseButton) && (
-                <div className="flex items-center justify-between px-4 md:px-6 pt-6 pb-2 sticky top-0 z-10 overflow-visible">
+                <div className="flex items-center justify-between px-4 md:px-6 pt-6 pb-2 sticky top-0 z-10 overflow-visible gap-3">
                     {title ? (
                         <h1 className="text-gray-950 dark:text-gray-50 text-xl font-semibold tracking-tight">
                             {title}
