@@ -244,16 +244,15 @@ const EventsListSearch = ({ eventsData }: { eventsData: EventResponse[] }) => {
                 </motion.div>
             </motion.div>
 
-            <motion.div className="max-w-max mx-auto w-full h-max grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-4 pb-20">
+            <motion.div className="max-w-max mx-auto w-full h-max grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-4 pb-20 px-3">
+
                 {isAdmin && (
-                    <button
-                        type="button"
-                        className="hover:bg-gray-50 dark:hover:bg-gray-900 rounded-3xl overflow-hidden hover:shadow-lg  dark:shadow-gray-950/50 flex items-center justify-center gap-2 h-full flex-col min-w-[300px] mx-auto w-full min-h-[150px] md:min-h-[400px] cursor-pointer select-none border-2 border-dashed border-gray-300 dark:border-gray-700 transition-all duration-75"
+                    <div className="flex items-center justify-center w-full h-[200px] relative rounded-3xl z-10 rounded-bl-3xl rounded-br-lg border-2 border-dashed border-gray-300 dark:border-gray-700 gap-2 cursor-pointer md:hover:shadow-xl dark:hover:border-gray-600 transition-all duration-100"
                         onClick={() => router.push('/eventos/nuevo')}
                     >
                         <PlusIcon className="w-4 h-4 text-gray-500 dark:text-white" />
                         <p className="text-sm font-medium tracking-tight text-gray-600 dark:text-gray-400">Nuevo evento</p>
-                    </button>
+                    </div>
                 )}
 
                 {events && events?.length > 0 ? (
@@ -266,7 +265,7 @@ const EventsListSearch = ({ eventsData }: { eventsData: EventResponse[] }) => {
                                 exit={{ opacity: 0, y: -20 }}
                                 transition={{ duration: 0.2, delay: 0.1 * index }}
                                 viewport={{ once: true }}
-                                className='relative'
+                                className='relative w-full flex items-center justify-center'
                             >
                                 <EventCard event={event} previewMode={false} />
                             </motion.div>

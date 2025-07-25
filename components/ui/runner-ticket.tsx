@@ -45,7 +45,7 @@ const RunnerTicket = ({ runner, event }: { runner: Runner, event: EventResponse 
                 <div>
                     <button
                         type="button"
-                        className={`h-10 rounded-full w-10 flex items-center justify-center relative select-none gap-2 bg-white dark:bg-gray-950 border-2 border-gray-100 dark:border-gray-800 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors`}
+                        className={`h-10 rounded-full w-10 flex items-center justify-center relative select-none gap-2 bg-white border-2 border-gray-100 hover:bg-gray-100 transition-colors shadow-md`}
                         onClick={() => router.push('/')}
                     >
                         <ArrowLeftIcon className="w-5 h-5 text-gray-500 dark:text-gray-400" />
@@ -72,8 +72,12 @@ const RunnerTicket = ({ runner, event }: { runner: Runner, event: EventResponse 
                                 />
                             </div>
 
-
                             <div className="flex flex-col items-starts justify-start gap-4 mb-8">
+                                <div className="flex items-center gap-2">
+                                    <p className="text-lg font-medium tracking-tight text-gray-800">
+                                        {event.name}
+                                    </p>
+                                </div>
                                 <p className="text-gray-800 text-2xl font-semibold tracking-tight text-start w-full">
                                     {name}
                                 </p>
@@ -110,11 +114,7 @@ const RunnerTicket = ({ runner, event }: { runner: Runner, event: EventResponse 
                                         </div>
                                     </div>
                                 </div>
-
                             </div>
-
-
-
                             <div className="grid grid-cols-2 gap-8">
                                 <div className='max-w-max mx-auto'>
                                     <div className="flex flex-col items-center">
@@ -125,7 +125,7 @@ const RunnerTicket = ({ runner, event }: { runner: Runner, event: EventResponse 
                                         </h1>
                                     </div>
                                     <p className="text-gray-500 text-xs font-normal tracking-tight font-mono">
-                                        Pos. {category}
+                                        {category}
                                     </p>
                                 </div>
 
@@ -138,7 +138,7 @@ const RunnerTicket = ({ runner, event }: { runner: Runner, event: EventResponse 
                                         </h1>
                                     </div>
                                     <p className="text-gray-500 text-xs font-normal tracking-tight font-mono">
-                                        Pos. {sex === 'M' ? 'Masculino' : 'Femenino'}
+                                        {sex === 'M' ? 'Masculino' : 'Femenino'}
                                     </p>
                                 </div>
 
@@ -151,7 +151,7 @@ const RunnerTicket = ({ runner, event }: { runner: Runner, event: EventResponse 
                                         </h1>
                                     </div>
                                     <p className="text-gray-500 text-xs font-normal tracking-tight font-mono">
-                                        Pos. General
+                                        General
                                     </p>
                                 </div>
 
@@ -168,11 +168,6 @@ const RunnerTicket = ({ runner, event }: { runner: Runner, event: EventResponse 
                         </div>
 
                         <div className="flex flex-col items-start gap-2 px-8 pb-8 pt-4 relative">
-                            <div className="flex items-center gap-2">
-                                <p className="text-lg font-medium tracking-tight text-gray-800">
-                                    {event.name}
-                                </p>
-                            </div>
                             <div className="flex items-center gap-2">
                                 <MapPinIcon className="w-4 h-4 text-gray-500" />
                                 <p className="text-gray-500 text-sm font-normal tracking-tight font-mono">

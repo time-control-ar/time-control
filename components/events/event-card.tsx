@@ -121,7 +121,7 @@ export const EventCard = ({ event, previewMode = false }: { event: EventResponse
 
     return (
         <>
-            <div className="mx-auto group relative w-[300px] h-max">
+            <div className="mx-auto group relative w-[350px] h-max">
                 <div
                     className={`w-full mx-auto rounded-3xl select-none bg-white dark:bg-gray-950 cursor-pointer relative overflow-hidden`}
                     onClick={() => setIsOpen(true)}
@@ -164,17 +164,17 @@ export const EventCard = ({ event, previewMode = false }: { event: EventResponse
                         <SafeImage
                             src={event?.image || ''}
                             alt={event?.name || ''}
-                            className="z-10 object-cover rounded-bl-3xl rounded-br-xl"
+                            className="z-10 object-cover rounded-bl-3xl rounded-br-lg"
                             fill
                             priority
                             fallbackText="Imagen"
                         />
                     </motion.div>
 
-                    <div className="flex flex-col w-full px-5 py-6 mx-auto md:h-[200px] rounded-b-3xl">
+                    <div className="flex flex-col w-full px-5 pt-4 pb-6 mx-auto md:h-[200px]">
                         <div className="flex flex-col gap-1 items-start justify-between w-full">
 
-                            <h2 className="text-gray-950 dark:text-gray-50 text-xl font-semibold tracking-tight -mt-2">
+                            <h2 className="text-gray-950 dark:text-gray-50 text-xl font-semibold tracking-tight">
                                 {event?.name || 'Nombre'}
                             </h2>
 

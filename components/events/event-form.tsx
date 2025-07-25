@@ -561,7 +561,8 @@ export default function EventForm({ event }: EventFormProps) {
                     <button
                       type='button'
                       key={`${type.value}-${index}`}
-                      className={`min-w-max flex items-center gap-2 pr-2 pl-1 py-1 rounded-xl border-2 border-gray-100 dark:border-gray-800 ${isSelected ? "" : "opacity-50"}`}
+                      className={`chip_filter
+                        ${isSelected ? "" : "opacity-50"}`}
                       onClick={() => setValue("type", type.value)}
                     >
                       <div className="rounded-xl p-1 h-5 w-5 bg-gray-100 dark:bg-gray-800 flex items-center justify-center transition-all duration-75">
@@ -572,7 +573,7 @@ export default function EventForm({ event }: EventFormProps) {
                         )}
 
                       </div>
-                      <p className={`text-xs font-medium ${isSelected ? "text-gray-950 dark:text-white" : "text-gray-500 dark:text-gray-400"}`}>
+                      <p className={`text-sm font-medium ${isSelected ? "text-gray-950 dark:text-white" : "text-gray-500 dark:text-gray-400"}`}>
                         {type.name}
                       </p>
                     </button>
