@@ -182,12 +182,13 @@ export function parseRacechecks(
    const modalityFound =
     modalities.length > 0
      ? modalities.find((m) =>
-        m.matchsWith
+        modality
          .trim()
          .toLowerCase()
-         .includes(modality.trim().toLowerCase())
+         .includes(m.matchsWith.trim().toLowerCase())
        )
      : null;
+   console.log(modalityFound);
 
    const categoryFound =
     categories.length > 0
@@ -199,17 +200,13 @@ export function parseRacechecks(
        )
      : null;
 
-   // Si no hay categorías o modalidades definidas, usar los valores del archivo
-   const finalModality = modalityFound?.name || modality;
-   const finalCategory = categoryFound?.name || category;
-
    const parsedRunner: Runner = {
     sex,
     name,
     chip,
     dorsal: parseInt(dorsal) || 0,
-    modality: finalModality,
-    category: finalCategory,
+    modality: modalityFound?.name || modality || "N/A",
+    category: categoryFound?.name || category || "N/A",
     time,
     position: parseInt(position) || 0,
     positionSex: parseInt(positionSex) || 0,

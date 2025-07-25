@@ -39,7 +39,7 @@ const Modal = ({
     const renderModalContent = () => (
         <>
             {(title || showCloseButton) && (
-                <div className="flex items-center justify-between px-4 md:px-6 pt-6 pb-2 sticky top-0 z-10 overflow-visible gap-3">
+                <div className="flex items-center justify-between px-3 md:px-6 pt-4 pb-2 sticky top-0 z-10 overflow-visible gap-3">
                     {title ? (
                         <h1 className="text-gray-950 dark:text-gray-50 text-xl font-semibold tracking-tight">
                             {title}
@@ -49,7 +49,6 @@ const Modal = ({
                     )}
                     {showCloseButton && (
                         <div>
-
                             <button
                                 type="button"
                                 className={`rounded-full flex items-center justify-center h-10 w-10 bg-white dark:bg-gray-950
@@ -90,7 +89,7 @@ const Modal = ({
                                 'h-full w-full' :
                                 'w-full md:max-w-[700px] h-auto max-h-[80vh] rounded-3xl'} 
                             z-[9999] relative overflow-y-auto flex flex-col
-                            md:border border-gray-200 dark:border-gray-900 bg-white dark:bg-gray-950
+                            md:border-2 border-gray-200 dark:border-gray-900 bg-white dark:bg-gray-950
                             ${className}
                             `}
                         onClick={(e) => e.stopPropagation()}

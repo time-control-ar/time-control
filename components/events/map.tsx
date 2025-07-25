@@ -69,7 +69,7 @@ const Map = ({
     }
 
     return (
-        <div className="rounded-3xl mt-3 overflow-hidden border-2 border-gray-50 dark:border-gray-800 p-3">
+        <div className="rounded-3xl overflow-hidden border-2 border-gray-50 dark:border-gray-800 p-3">
             <Autocomplete
                 onLoad={(autocomplete) => (autocompleteRef.current = autocomplete)}
                 onPlaceChanged={handlePlaceChanged}

@@ -61,11 +61,11 @@ export const EventDate = ({ event }: { event: EventResponse }) => {
         : 'Día'
 
     return (
-        <div className="flex flex-col items-center justify-center rounded-xl bg-gradient-to-t w-[50px] h-[60px] dark:from-gray-900 dark:to-gray-800 from-gray-100 to-white max-w-[50px] overflow-hidden">
-            <p className="text-gray-950 dark:text-white text-3xl tracking-tighter font-bold -mb-1">
+        <div className="flex flex-col items-center justify-center rounded-xl w-[50px] h-[60px] backdrop-blur-sm max-w-[50px] overflow-hidden">
+            <p className="text-white text-3xl tracking-tighter font-bold -mb-1">
                 {eventDay}
             </p>
-            <p className="text-gray-950 dark:text-white text-[11px] tracking-tight font-medium capitalize truncate w-full text-center">
+            <p className="text-white text-[11px] tracking-tight font-medium capitalize truncate w-full text-center">
                 {eventMonth}
             </p>
         </div>
@@ -123,14 +123,14 @@ export const EventCard = ({ event, previewMode = false }: { event: EventResponse
         <>
             <div className="mx-auto group relative w-[300px] h-max">
                 <div
-                    className={`w-full mx-auto rounded-3xl select-none shadow-lg dark:shadow-gray-950/50 bg-white dark:bg-gray-900 cursor-pointer relative overflow-hidden`}
+                    className={`w-full mx-auto rounded-3xl select-none bg-white dark:bg-gray-950 cursor-pointer relative overflow-hidden`}
                     onClick={() => setIsOpen(true)}
                 >
-                    <div
-                        onClick={(e) => e.stopPropagation()}
-                        className="absolute top-2 right-2 z-20 md:opacity-0 group-hover:opacity-100 transition-all duration-300"
-                    >
-                        {isAdmin && !previewMode && (
+                    {isAdmin && !previewMode && (
+                        <div
+                            onClick={(e) => e.stopPropagation()}
+                            className="absolute top-2 right-2 z-20 md:opacity-0 group-hover:opacity-100 transition-all duration-300"
+                        >
                             <div
                                 className="flex items-center gap-2 relative -inset-0"
                             >
@@ -150,28 +150,28 @@ export const EventCard = ({ event, previewMode = false }: { event: EventResponse
                                 </button>
                                 <div className="absolute -top-2 -right-2 w-[80px] h-[40px] blur-xl bg-gray-950/80 dark:bg-gray-950 -z-10" />
                             </div>
-                        )}
+                        </div>
+                    )}
 
-                    </div>
 
                     <motion.div
                         className={`w-full  overflow-hidden flex flex-col h-max mx-auto relative`}
                     >
-                        <div className="z-20 absolute bottom-1.5 left-1.5 p-2 flex flex-col gap-1 ">
+                        <div className="z-20 absolute bottom-1 left-1 p-2 flex flex-col gap-1 ">
                             <EventDate event={event} />
                         </div>
 
                         <SafeImage
                             src={event?.image || ''}
                             alt={event?.name || ''}
-                            className="z-10 object-cover rounded-t-3xl rounded-b-xl"
+                            className="z-10 object-cover rounded-bl-3xl rounded-br-xl"
                             fill
                             priority
                             fallbackText="Imagen"
                         />
                     </motion.div>
 
-                    <div className="flex flex-col w-full px-6 py-6 mx-auto bg-gradient-to-t from-white to-white dark:from-gray-900 dark:to-gray-900 h-[200px] rounded-b-3xl">
+                    <div className="flex flex-col w-full px-5 py-6 mx-auto md:h-[200px] rounded-b-3xl">
                         <div className="flex flex-col gap-1 items-start justify-between w-full">
 
                             <h2 className="text-gray-950 dark:text-gray-50 text-xl font-semibold tracking-tight -mt-2">
@@ -198,7 +198,7 @@ export const EventCard = ({ event, previewMode = false }: { event: EventResponse
                 title={event?.name}
                 showCloseButton={true}
             >
-                <div className={`flex flex-col h-full w-full overflow-y-hidden gap-2`}>
+                <div className={`flex flex-col h-full w-full overflow-auto gap-2`}>
 
                     <div className="flex w-full items-center justify-start px-4 md:px-6 gap-2 ">
                         {tabs.map((tab) => (
@@ -271,6 +271,7 @@ export const EventCard = ({ event, previewMode = false }: { event: EventResponse
                                     eventName={event?.name || ''}
                                     categories={event?.categories || []}
                                     modalities={event?.modalities || []}
+                                    genders={[{ name: 'Masculino', matchsWith: 'M' }, { name: 'Femenino', matchsWith: 'F' }]}
                                     racecheck={event?.racecheck || null}
                                     previewMode={previewMode}
                                 />

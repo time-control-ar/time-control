@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useCallback, useEffect } from 'react'
-import { ArrowUp, CheckIcon, PlusIcon, SearchIcon, SlidersIcon, XIcon } from 'lucide-react'
+import { useState, useCallback, useEffect, useMemo } from 'react'
+import { ArrowUp, BrushCleaning, CheckIcon, PlusIcon, SearchIcon, SlidersIcon, XIcon } from 'lucide-react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { EventCard } from './event-card'
 import { EventResponse } from '@/lib/schemas/event.schema'
@@ -20,7 +20,7 @@ const EventsListSearch = ({ eventsData }: { eventsData: EventResponse[] }) => {
     const router = useRouter()
     const session = useSession()
     const isAdmin = adminEmails.includes(session.data?.user?.email || '')
-    const [filtersOpen, setFiltersOpen] = useState(true)
+    const [filtersOpen, setFiltersOpen] = useState(false)
     const [isMounted, setIsMounted] = useState(false)
     const [events, setEvents] = useState(eventsData)
     const [search, setSearch] = useState('')
@@ -40,6 +40,9 @@ const EventsListSearch = ({ eventsData }: { eventsData: EventResponse[] }) => {
         })
         setEvents(filteredEvents)
     }, [eventsData])
+    const filtersCount = useMemo(() => {
+        return selectedEventTypes.length + selectedLocations.length
+    }, [selectedEventTypes, selectedLocations])
 
     const uniqueLocations = Array.from(new Set(eventsData?.map(event => event.locationName)))
 
@@ -58,6 +61,12 @@ const EventsListSearch = ({ eventsData }: { eventsData: EventResponse[] }) => {
             handleSearch(search, newSelected, selectedLocations)
             return newSelected
         })
+    }
+
+    const handleClearFilters = () => {
+        setSelectedEventTypes([])
+        setSelectedLocations([])
+        handleSearch('', [], [])
     }
 
     useEffect(() => {
@@ -84,16 +93,16 @@ const EventsListSearch = ({ eventsData }: { eventsData: EventResponse[] }) => {
                     w-full flex flex-col items-start justify-between gap-3
                     bg-gradient-to-b
                     from-white via-white to-white/90
-                    dark:from-gray-950 dark:via-gray-950 dark:to-gray-950/50
+                    dark:from-gray-950 dark:via-gray-950/90 dark:to-gray-950/90
                     `}
             >
 
                 <motion.div
-                    transition={{ duration: 0.2 }}
+                    transition={{ duration: 0.1 }}
                     className={`max-w-screen-lg mx-auto w-full flex flex-col items-start justify-between`}
                 >
 
-                    <div className="flex items-center justify-start w-full gap-3 px-3 md:px-6">
+                    <div className="flex items-center justify-start w-full gap-6 px-3 md:px-6">
                         <div className="flex relative w-full max-w-[300px]">
                             <SearchIcon className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-white z-20" />
                             <input
@@ -120,20 +129,43 @@ const EventsListSearch = ({ eventsData }: { eventsData: EventResponse[] }) => {
                             )}
                         </div>
 
-                        <div>
-                            <button
-                                type="button"
-                                className={`rounded-full flex items-center justify-center h-10 w-10 bg-white dark:bg-gray-950
+                        <div className='flex items-center justify-center gap-2'>
+                            <div>
+                                <button
+                                    type="button"
+                                    className={`rounded-full flex items-center justify-center h-10 w-10 bg-white dark:bg-gray-950
                             border-2 border-gray-200 dark:border-gray-800
                           outline-none ring-0 transition-all duration-75 shadow-sm md:hover:shadow-md`}
-                                onClick={() => setFiltersOpen(!filtersOpen)}
-                            >
-                                {filtersOpen ? (
-                                    <ArrowUp strokeWidth={2.5} className="w-4 h-4 text-gray-500 dark:text-gray-400 z-20" />
-                                ) : (
-                                    <SlidersIcon strokeWidth={2.5} className="w-4 h-4 text-gray-500 dark:text-gray-400 z-20" />
+                                    onClick={() => setFiltersOpen(!filtersOpen)}
+                                >
+                                    {filtersOpen ? (
+                                        <ArrowUp strokeWidth={2.5} className="w-4 h-4 text-gray-500 dark:text-gray-400 z-20" />
+                                    ) : (
+                                        <SlidersIcon strokeWidth={2.5} className="w-4 h-4 text-gray-500 dark:text-gray-400 z-20" />
+                                    )}
+                                </button>
+                            </div>
+
+                            <div className='relative overflow-visible' onClick={() => handleClearFilters()}>
+                                {filtersCount > 0 && (
+                                    <div className='absolute -top-0.5 -right-0.5 w-4 h-4 bg-red-500 rounded-full z-20'>
+                                        <p className='text-white text-[10px] font-medium tracking-tight flex items-center justify-center'>
+                                            {filtersCount}
+                                        </p>
+                                    </div>
                                 )}
-                            </button>
+
+                                <button
+                                    type="button"
+                                    disabled={filtersCount === 0}
+                                    className={`rounded-full flex items-center justify-center h-10 w-10 bg-white dark:bg-gray-950
+                                        border-2 border-gray-200 dark:border-gray-800 disabled:opacity-50 disabled:cursor-not-allowed
+                                        outline-none ring-0 transition-all duration-75 shadow-sm md:hover:shadow-md`}
+
+                                >
+                                    <BrushCleaning className="w-5 h-5 text-gray-500 z-20 hover:text-gray-700 dark:hover:text-gray-300 transition-all duration-75 disabled:opacity-50 disabled:cursor-not-allowed" />
+                                </button>
+                            </div>
                         </div>
                     </div>
 
@@ -148,21 +180,6 @@ const EventsListSearch = ({ eventsData }: { eventsData: EventResponse[] }) => {
                             >
 
                                 <div className="flex flex-col gap-2 pt-3">
-                                    <div className="flex justify-between items-center gap-2 mb-2 px-3 md:px-6">
-                                        <p className='text-gray-500 dark:text-gray-400 text-sm font-medium tracking-tight'>
-                                            Filtrar
-                                        </p>
-
-
-                                        {selectedEventTypes.length > 0 && (
-                                            <button type="button" className="text-gray-500 dark:text-gray-400 text-sm font-medium tracking-tight" onClick={() => {
-                                                setSelectedEventTypes([])
-                                                setSearch('')
-                                            }}>
-                                                Limpiar filtros {selectedEventTypes.length > 0 && `(${selectedEventTypes.length})`}
-                                            </button>
-                                        )}
-                                    </div>
                                     <div className="flex items-center gap-2 w-full h-max overflow-auto scrollbar-hide pb-1 px-3 md:px-6">
                                         {eventTypes.map((type, index) => {
                                             const isSelected = selectedEventTypes.includes(type.value)
@@ -171,7 +188,7 @@ const EventsListSearch = ({ eventsData }: { eventsData: EventResponse[] }) => {
                                                 <motion.button
                                                     type='button'
                                                     key={`${type.value}-${index}`}
-                                                    className={`min-w-max flex items-center gap-2 pr-2 pl-1 py-1 rounded-xl border-2 border-gray-100 dark:border-gray-800 ${isSelected ? "" : "opacity-50"}`}
+                                                    className={`chip_filter ${isSelected ? "" : "opacity-50"}`}
                                                     onClick={() => handleCategoryToggle(type.value)}
                                                     whileTap={{ scale: 0.95 }}
                                                     transition={{ type: "spring", stiffness: 400, damping: 17 }}
@@ -192,14 +209,14 @@ const EventsListSearch = ({ eventsData }: { eventsData: EventResponse[] }) => {
                                         })}
                                     </div>
                                     <div className="flex items-center gap-2 w-full h-max overflow-auto scrollbar-hide pb-1 px-3 md:px-6">
-                                        {uniqueLocations.map((location, index) => {
+                                        {uniqueLocations?.map((location, index) => {
                                             const isSelected = selectedLocations.includes(location)
 
                                             return (
                                                 <motion.button
                                                     type='button'
                                                     key={`${location}-${index}`}
-                                                    className={`min-w-max flex items-center gap-2 pr-2 pl-1 py-1 rounded-xl border-2 border-gray-100 dark:border-gray-800 ${isSelected ? "" : "opacity-50"}`}
+                                                    className={`chip_filter ${isSelected ? "" : "opacity-50"}`}
                                                     onClick={() => handleLocationToggle(location)}
                                                     whileTap={{ scale: 0.95 }}
                                                     transition={{ type: "spring", stiffness: 400, damping: 17 }}
@@ -231,7 +248,7 @@ const EventsListSearch = ({ eventsData }: { eventsData: EventResponse[] }) => {
                 {isAdmin && (
                     <button
                         type="button"
-                        className="hover:bg-gray-50 dark:hover:bg-gray-900 rounded-3xl overflow-hidden hover:shadow-lg  dark:shadow-gray-950/50 flex items-center justify-center gap-2 h-full flex-col min-w-[300px] mx-auto w-full min-h-[400px] cursor-pointer select-none border-2 border-dashed border-gray-300 dark:border-gray-700 transition-all duration-75"
+                        className="hover:bg-gray-50 dark:hover:bg-gray-900 rounded-3xl overflow-hidden hover:shadow-lg  dark:shadow-gray-950/50 flex items-center justify-center gap-2 h-full flex-col min-w-[300px] mx-auto w-full min-h-[150px] md:min-h-[400px] cursor-pointer select-none border-2 border-dashed border-gray-300 dark:border-gray-700 transition-all duration-75"
                         onClick={() => router.push('/eventos/nuevo')}
                     >
                         <PlusIcon className="w-4 h-4 text-gray-500 dark:text-white" />

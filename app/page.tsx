@@ -34,10 +34,7 @@ export default async function Home({
           </div>
 
           {ticket ?
-            <RunnerTicket
-              runner={ticket.ticket}
-              event={ticket.event}
-            /> :
+            <RunnerTicket runner={ticket.ticket} event={ticket.event} /> :
             <EventsListSearch eventsData={events} />
           }
         </div>

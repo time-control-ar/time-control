@@ -59,21 +59,11 @@ const RunnerTicket = ({ runner, event }: { runner: Runner, event: EventResponse 
 
             <div className="w-[90%] max-w-[350px] border border-gray-200 dark:border-gray-800 shadow-xl overflow-hidden rounded-3xl relative" ref={ticketRef}>
 
-                <div className="absolute top-2 right-2 z-10">
-                    <button
-                        type="button"
-                        className={`h-10 rounded-full w-10 flex items-center justify-center relative select-none gap-2 bg-white border-2 border-gray-100 hover:bg-gray-100 transition-colors shadow-md`}
-                        onClick={handleDownload}
-                    >
-                        <DownloadIcon className="w-5 h-5 text-blue-500" />
-                    </button>
-                </div>
-
                 <div className="relative mx-auto h-full max-h-max max-w-[370px] shadow-xl bg-white">
                     <div className="flex flex-col">
                         <div className="px-8 pt-4 pb-8 border-b-2 border-dashed border-gray-200">
-                            {/* Logo TimeControl */}
-                            <div className="flex justify-center mb-8 mt-3 relative h-8 w-20">
+
+                            <div className="flex justify-center mb-8 mt-3 relative min-h-8 min-w-20 max-w-20 max-h-8">
                                 <Image
                                     src="/logo-timecontrol.png"
                                     alt="TimeControl Logo"
@@ -82,8 +72,8 @@ const RunnerTicket = ({ runner, event }: { runner: Runner, event: EventResponse 
                                 />
                             </div>
 
-                            <div className="flex flex-col items-center justify-between gap-4 mb-8">
 
+                            <div className="flex flex-col items-starts justify-start gap-4 mb-8">
                                 <p className="text-gray-800 text-2xl font-semibold tracking-tight text-start w-full">
                                     {name}
                                 </p>
@@ -120,6 +110,7 @@ const RunnerTicket = ({ runner, event }: { runner: Runner, event: EventResponse 
                                         </div>
                                     </div>
                                 </div>
+
                             </div>
 
 
@@ -176,7 +167,7 @@ const RunnerTicket = ({ runner, event }: { runner: Runner, event: EventResponse 
 
                         </div>
 
-                        <div className="flex flex-col items-start gap-2 px-8 pb-8 pt-4">
+                        <div className="flex flex-col items-start gap-2 px-8 pb-8 pt-4 relative">
                             <div className="flex items-center gap-2">
                                 <p className="text-lg font-medium tracking-tight text-gray-800">
                                     {event.name}
@@ -201,6 +192,20 @@ const RunnerTicket = ({ runner, event }: { runner: Runner, event: EventResponse 
                                 </p>
                             </div>
 
+                            <p className="font-inter tracking-tight text-2xl font-black text-gray-700 absolute bottom-6 right-6 z-10">
+                                {runner.modality}
+                            </p>
+                        </div>
+
+
+                        <div className="absolute top-2 right-2 z-10">
+                            <button
+                                type="button"
+                                className={`h-10 rounded-full w-10 flex items-center justify-center relative select-none gap-2 bg-white border-2 border-gray-100 hover:bg-gray-100 transition-colors shadow-md`}
+                                onClick={handleDownload}
+                            >
+                                <DownloadIcon className="w-5 h-5 text-blue-500" />
+                            </button>
                         </div>
                     </div>
                 </div>

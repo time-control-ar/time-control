@@ -11,6 +11,7 @@ export async function obtainTicketServer(
 ): Promise<{ ticket: Runner; event: EventResponse } | null> {
  try {
   const db = await connectToDatabase();
+
   const event = (await db.db
    .collection("events")
    .findOne({ _id: new ObjectId(eventId) })) as EventResponse & {

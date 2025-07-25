@@ -50,9 +50,6 @@ export default function QRGenerator({ eventId, eventName, maxParticipants, stayA
             for (let dorsal = 1; dorsal <= maxParticipants; dorsal++) {
                 const qrUrl = generateQRCode(dorsal)
 
-                console.log('qrUrl')
-                console.log(qrUrl)
-
                 // Crear un elemento temporal para renderizar el QR
                 const tempDiv = document.createElement('div')
                 tempDiv.style.position = 'absolute'
@@ -159,17 +156,21 @@ export default function QRGenerator({ eventId, eventName, maxParticipants, stayA
                                 onClick={downloadQRs}
                                 disabled={isGenerating || isEmpty}
                             >
-                                <FolderIcon className='w-5 h-5' />
-                                <div className='flex flex-col text-start'>
-                                    <p className='text-sm font-medium'>Descargar .ZIP</p>
-                                    <p className='text-xs text-gray-500'>{maxParticipants} archivos
-                                    </p>
-                                </div>
 
-                                {isGenerating && (
+
+                                {isGenerating ? (
                                     <>
                                         <Loader2 className='w-4 h-4 animate-spin' />
-                                        <p className='text-sm font-medium'> {progress.toFixed(2)}%</p>
+                                        <p className='text-sm font-medium'> {progress.toFixed(0)}%</p>
+                                    </>
+                                ) : (
+                                    <>
+                                        <FolderIcon className='w-5 h-5' />
+                                        <div className='flex flex-col text-start'>
+                                            <p className='text-sm font-medium'>Descargar .ZIP</p>
+                                            <p className='text-xs text-gray-500'>{maxParticipants} archivos
+                                            </p>
+                                        </div>
                                     </>
                                 )}
                             </button>
