@@ -55,7 +55,7 @@ const RunnerTicket = ({ runner, event }: { runner: Runner, event: EventResponse 
                                 />
                             </div>
 
-                            <div className="flex flex-col items-center justify-between gap-4 mb-6">
+                            <div className="flex flex-col items-center justify-between gap-4 mb-8">
 
                                 <p className="text-gray-800 text-2xl font-semibold tracking-tight text-start w-full">
                                     {name}
@@ -82,12 +82,12 @@ const RunnerTicket = ({ runner, event }: { runner: Runner, event: EventResponse 
                                             Tiempo
                                         </p>
 
-                                        <div className="flex items-end justify-end">
-                                            <p className="font-mono font-medium tracking-tight text-[38px] text-gray-700">
+                                        <div className="flex items-end justify-end h-[50px]">
+                                            <p className="font-mono tracking-tight text-[38px] text-gray-700">
                                                 {time?.split('.')[0] || '00'}
                                             </p>
 
-                                            <p className="text-gray-500 text-base mb-2 -ml-1 font-mono">
+                                            <p className="text-gray-500 text-base mb-2 font-mono">
                                                 ,{time?.split('.')[1]}
                                             </p>
                                         </div>
@@ -97,7 +97,7 @@ const RunnerTicket = ({ runner, event }: { runner: Runner, event: EventResponse 
 
 
 
-                            <div className="grid grid-cols-2 gap-4">
+                            <div className="grid grid-cols-2 gap-8">
                                 <div className='max-w-max mx-auto'>
                                     <div className="flex flex-col items-center">
                                         <h1 className="text-[40px] -mt-2 font-normal tracking-tight text-gray-700 italic font-mono">
@@ -136,6 +136,7 @@ const RunnerTicket = ({ runner, event }: { runner: Runner, event: EventResponse 
                                         Pos. General
                                     </p>
                                 </div>
+
                                 <div className="flex flex-col items-start justify-end gap-1">
                                     <p className="text-gray-500 text-xs font-normal tracking-tight font-mono">
                                         Ritmo

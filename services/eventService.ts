@@ -46,8 +46,6 @@ export async function updateEvent(
  newEvent: EventFormData
 ): Promise<{ success: boolean; data: EventResponse[] }> {
  try {
-  console.log("newEvent", newEvent);
-  console.log("id", id);
   const res = await axios({
    method: "PUT",
    url: `/api/events/${id}`,
