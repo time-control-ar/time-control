@@ -152,7 +152,7 @@ export default function QRGenerator({ eventId, eventName, maxParticipants, stayA
                         <div className="flex items-center gap-2 justify-between">
                             <button
                                 type="button"
-                                className='rounded-btn !h-12 !pr-4 !bg-gray-950 max-w-max flex items-center gap-2 !text-white'
+                                className='rounded-btn !border-0 !h-12 !pr-4 !bg-gray-950 max-w-max flex items-center gap-2 !text-white'
                                 onClick={downloadQRs}
                                 disabled={isGenerating || isEmpty}
                             >
@@ -177,7 +177,7 @@ export default function QRGenerator({ eventId, eventName, maxParticipants, stayA
 
                             <button
                                 type="button"
-                                className='rounded-btn !bg-transparent max-w-max flex items-center gap-2 !text-black'
+                                className='rounded-btn !border-0 !bg-transparent max-w-max flex items-center gap-2 !text-black'
                                 onClick={() => setOpenTestQR(true)}
                                 disabled={isGenerating || isEmpty}
                             >

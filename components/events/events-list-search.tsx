@@ -29,7 +29,7 @@ const EventsListSearch = ({ eventsData }: { eventsData: EventResponse[] }) => {
 
     const handleSearch = useCallback((searchTerm: string, selectedTypes: string[], selectedLocations: string[]) => {
         const serializedSearch = serializeText(searchTerm)
-        const filteredEvents = eventsData.filter(e => {
+        const filteredEvents = eventsData?.filter(e => {
             const serializedName = serializeText(e.name)
             const serializedDescription = serializeText(e.description)
 
@@ -44,7 +44,7 @@ const EventsListSearch = ({ eventsData }: { eventsData: EventResponse[] }) => {
         return selectedEventTypes.length + selectedLocations.length
     }, [selectedEventTypes, selectedLocations])
 
-    const uniqueLocations = Array.from(new Set(eventsData?.map(event => event.locationName)))
+    const uniqueLocations = Array.from(new Set(eventsData?.map(event => event.locationName) ?? []))
 
     const handleLocationToggle = (location: string) => {
 

@@ -1,4 +1,4 @@
-import { obtainEventsServer } from "@/lib/server/eventService";
+import { searchEvents } from "@/lib/server/eventService";
 import { connectToDatabase } from "@/lib/mongodb";
 import { NextResponse } from "next/server";
 import { ObjectId } from "mongodb";
@@ -11,7 +11,7 @@ export async function GET() {
   if (!session?.user)
    return NextResponse.json({ success: false, data: [] }, { status: 401 });
 
-  const events = await obtainEventsServer();
+  const events = await searchEvents({ query: "" });
 
   return NextResponse.json({ success: true, data: events });
  } catch (error) {
@@ -40,9 +40,15 @@ export async function POST(req: Request) {
    );
   }
 
+  // Serializar el evento para evitar problemas con ObjectId
+  const serializedEvent = {
+   ...createdEvent,
+   _id: createdEvent._id.toString(),
+  };
+
   return NextResponse.json({
    success: true,
-   data: createdEvent,
+   data: serializedEvent,
   });
  } catch (error) {
   console.error("Error al crear evento:", error);

@@ -8,7 +8,7 @@ import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import html2canvas from 'html2canvas'
 
-const RunnerTicket = ({ runner, event }: { runner: RacecheckRunner, event: EventResponse }) => {
+const RunnerTicket = ({ runner, event }: { runner: RacecheckRunner, event: EventResponse | undefined }) => {
     const { name, sex, category, time, position, positionSex, positionCategory, dorsal, pace } = runner;
     const router = useRouter()
     const ticketRef = useRef<HTMLDivElement>(null);
@@ -19,11 +19,11 @@ const RunnerTicket = ({ runner, event }: { runner: RacecheckRunner, event: Event
         ? event?.date.split('T')[0].split('-')[2]
         : 'Día'
 
-    const parsedRacecheck = parseRacechecks(event.racecheck || '')
+    const parsedRacecheck = parseRacechecks(event?.racecheck || '')
 
-    const runnersAmount = parsedRacecheck?.runners?.length
-    const runnersInThisCategory = parsedRacecheck?.runners?.filter((runner: RacecheckRunner) => runner.category === category).length
-    const runnersInThisSex = parsedRacecheck?.runners?.filter((runner: RacecheckRunner) => runner.sex === sex).length
+    const runnersAmount = parsedRacecheck.length
+    const runnersInThisCategory = parsedRacecheck.filter((runner: RacecheckRunner) => runner.category === category).length
+    const runnersInThisSex = parsedRacecheck.filter((runner: RacecheckRunner) => runner.sex === sex).length
 
     const handleDownload = async () => {
         if (ticketRef.current) {
@@ -35,6 +35,8 @@ const RunnerTicket = ({ runner, event }: { runner: RacecheckRunner, event: Event
             link.click()
         }
     }
+
+    if (!event) return null
 
     return (
         <div className="bg-white dark:bg-gray-950 flex flex-col justify-center items-center h-full py-6">
@@ -53,7 +55,7 @@ const RunnerTicket = ({ runner, event }: { runner: RacecheckRunner, event: Event
                 </div>
 
                 <h1 className='text-2xl font-semibold text-start tracking-tight'>
-                    {event.name}
+                    {event?.name}
                 </h1>
             </div>
 
@@ -75,7 +77,7 @@ const RunnerTicket = ({ runner, event }: { runner: RacecheckRunner, event: Event
                             <div className="flex flex-col items-starts justify-start gap-4 mb-8">
                                 <div className="flex items-center gap-2">
                                     <p className="text-lg font-medium tracking-tight text-gray-800">
-                                        {event.name}
+                                        {event?.name}
                                     </p>
                                 </div>
                                 <p className="text-gray-800 text-2xl font-semibold tracking-tight text-start w-full">

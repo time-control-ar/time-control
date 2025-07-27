@@ -2,10 +2,28 @@ import { connectToDatabase } from "@/lib/mongodb";
 import { BlobServiceClient } from "@azure/storage-blob";
 import { EventResponse } from "../schemas/event.schema";
 
-export async function obtainEventsServer(): Promise<EventResponse[]> {
+export async function searchEvents({
+ query,
+}: {
+ query: string;
+}): Promise<EventResponse[] | null> {
  try {
   const { db } = await connectToDatabase();
-  const events = await db.collection("events").find({}).toArray();
+  const events = await db
+   .collection("events")
+   .find({
+    $or: [
+     { name: { $regex: query, $options: "i" } },
+     { description: { $regex: query, $options: "i" } },
+    ],
+   })
+   .toArray();
+
+  // Convertir ObjectId a string para serialización
+  const serializedEvents = events.map((event) => ({
+   ...event,
+   _id: event._id.toString(),
+  })) as EventResponse[];
 
   const blobServiceClient = BlobServiceClient.fromConnectionString(
    process.env.AZURE_STORAGE_CONNECTION_STRING || ""
@@ -19,35 +37,35 @@ export async function obtainEventsServer(): Promise<EventResponse[]> {
    blobs.push(blobClient.url);
   }
 
-  const serializedEvents = events.map((event) => ({
-   _id: event._id.toString(), // Convertir ObjectId a string
-   name: event.name,
-   date: event.date,
-   startTime: event.startTime,
-   endTime: event.endTime,
-   location:
-    event.location &&
-    typeof event.location === "object" &&
-    "lat" in event.location &&
-    "lng" in event.location
-     ? event.location
-     : { lat: -34.397, lng: 150.644 },
-   description: event.description,
-   maxParticipants: event.maxParticipants,
-   image: event.image,
-   createdBy: event.createdBy,
-   createdAt: event.createdAt,
-   updatedAt: event.updatedAt,
-   type: event.type || "",
-   locationName: event.locationName || "",
-   categories: event.categories || [],
-   modalities: event.modalities || [],
-   racecheck: event.racecheck || null,
-  }));
-
   return serializedEvents;
  } catch (e) {
   console.error("Error al obtener eventos:", e);
-  return [];
+  return null;
+ }
+}
+
+export async function getEventById(id: string): Promise<EventResponse | null> {
+ try {
+  const { db } = await connectToDatabase();
+  const { ObjectId } = await import("mongodb");
+
+  const event = await db.collection("events").findOne({
+   _id: new ObjectId(id),
+  });
+
+  if (!event) {
+   return null;
+  }
+
+  // Convertir ObjectId a string para serialización
+  const serializedEvent = {
+   ...event,
+   _id: event._id.toString(),
+  } as EventResponse;
+
+  return serializedEvent;
+ } catch (e) {
+  console.error("Error al obtener evento por ID:", e);
+  return null;
  }
 }

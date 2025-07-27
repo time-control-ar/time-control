@@ -128,7 +128,7 @@ const Map = ({
                 <button
                     disabled={!markerPosition}
                     type='button'
-                    className="absolute bottom-1 right-1 z-10 rounded-xl w-max h-[39px] backdrop-blur-sm border bg-white/20 border-gray-300 shadow-lg flex items-center gap-2 px-3  shadow-black/50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="absolute bottom-1 right-1 z-5 rounded-xl w-max h-[39px] backdrop-blur-sm border bg-white/50 border-gray-300 shadow-lg flex items-center gap-2 px-3  shadow-black/50 disabled:opacity-50 disabled:cursor-not-allowed"
                     onClick={() => {
                         const url = `https://www.google.com/maps?q=${markerPosition?.lat},${markerPosition?.lng}`;
                         window.open(url, '_blank', 'noopener,noreferrer');

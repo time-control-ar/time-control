@@ -19,8 +19,7 @@ interface RaceCheckProps {
 
 const RaceCheckTable = ({ categories, modalities, genders, racecheck, previewMode }: RaceCheckProps) => {
     const router = useRouter()
-    const { runners = [], errors: racecheckErrors = [] } = parseRacechecks(racecheck || '')
-    console.log(racecheckErrors)
+    const runners = parseRacechecks(racecheck || '')
 
     const [currentPage, setCurrentPage] = useState(1)
     const [filtersOpen, setFiltersOpen] = useState(false)
@@ -42,7 +41,7 @@ const RaceCheckTable = ({ categories, modalities, genders, racecheck, previewMod
         })
         const filteredByCategories = filteredBySearch.filter(participant => {
             if (!selectedCategories.length) return true
-            return selectedCategories.length > 0 ? selectedCategories.some(category => participant.category.toLowerCase().includes(category.matchsWith.toLowerCase())) : true
+            return selectedCategories.length > 0 ? selectedCategories.some(category => participant.category.toLowerCase().includes(category.matchsWith?.toLowerCase() || '')) : true
         })
         const filteredByModalities = filteredByCategories.filter(participant => {
             if (!selectedModalities.length) return true
@@ -123,7 +122,7 @@ const RaceCheckTable = ({ categories, modalities, genders, racecheck, previewMod
                 exit={{ opacity: 0, y: -20 }}
                 transition={{ type: "spring", stiffness: 300, damping: 30 }}
             >
-                <div className="flex items-center justify-start lg:justify-between w-full gap-6 px-3 md:px-6 pb-3 pt-1">
+                <div className="flex items-center justify-start lg:justify-between w-full gap-6 px-3 md:px-6 pt-1 pb-3">
                     <div className="flex relative w-full max-w-[300px]">
                         <SearchIcon className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-white z-20" />
                         <input
@@ -195,7 +194,7 @@ const RaceCheckTable = ({ categories, modalities, genders, racecheck, previewMod
                             className='flex flex-col gap-2 w-full overflow-hidden'
                         >
 
-                            <div className="flex flex-col gap-2">
+                            <div className="flex flex-col gap-2 pb-3">
                                 {modalities.length > 0 && (
                                     <div className="flex items-center gap-2 w-full h-max overflow-auto scrollbar-hide pb-1 px-3 md:px-6">
                                         {modalities?.map((modality, index) => {
@@ -229,14 +228,14 @@ const RaceCheckTable = ({ categories, modalities, genders, racecheck, previewMod
                                 {genders.length > 0 && (
                                     <div className="flex items-center gap-2 w-full h-max overflow-auto scrollbar-hide pb-1 px-3 md:px-6">
                                         {genders?.map((gender, index) => {
-                                            const isSelected = selectedGenders.includes(gender.matchsWith)
+                                            const isSelected = selectedGenders.includes(gender.matchsWith || '')
 
                                             return (
                                                 <motion.button
                                                     type='button'
                                                     key={`${gender.matchsWith}-${index}`}
                                                     className={`chip_filter ${isSelected ? "" : "opacity-50"}`}
-                                                    onClick={() => handleGenderToggle(gender.matchsWith)}
+                                                    onClick={() => handleGenderToggle(gender.matchsWith || '')}
                                                     whileTap={{ scale: 0.95 }}
                                                     transition={{ type: "spring", stiffness: 400, damping: 17 }}
                                                 >
@@ -290,7 +289,7 @@ const RaceCheckTable = ({ categories, modalities, genders, racecheck, previewMod
                 </AnimatePresence >
             </motion.div>
 
-            <div className="px-4 md:px-6 pb-4 w-full h-full flex flex-col overflow-auto">
+            <div className="pb-4 w-full h-full flex flex-col overflow-auto">
                 <div className="modern-table">
                     <table>
                         <thead className="modern-table-header">

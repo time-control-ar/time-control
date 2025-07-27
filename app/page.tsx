@@ -3,7 +3,7 @@ import { ModeToggle } from '@/components/mode-toggle';
 import AnimatedLogo from "@/components/ui/animated-logo";
 import RunnerTicket from '@/components/ui/runner-ticket';
 import { SignInButton } from '@/components/ui/sign-in-button';
-import { obtainEventsServer } from '@/lib/server/eventService';
+import { searchEvents } from '@/lib/server/eventService';
 import { obtainTicketServer } from '@/lib/server/ticketService';
 
 
@@ -16,7 +16,7 @@ export default async function Home({
   const eventId = resolvedSearchParams?.eventId as string;
   const dorsal = resolvedSearchParams?.dorsal as string;
 
-  const events = await obtainEventsServer();
+  const events = await searchEvents({ query: "" });
   const ticket = eventId && dorsal ? await obtainTicketServer(eventId, dorsal) : null;
 
 
@@ -34,8 +34,8 @@ export default async function Home({
           </div>
 
           {ticket ?
-            <RunnerTicket runner={ticket.ticket} event={ticket.event} /> :
-            <EventsListSearch eventsData={events} />
+            <RunnerTicket runner={ticket} event={events?.[0]} /> :
+            <EventsListSearch eventsData={events ?? []} />
           }
         </div>
       </div>

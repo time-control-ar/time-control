@@ -89,19 +89,18 @@ export const eventCreateSchema = z.object({
   .min(1, "Debe tener al menos 1 participante.")
   .optional(),
  image: z.string().optional(),
- categories: z
-  .array(
-   z.object({
-    name: z.string(),
-    matchsWith: z.string(),
-   })
-  )
-  .optional(),
  modalities: z
   .array(
    z.object({
     name: z.string(),
-    matchsWith: z.string(),
+    categories: z
+     .array(
+      z.object({
+       name: z.string(),
+       matchsWith: z.string().optional(),
+      })
+     )
+     .optional(),
    })
   )
   .optional(),

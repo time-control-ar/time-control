@@ -1,9 +1,8 @@
 'use client'
-
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { eventCreateSchema, EventFormData, EventResponse } from '@/lib/schemas/event.schema'
-import { File, Loader2, CheckIcon, ListIcon, ListOrderedIcon, UnderlineIcon, BoldIcon, ItalicIcon, TrashIcon, ArrowLeftIcon, MapPinIcon, PlusIcon } from 'lucide-react'
+import { File, Loader2, CheckIcon, ListIcon, ListOrderedIcon, UnderlineIcon, BoldIcon, ItalicIcon, TrashIcon, ArrowLeftIcon, MapPinIcon, PlusIcon, SettingsIcon, InfoIcon } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 
 const MAX_IMAGE_SIZE = 15 * 1024 * 1024 // 15MB
@@ -11,7 +10,7 @@ const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10MB
 const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp']
 const ALLOWED_FILE_EXTENSIONS = ['.racecheck']
 
-import { adminEmails, Category, eventTypes, validateFile } from '@/lib/utils'
+import { adminEmails, Category, eventTypes, Modality, validateFile } from '@/lib/utils'
 import { SignInButton } from '../ui/sign-in-button'
 import { useEffect, useState } from 'react'
 import { useSession } from 'next-auth/react'
@@ -35,181 +34,7 @@ import QRGenerator from './qr-generator'
 import Toast from '../ui/toast'
 import SafeImage from '../ui/safe-image'
 import { EventDate } from './event-card'
-import { useFieldArray } from 'react-hook-form'
 import RaceCheckTable from './race-check-table'
-import { z } from 'zod'
-
-const NewCategoryForm = ({ append }: { append: (category: Category) => void }) => {
-  const { register, handleSubmit, reset, formState: { errors } } = useForm<Category>({
-    resolver: zodResolver(z.object({
-      name: z.string().min(1, "Campo requerido"),
-      matchsWith: z.string().min(1, "Campo requerido")
-    }))
-  })
-
-  const onSubmit = (data: Category) => {
-    append(data)
-    reset()
-  }
-
-  return (
-    <div className='flex items-end gap-2 w-full mt-4'>
-      <div className='grid grid-cols-2 gap-2 w-full'>
-        <div className='flex flex-col gap-1'>
-          <input
-            type="text"
-            className='input w-full'
-            placeholder='ej. 10K'
-            {...register('name')}
-          />
-          {errors.name && (
-            <p className="error-input">{errors.name.message}</p>
-          )}
-        </div>
-
-        <div className='flex flex-col gap-1 w-full'>
-          <input
-            type="text"
-            className='input w-full'
-            placeholder='ej. 10K L'
-            {...register('matchsWith')}
-          />
-          {errors.matchsWith && (
-            <p className="error-input">{errors.matchsWith.message}</p>
-          )}
-        </div>
-      </div>
-
-      <button
-        type='button'
-        className='rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center p-2 hover:bg-gray-200 dark:hover:bg-gray-700 transition-all duration-75 w-max h-max mb-2'
-        onClick={handleSubmit(onSubmit)}
-      >
-        <PlusIcon className='w-4 h-4 text-gray-500 dark:text-gray-400' />
-      </button>
-    </div >
-  )
-}
-// const NewModalityForm = ({ append }: { append: (modality: Modality) => void }) => {
-//   const { register, handleSubmit, reset, formState: { errors } } = useForm<Modality>({
-//     resolver: zodResolver(z.object({
-//       name: z.string().min(1, "Campo requerido"),
-//       matchsWith: z.string().min(1, "Campo requerido")
-//     }))
-//   })
-
-//   const onSubmit = (data: Modality) => {
-//     append(data)
-//     reset()
-//   }
-
-//   return (
-//     <div className='flex items-end gap-2 w-full mt-4'>
-//       <div className='grid grid-cols-2 gap-2 w-full'>
-//         <div className='flex flex-col gap-1'>
-//           <input
-//             type="text"
-//             className='input w-full'
-//             placeholder='ej. 10K'
-//             {...register('name')}
-//           />
-//           {errors.name && (
-//             <p className="error-input">{errors.name.message}</p>
-//           )}
-//         </div>
-
-//         <div className='flex flex-col gap-1 w-full'>
-//           <input
-//             type="text"
-//             className='input w-full'
-//             placeholder='ej. 10K L'
-//             {...register('matchsWith')}
-//           />
-//           {errors.matchsWith && (
-//             <p className="error-input">{errors.matchsWith.message}</p>
-//           )}
-//         </div>
-//       </div>
-
-//       <button
-//         type='button'
-//         className='rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center p-2 hover:bg-gray-200 dark:hover:bg-gray-700 transition-all duration-75 w-max h-max mb-2'
-//         onClick={handleSubmit(onSubmit)}
-//       >
-//         <PlusIcon className='w-4 h-4 text-gray-500 dark:text-gray-400' />
-//       </button>
-//     </div >
-//   )
-// }
-// <div className="flex flex-col gap-1">
-//             <label className='label-input'>
-//               Modalidades ({modalities.length})
-//             </label>
-
-//             <div className='rounded-3xl overflow-hidden border-2 border-gray-50 dark:border-gray-800 p-3'>
-
-//               <div className='flex px-2' >
-//                 <label className='label-input w-full'>Nombre</label>
-//                 <label className='label-input w-full -ml-3'>Empieza con <br />
-//                   <span className='text-xs text-gray-500 dark:text-gray-400'>(en .racecheck)</span>
-//                 </label>
-//               </div>
-
-//               <div className="flex flex-col gap-3 divide divide-gray-100 dark:divide-y-800">
-
-//                 {modalities?.map((modality: Modality, index: number) => (
-//                   <div className='flex items-end gap-2 w-full' key={index}>
-//                     <div className="px-3 w-full">
-//                       {modality.name}
-//                     </div>
-//                     <div className="px-3 w-full">
-//                       {modality.matchsWith}
-//                     </div>
-//                     <button type='button' className='rounded-full bg-red-600 flex items-center justify-center p-2 hover:bg-red-700 transition-all duration-75 w-max h-max' onClick={() => removeModality(index)}>
-//                       <TrashIcon className='w-4 h-4 text-white' strokeWidth={2.5} />
-//                     </button>
-//                   </div>
-//                 ))}
-//               </div>
-
-//               <NewModalityForm append={appendModality} />
-//             </div>
-
-//           </div>
-
-//           <div className="flex flex-col gap-1">
-//             <label className='label-input'>
-//               Categorías ({categories.length})
-//             </label>
-
-//             <div className='rounded-3xl overflow-hidden border-2 border-gray-50 dark:border-gray-800 p-3'>
-//               <div className='flex px-2' >
-//                 <label className='label-input w-full'>Nombre</label>
-//                 <label className='label-input w-full -ml-3'>Empieza con <br />
-//                   <span className='text-xs text-gray-500 dark:text-gray-400'>(en .racecheck)</span>
-//                 </label>
-//               </div>
-
-//               <div className="flex flex-col gap-3 divide divide-gray-100 dark:divide-y-800">
-
-//                 {categories?.map((category: Category, index: number) => (
-//                   <div className='flex items-end gap-2 w-full' key={index}>
-//                     <div className="px-3 w-full">
-//                       {category.name}
-//                     </div>
-//                     <div className="px-3 w-full">
-//                       {category.matchsWith}
-//                     </div>
-//                     <button type='button' className='rounded-full bg-red-600 flex items-center justify-center p-2 hover:bg-red-700 transition-all duration-75 w-max h-max' onClick={() => removeCategory(index)}>
-//                       <TrashIcon className='w-4 h-4 text-white' strokeWidth={2.5} />
-//                     </button>
-//                   </div>
-//                 ))}
-//               </div>
-
-//               <NewCategoryForm append={appendCategory} />
-//             </div>
-//           </div>
 
 interface EventFormProps {
   event?: EventResponse | null;
@@ -233,34 +58,20 @@ export default function EventForm({ event }: EventFormProps) {
 
   const isNewEvent = !event?._id
 
-  const defaultValues = isNewEvent ? {
-    name: event?.name || "",
-    image: event?.image || "",
-    date: event?.date || "",
-    startTime: event?.startTime || "",
-    endTime: event?.endTime || "",
-    locationName: event?.locationName || "",
-    location: event?.location || { lat: -34.397, lng: 150.644 },
-    description: event?.description || "",
-    maxParticipants: event?.maxParticipants || 100,
-    categories: event?.categories || [],
-    modalities: event?.modalities || [],
-    racecheck: event?.racecheck || null,
-    type: event?.type || "",
-  } : {
-    name: event?.name || "",
-    image: event?.image || "",
-    date: event?.date || "",
-    startTime: event?.startTime || "",
-    endTime: event?.endTime || "",
-    locationName: event?.locationName || "",
-    location: event?.location || { lat: -34.397, lng: 150.644 },
-    description: event?.description || "",
-    maxParticipants: event?.maxParticipants || 100,
-    categories: event?.categories || [],
-    modalities: event?.modalities || [],
-    racecheck: event?.racecheck || null,
-    type: event?.type || "",
+  const defaultValues = {
+    _id: event?._id ?? "",
+    name: event?.name ?? "",
+    image: event?.image ?? "",
+    date: event?.date ?? "",
+    startTime: event?.startTime ?? "",
+    endTime: event?.endTime ?? "",
+    locationName: event?.locationName ?? "",
+    location: event?.location ?? { lat: -34.397, lng: 150.644 },
+    description: event?.description ?? "",
+    maxParticipants: event?.maxParticipants ?? 100,
+    modalities: event?.modalities ?? [],
+    racecheck: event?.racecheck ?? null,
+    type: event?.type ?? "",
   }
 
   const {
@@ -269,20 +80,11 @@ export default function EventForm({ event }: EventFormProps) {
     reset,
     watch,
     setValue,
-    control,
     formState: { errors, isSubmitting }
   } = useForm<EventFormData>({
     resolver: zodResolver(eventCreateSchema),
     mode: 'onBlur',
     defaultValues
-  })
-  const { fields: modalities, append: appendModality, remove: removeModality } = useFieldArray({
-    control,
-    name: 'modalities'
-  })
-  const { fields: categories, append: appendCategory, remove: removeCategory } = useFieldArray({
-    control,
-    name: 'categories'
   })
 
   const editor = useEditor({
@@ -443,6 +245,19 @@ export default function EventForm({ event }: EventFormProps) {
     }
   }
 
+  const handleAddModality = (modality: Modality) => {
+    const currentModalities = watch('modalities') || []
+    setValue('modalities', [...currentModalities, modality])
+  }
+
+  const handleRemoveModality = (index: number) => {
+    const currentModalities = watch('modalities') || []
+    const newModalities = currentModalities.filter((_, i) => i !== index)
+    setValue('modalities', newModalities)
+  }
+
+
+
   if (!session?.user?.email && status === 'unauthenticated') return (
     <div className="h-screen w-full flex items-center justify-center">
       <div className="flex flex-col gap-4 max-w-md mx-auto w-full h-full px-3 md:px-6 py-10">
@@ -485,10 +300,10 @@ export default function EventForm({ event }: EventFormProps) {
   )
 
   const racecheck = watch('racecheck')
-
+  const modalities = watch('modalities')
   return (
     <div className='h-screen w-screen flex flex-col overflow-auto'>
-      <div className=" w-full flex justify-between items-center max-w-5xl mx-auto px-6">
+      <div className=" w-full flex justify-between items-center max-w-7xl mx-auto px-6">
         <AnimatedLogo />
 
         <div className="flex items-center gap-2">
@@ -499,92 +314,35 @@ export default function EventForm({ event }: EventFormProps) {
 
       <form
         onSubmit={handleSubmit(onSubmit)}
-        className="w-full flex flex-col h-max"
+        className="w-full flex flex-col min-h-max mt-12"
       >
-        <div className="flex gap-3 w-full items-center lg:max-w-5xl mx-auto px-3 mb-6 my-10">
-          <button
-            type="button"
-            className={`h-8 rounded-full w-8 flex items-center justify-center
+        <div className="flex flex-col lg:flex-row gap-6 h-full w-full items-center lg:items-start max-w-6xl mx-auto px-3 lg:px-0">
+          <div className="flex flex-col w-full gap-8 max-w-sm h-max lg:pb-12">
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                className={`h-8 rounded-full w-8 flex items-center justify-center
             relative select-none gap-2
             bg-gradient-to-b from-white to-white dark:from-gray-950 dark:to-gray-950
             border-2 border-gray-100 dark:border-gray-800 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors`}
-            onClick={() => router.push('/')}
-          >
-            <ArrowLeftIcon className="w-5 h-5 text-gray-500 dark:text-gray-400" />
-          </button >
-
-          <h1 className='text-2xl font-semibold text-start tracking-tight'>
-            {event ? "Editar evento" : "Nuevo evento"}
-          </h1>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 h-full w-full items-center lg:items-start max-w-5xl mx-auto px-3 lg:px-0">
-
-          <div className="flex flex-col w-full gap-8 max-w-sm h-max lg:pb-12 lg:col-span-1">
-            <div className='w-full flex flex-col gap-1'>
-              <label className="label-input">
-                Imagen del evento
+                onClick={() => router.push('/')}
+              >
+                <ArrowLeftIcon className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+              </button >
+              <label className="text-2xl font-medium text-gray-950 dark:text-gray-100 font-mono tracking-tight">
+                {event ? "Editar evento" : "Nuevo evento"}
               </label>
+            </div>
 
-              {currentImageUrl ? (
-                <div className="flex items-center relative">
-                  <SafeImage
-                    src={event?.image || ''}
-                    alt={event?.name || ''}
-                    className="z-10 object-cover rounded-bl-3xl rounded-xl"
-                    fill
-                    priority
-                    fallbackText="Imagen"
-                  />
-
-                  <div className="flex items-center gap-1 absolute top-2 right-2">
-                    <button
-                      type="button"
-                      className="rounded-full bg-red-600 flex items-center justify-center p-2 hover:bg-red-700 transition-all duration-75 w-max z-10"
-                      onClick={() => {
-                        setCurrentImageUrl('')
-                        setValue('image', '')
-                      }}
-                    >
-                      <TrashIcon className="w-4 h-4 text-white" strokeWidth={2.5} />
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                <div
-                  className={`w-full h-max rounded-2xl shadow-lg md:shadow-none p-3 border-2 
-                ${!currentImageUrl ? "border-dashed" : ""} 
-                border-gray-100 dark:border-gray-800`}
-                >
-                  {isUpdatingImage ? (
-                    <div className="flex items-center justify-center w-full gap-2 py-3">
-                      <Loader2 size={20} className="animate-spin text-black dark:text-white" />
-                      <span className="text-sm font-medium ml-2">Actualizando imagen...</span>
-                    </div>
-                  ) : (
-                    <div className="text-center p-3">
-                      <input
-                        accept={ALLOWED_IMAGE_TYPES.join(',')}
-                        onChange={handleImageChange}
-                        disabled={isUpdatingImage}
-                        className="hidden"
-                        id="image-upload"
-                        type="file"
-                      />
-                      <label htmlFor="image-upload" className={`cursor-pointer ${isUpdatingImage ? 'opacity-50' : ''}`}>
-                        <div className="text-gray-500 flex flex-col items-center justify-center">
-                          <File size={24} className="mx-auto mb-2" />
-                          <p className='text-sm'>Haz clic para seleccionar una imagen</p>
-                          <p className="text-xs">PNG, JPG hasta 15MB</p>
-                        </div>
-                      </label>
-                    </div>
-                  )}
-                </div>
-              )}
+            <div className="flex items-center gap-2 px-3 lg:px-6 pb-3">
+              <InfoIcon className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+              <label className="text-sm font-light opacity-50 font-mono tracking-tight">
+                Información
+              </label>
             </div>
 
             <div className="flex h-max gap-1 w-full">
+
               <div className="flex flex-col items-start gap-1 w-full">
                 <label className="label-input">Título *</label>
                 <input
@@ -614,6 +372,68 @@ export default function EventForm({ event }: EventFormProps) {
                 />
               </div>
             </div>
+            <div className='w-full flex flex-col gap-1'>
+              <label className="label-input">
+                Imagen del evento
+              </label>
+
+              {currentImageUrl ? (
+                <div className="flex items-center relative">
+                  <SafeImage
+                    src={currentImageUrl}
+                    alt={event?.name || ''}
+                    className="z-10 object-cover rounded-bl-3xl rounded-xl"
+                    fill
+                    priority
+                    fallbackText="Imagen"
+                  />
+
+                  <div className="flex items-center gap-1 absolute top-2 right-2">
+                    <button
+                      type="button"
+                      className="rounded-full bg-red-600 flex items-center justify-center p-2 hover:bg-red-700 transition-all duration-75 w-max z-10"
+                      onClick={() => {
+                        setCurrentImageUrl('')
+                        setValue('image', '')
+                      }}
+                    >
+                      <TrashIcon className="w-4 h-4 text-white" strokeWidth={2.5} />
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div
+                  className={`w-full h-max rounded-bl-3xl rounded-xl shadow-lg md:shadow-none p-3 custom_border !border-dashed`}
+                >
+                  {isUpdatingImage ? (
+                    <div className="flex items-center justify-center w-full gap-2 py-3">
+                      <Loader2 size={20} className="animate-spin text-black dark:text-white" />
+                      <span className="text-sm font-medium ml-2">Actualizando imagen...</span>
+                    </div>
+                  ) : (
+                    <div className="text-center p-3">
+                      <input
+                        accept={ALLOWED_IMAGE_TYPES.join(',')}
+                        onChange={handleImageChange}
+                        disabled={isUpdatingImage}
+                        className="hidden"
+                        id="image-upload"
+                        type="file"
+                      />
+                      <label htmlFor="image-upload" className={`cursor-pointer ${isUpdatingImage ? 'opacity-50' : ''}`}>
+                        <div className="text-gray-500 flex flex-col items-center justify-center">
+                          <File size={24} className="mx-auto mb-2" />
+                          <p className='text-sm'>Haz clic para seleccionar una imagen</p>
+                          <p className="text-xs">PNG, JPG hasta 15MB</p>
+                        </div>
+                      </label>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+
 
             <div className="flex flex-col gap-2">
 
@@ -714,18 +534,18 @@ export default function EventForm({ event }: EventFormProps) {
               </div>
             </div>
 
-            <div className='w-full flex flex-col gap-1'>
+            <div className='w-full flex flex-col gap-1 relative'>
               <label className="label-input">Ubicación *</label>
-              <Map
-                onLocationSelect={handleLocationSelect}
-                value={watch('location')}
-              />
               {(watch('locationName') || event?.locationName) && (
                 <div className="flex items-center gap-2">
                   <MapPinIcon className="w-4 h-4 text-gray-500 dark:text-gray-400" />
                   <p className="text-gray-500 dark:text-gray-400 text-sm font-mono tracking-tight">{watch('locationName') ?? event?.locationName}</p>
                 </div>
               )}
+              <Map
+                onLocationSelect={handleLocationSelect}
+                value={watch('location')}
+              />
 
               {(errors?.location || errors?.locationName) && (
                 <div className="mt-2 p-3 bg-red-50 dark:bg-red-900/20 border-2 border-red-200 dark:border-red-800 rounded-lg">
@@ -776,8 +596,8 @@ export default function EventForm({ event }: EventFormProps) {
             <div className="max-w-sm w-full flex flex-col gap-6 mx-auto">
 
               <QRGenerator
-                eventId={event?._id || ''}
-                eventName={watch('name') as string}
+                eventId={event?._id ?? ''}
+                eventName={watch('name') ?? ''}
                 maxParticipants={parseInt(watch('maxParticipants') as unknown as string) || 0}
                 stayAfterCreation={stayAfterCreation}
                 setStayAfterCreation={setStayAfterCreation}
@@ -786,43 +606,105 @@ export default function EventForm({ event }: EventFormProps) {
             </div>
           </div>
 
-          <div className="flex flex-col gap-6 w-full mt-6">
-            <NewCategoryForm append={appendCategory} />
 
+          <div className="flex flex-col gap-8 w-full mt-[60px] lg:px-6">
+            <div className="flex items-center gap-2 px-3 lg:px-6 pb-3">
+              <SettingsIcon className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+              <label className="text-sm font-light opacity-50 font-mono tracking-tight">
+                Configuración
+              </label>
+            </div>
 
-          </div>
+            <div className='flex flex-col gap-2'>
+              <p className="label-input">Modalidades</p>
+              <ModalityForm handleAddModality={handleAddModality} />
 
-          {!racecheck ? (
-            <div className="px-3 lg:px-6 w-full flex flex-col items-center justify-center lg:col-span-2">
+              <div className={`modern-table w-full ${modalities?.length === 0 ? "hidden" : ""}`}>
+                <table>
+                  <thead className="modern-table-header">
+                    <tr>
+                      <th className="w-max max-w-max">Nombre</th>
+                      <th className="w-full">Categorías</th>
+                      <th className="w-max !text-center">Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody className="modern-table-body">
+                    {modalities?.map((modality: Modality, index: number) => (
+                      <tr key={index} className="group">
+                        <td className='!text-center items-center justify-start flex max-w-max !px-4'>
+                          <div className="chip_filter max-w-max">
+                            <p className='text-sm text-gray-500 dark:text-gray-400 px-2'>
+                              {modality.name}
+                            </p>
+                          </div>
+                        </td>
 
-              <div className={`w-full flex flex-col h-max rounded-2xl shadow-lg md:shadow-none p-3 border-2 border-dashed border-gray-100 dark:border-gray-800`}>
-                <div className="text-center w-full">
-                  <input
-                    accept={ALLOWED_FILE_EXTENSIONS.join(',')}
-                    onChange={handleFileChange}
-                    disabled={isSubmitting}
-                    className="hidden"
-                    id="race-check-file"
-                    type="file"
-                  />
+                        <td className="!px-4">
+                          <div className="flex w-full gap-2">
+                            <ul>
+                              {modality.categories?.map((category: Category) => (
+                                <li key={category.name} className='text-sm font-mono opacity-50 text-gray-500 dark:text-gray-400'>
+                                  {category.name}
+                                </li>
+                              ))}
+                            </ul>
 
-                  <label htmlFor="race-check-file" className={`cursor-pointer ${isSubmitting ? 'opacity-50' : ''}`}>
-                    <div className="text-gray-500 flex flex-col items-center justify-center">
-                      <File size={24} className="mx-auto mb-2" />
-                      <p className='text-sm'>Haz clic para seleccionar archivo de resultados</p>
-                      <p className="text-xs">Archivos .racecheck hasta 10MB</p>
-                    </div>
-                  </label>
-                </div>
+                            <button
+                              type="button"
+                              className='w-8 h-8 flex items-center justify-center transition-all duration-100 gap-2 rounded-full custom_border'
+                            >
+                              <PlusIcon className='w-4 h-4 text-gray-500 dark:text-gray-400' />
+                            </button>
+                          </div>
+                        </td>
+
+                        <td className="py-2 px-3 !text-center items-center justify-center flex">
+                          <button
+                            type="button"
+                            className="rounded-full bg-red-600 flex items-center justify-center p-2 hover:bg-red-700 transition-all duration-75 w-max"
+                            onClick={() => handleRemoveModality(index)}
+                          >
+                            <TrashIcon className="w-4 h-4 text-white" strokeWidth={2.5} />
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             </div>
-          ) :
-            <>
-              <div className='w-full flex flex-col px-3 lg:px-6 h-max sticky top-10 lg:col-span-2 max-h-[90vh]'>
+
+
+
+            {!racecheck ? (
+              <div className="w-full flex flex-col items-center justify-center lg:p-6">
+
+                <div className={`w-full flex flex-col h-max rounded-2xl shadow-lg md:shadow-none p-3 border-2 border-dashed border-gray-100 dark:border-gray-800`}>
+                  <div className="text-center w-full">
+                    <input
+                      accept={ALLOWED_FILE_EXTENSIONS.join(',')}
+                      onChange={handleFileChange}
+                      disabled={isSubmitting}
+                      className="hidden"
+                      id="race-check-file"
+                      type="file"
+                    />
+
+                    <label htmlFor="race-check-file" className={`cursor-pointer ${isSubmitting ? 'opacity-50' : ''}`}>
+                      <div className="text-gray-500 flex flex-col items-center justify-center">
+                        <File size={24} className="mx-auto mb-2" />
+                        <p className='text-sm'>Haz clic para seleccionar archivo de resultados</p>
+                        <p className="text-xs">Archivos .racecheck hasta 10MB</p>
+                      </div>
+                    </label>
+                  </div>
+                </div>
+              </div>
+            ) :
+              <div className='w-full flex flex-col h-max max-h-[90vh]'>
                 <div className="flex items-center justify-between gap-2 w-full pb-3 px-3 lg:px-6">
                   <div className="flex">
                     <label className="label-input">Resultados (.racecheck)</label>
-
                   </div>
 
                   <button
@@ -836,8 +718,6 @@ export default function EventForm({ event }: EventFormProps) {
                   </button>
                 </div>
 
-                <div className=""></div>
-
                 <RaceCheckTable
                   categories={event?.categories ?? []}
                   modalities={event?.modalities ?? []}
@@ -848,8 +728,8 @@ export default function EventForm({ event }: EventFormProps) {
                   }}
                 />
               </div>
-            </>
-          }
+            }
+          </div>
         </div>
 
         <div className="flex items-center md:justify-end justify-center px-3 pt-6 pb-12 lg:p-6 w-full max-w-5xl mx-auto">
@@ -886,5 +766,45 @@ export default function EventForm({ event }: EventFormProps) {
 
 
     </div >
+  )
+}
+
+const ModalityForm = ({ handleAddModality }: { handleAddModality: (modality: Modality) => void }) => {
+  const [name, setName] = useState<string>('')
+
+  const handleSubmit = () => {
+    if (name.trim()) {
+      handleAddModality({ name: name.trim(), categories: [] })
+      setName('') // Limpiar el input después de agregar
+    }
+  }
+
+  return (
+    <div className="flex items-center gap-2 w-full max-w-sm px-3">
+      <div className="flex flex-col gap-1 w-full">
+        <input
+          type="text"
+          className="input"
+          placeholder="Cree una nueva modalidad"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          onKeyPress={(e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault()
+              handleSubmit()
+            }
+          }}
+        />
+      </div>
+
+      <button
+        type="button"
+        className="custom_border rounded-full min-w-10 min-h-10 flex items-center justify-center"
+        onClick={handleSubmit}
+        disabled={!name.trim()}
+      >
+        <PlusIcon className="w-4 h-4" strokeWidth={2.5} />
+      </button>
+    </div>
   )
 }
