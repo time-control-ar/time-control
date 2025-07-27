@@ -87,7 +87,7 @@ const EventsListSearch = ({ eventsData }: { eventsData: EventResponse[] }) => {
                     overflow: filtersOpen ? 'hidden' : 'visible',
                     height: filtersOpen ? 'auto' : 'auto'
                 }}
-                transition={{ duration: 0.2 }}
+                transition={{ duration: 0.1 }}
                 className={`
                     sticky top-0 z-30 pt-3 pb-2 mb-6 mx-auto backdrop-blur-md
                     w-full flex flex-col items-start justify-between gap-3
@@ -101,7 +101,6 @@ const EventsListSearch = ({ eventsData }: { eventsData: EventResponse[] }) => {
                     transition={{ duration: 0.1 }}
                     className={`max-w-screen-lg mx-auto w-full flex flex-col items-start justify-between`}
                 >
-
                     <div className="flex items-center justify-start w-full gap-6 px-3 md:px-6">
                         <div className="flex relative w-full max-w-[300px]">
                             <SearchIcon className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-white z-20" />
@@ -133,9 +132,7 @@ const EventsListSearch = ({ eventsData }: { eventsData: EventResponse[] }) => {
                             <div>
                                 <button
                                     type="button"
-                                    className={`rounded-full flex items-center justify-center h-10 w-10 bg-white dark:bg-gray-950
-                            border-2 border-gray-200 dark:border-gray-800
-                          outline-none ring-0 transition-all duration-75 shadow-sm md:hover:shadow-md`}
+                                    className={`rounded-full flex items-center justify-center h-10 w-10 custom_border`}
                                     onClick={() => setFiltersOpen(!filtersOpen)}
                                 >
                                     {filtersOpen ? (
@@ -158,9 +155,8 @@ const EventsListSearch = ({ eventsData }: { eventsData: EventResponse[] }) => {
                                 <button
                                     type="button"
                                     disabled={filtersCount === 0}
-                                    className={`rounded-full flex items-center justify-center h-10 w-10 bg-white dark:bg-gray-950
-                                        border-2 border-gray-200 dark:border-gray-800 disabled:opacity-50 disabled:cursor-not-allowed
-                                        outline-none ring-0 transition-all duration-75 shadow-sm md:hover:shadow-md`}
+                                    className={`rounded-full flex items-center justify-center h-10 w-10 custom_border
+                                        `}
 
                                 >
                                     <BrushCleaning className="w-5 h-5 text-gray-500 z-20 hover:text-gray-700 dark:hover:text-gray-300 transition-all duration-75 disabled:opacity-50 disabled:cursor-not-allowed" />
@@ -174,8 +170,8 @@ const EventsListSearch = ({ eventsData }: { eventsData: EventResponse[] }) => {
                             <motion.div
                                 initial={{ opacity: 0, y: 20, height: 0, overflow: 'hidden' }}
                                 animate={{ opacity: 1, y: 0, height: 'auto', overflow: 'hidden' }}
-                                exit={{ opacity: 0, y: -20, height: 0, overflow: 'hidden' }}
-                                transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                                exit={{ opacity: 0, y: -20, height: 0, overflow: 'hidden', transition: { duration: 0.1 } }}
+                                transition={{ type: "spring", stiffness: 300, damping: 30, duration: 0.2 }}
                                 className='flex flex-col gap-2 w-full'
                             >
 
@@ -247,7 +243,7 @@ const EventsListSearch = ({ eventsData }: { eventsData: EventResponse[] }) => {
             <motion.div className="max-w-max mx-auto w-full h-max grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-4 pb-20 px-3">
 
                 {isAdmin && (
-                    <div className="flex items-center justify-center w-full h-[200px] relative rounded-3xl z-10 rounded-bl-3xl rounded-br-lg border-2 border-dashed border-gray-300 dark:border-gray-700 gap-2 cursor-pointer md:hover:shadow-xl dark:hover:border-gray-600 transition-all duration-100"
+                    <div className="flex items-center justify-center w-full h-[200px] relative rounded-3xl z-10 rounded-bl-3xl border border-dashed border-gray-300 dark:border-gray-700 gap-2 cursor-pointer md:hover:shadow-xl dark:hover:border-gray-600 transition-all duration-100"
                         onClick={() => router.push('/eventos/nuevo')}
                     >
                         <PlusIcon className="w-4 h-4 text-gray-500 dark:text-white" />

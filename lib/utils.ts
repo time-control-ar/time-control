@@ -1,14 +1,27 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 
+export const adminEmails = [
+ "iamindev@gmail.com",
+ "jeronimodonato@gmail.com",
+ "timenoetinger@gmail.com",
+];
+
 export function cn(...inputs: ClassValue[]) {
  return twMerge(clsx(inputs));
 }
 
-export const adminEmails = [
- "jeronimodonato@gmail.com",
- "timenoetinger@gmail.com",
-];
+export function orderByTime(runners: RacecheckRunner[]): RacecheckRunner[] {
+ return runners.sort((a, b) => {
+  const timeA = a.time.split(":");
+  const timeB = b.time.split(":");
+  return (
+   parseInt(timeA[0]) - parseInt(timeB[0]) ||
+   parseInt(timeA[1]) - parseInt(timeB[1]) ||
+   parseInt(timeA[2]) - parseInt(timeB[2])
+  );
+ });
+}
 
 export const eventTypes = [
  {
@@ -95,6 +108,11 @@ export function validateFile(
  return true;
 }
 
+export interface Gender {
+ name: string;
+ matchsWith: string;
+}
+
 export interface Category {
  name: string;
  matchsWith: string;
@@ -104,48 +122,46 @@ export interface Modality {
  matchsWith: string;
 }
 
-export interface Runner {
+export interface RacecheckRunner {
  sex: string;
  name: string;
  chip: string;
- dorsal: number;
+ dorsal: string;
  modality: string;
  category: string;
  time: string;
- position: number;
- positionSex: number;
- positionCategory: number;
+ position: string;
+ positionSex: string;
+ positionCategory: string;
  pace: string;
 }
 
 export interface ParsedRace {
  eventName: string;
- categories: Category[];
- modalities: Modality[];
- runners: Runner[];
+ uniqueModalities: string[];
+ uniqueCategories: string[];
+ uniqueGenders: string[];
+ runners: RacecheckRunner[];
+ errors: string[];
 }
 
-export function parseRacechecks(
- fileContent: string,
- categories: Category[],
- modalities: Modality[]
-): ParsedRace {
+export function parseRacechecks(fileContent: string): ParsedRace {
  const result: ParsedRace = {
   eventName: "",
   runners: [],
-  categories: categories || [],
-  modalities: modalities || [],
+  errors: [],
+  uniqueModalities: [],
+  uniqueCategories: [],
+  uniqueGenders: [],
  };
 
  // Separar el contenido del archivo en líneas
  const lines = fileContent.trim().split("\n");
-
- // Verificar que hay líneas para procesar
+ // Verificar que hay líneas
  if (lines.length === 0) {
   throw new Error("El archivo está vacío");
  }
-
- // La primera línea es el nombre del evento
+ // Separar el nombre del evento
  if (lines[0] && lines[0].includes("|")) {
   result.eventName = lines[0].split("|")[1]?.trim() || "Evento sin nombre";
  } else {
@@ -161,16 +177,17 @@ export function parseRacechecks(
    // Verificar que hay suficientes partes
    if (parts.length < 11) {
     console.warn("Línea de corredor incompleta:", line);
+    result.errors.push(line);
     continue;
    }
 
    const [
-    sex,
     name,
     chip,
     dorsal,
     modality,
     category,
+    sex,
     time,
     position,
     positionSex,
@@ -178,45 +195,38 @@ export function parseRacechecks(
     pace,
    ] = parts;
 
-   // Buscar modalidad y categoría correspondientes
-   const modalityFound =
-    modalities.length > 0
-     ? modalities.find((m) =>
-        modality
-         .trim()
-         .toLowerCase()
-         .includes(m.matchsWith.trim().toLowerCase())
-       )
-     : null;
-   console.log(modalityFound);
+   if (!result.uniqueModalities.includes(modality)) {
+    result.uniqueModalities.push(modality);
+   }
 
-   const categoryFound =
-    categories.length > 0
-     ? categories.find((c) =>
-        c.matchsWith
-         .trim()
-         .toLowerCase()
-         .includes(category.trim().toLowerCase())
-       )
-     : null;
+   if (!result.uniqueCategories.includes(category)) {
+    result.uniqueCategories.push(category);
+   }
 
-   const parsedRunner: Runner = {
+   if (!result.uniqueGenders.includes(sex)) {
+    result.uniqueGenders.push(sex);
+   }
+
+   const parsedLine: RacecheckRunner = {
     sex,
     name,
     chip,
-    dorsal: parseInt(dorsal) || 0,
-    modality: modalityFound?.name || modality || "N/A",
-    category: categoryFound?.name || category || "N/A",
+    dorsal: dorsal || "N/A",
+    modality: modality || "N/A",
+    category: category || "N/A",
     time,
-    position: parseInt(position) || 0,
-    positionSex: parseInt(positionSex) || 0,
-    positionCategory: parseInt(positionCategory) || 0,
-    pace,
+    position: position || "N/A",
+    positionSex: positionSex || "N/A",
+    positionCategory: positionCategory || "N/A",
+    pace: pace || "N/A",
    };
-
-   result.runners.push(parsedRunner);
+   result.runners.push(parsedLine);
   }
  }
+
+ result.runners = orderByTime(result.runners);
+
+ console.log(result);
 
  return result;
 }

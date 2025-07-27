@@ -2,7 +2,7 @@
 
 // import { Input } from "@/components/ui/input"
 // import { useEffect, useState } from 'react'
-// import { Event, Runner } from '@/app/schemas'
+// import { Event, RacecheckRunner } from '@/app/schemas'
 // import { TabsContent } from './ui/tabs'
 // import { Tabs, TabsTrigger } from './ui/tabs'
 // import { TabsList } from '@radix-ui/react-tabs'
@@ -104,7 +104,7 @@
 //                             return (
 //                                 <TabsContent key={index} value={index.toString()}>
 //                                     <RunnersTable
-//                                         data={category?.runners?.map((runner: Runner, index: number) => ({
+//                                         data={category?.runners?.map((runner: RacecheckRunner, index: number) => ({
 //                                             ...runner,
 //                                             id: index,
 //                                         }))}

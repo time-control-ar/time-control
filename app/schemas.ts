@@ -1,5 +1,5 @@
 // // FILE TYPES
-// export interface Runner {
+// export interface RacecheckRunner {
 //  sex: "M" | "F";
 //  name: string;
 //  chip: string;
@@ -23,7 +23,7 @@
 //  time: string;
 //  location: string;
 //  categories: Category[];
-//  participants: Runner[];
+//  participants: RacecheckRunner[];
 //  imageUrl: string;
 //  description: string;
 // }

@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { Category, Modality } from "../utils";
+import { Category, Gender, Modality } from "../utils";
 
 export const eventCreateSchema = z.object({
  name: z
@@ -105,6 +105,14 @@ export const eventCreateSchema = z.object({
    })
   )
   .optional(),
+ genders: z
+  .array(
+   z.object({
+    name: z.string(),
+    matchsWith: z.string(),
+   })
+  )
+  .optional(),
  racecheck: z.string().nullable(),
 });
 
@@ -128,6 +136,7 @@ export interface EventResponse {
   lng: number;
  };
  locationName: string;
+ genders: Gender[];
  categories: Category[];
  modalities: Modality[];
  racecheck: string | null;

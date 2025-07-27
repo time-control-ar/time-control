@@ -59,7 +59,7 @@ export function SignInButton() {
     }
     return (
         <>
-            <button type="button" className="rounded-btn w-max" onClick={() => signIn("google")}>
+            <button type="button" className="rounded-btn !border-0 w-max" onClick={() => signIn("google")}>
                 <p className="text-xs font-semibold tracking-tight">
                     Iniciar sesión
                 </p>

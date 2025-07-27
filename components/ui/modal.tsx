@@ -39,7 +39,7 @@ const Modal = ({
     const renderModalContent = () => (
         <>
             {(title || showCloseButton) && (
-                <div className="flex items-center justify-between px-3 md:px-6 pt-4 pb-2 sticky top-0 z-10 overflow-visible gap-3">
+                <div className="flex items-center justify-between px-4 md:px-6 pt-5 pb-3 sticky top-0 z-10 overflow-visible gap-3">
                     {title ? (
                         <h1 className="text-gray-950 dark:text-gray-50 text-xl font-semibold tracking-tight">
                             {title}
@@ -51,9 +51,7 @@ const Modal = ({
                         <div>
                             <button
                                 type="button"
-                                className={`rounded-full flex items-center justify-center h-10 w-10 bg-white dark:bg-gray-950
-                                border-2 border-gray-200 dark:border-gray-800
-                              outline-none ring-0 transition-all duration-75 shadow-sm md:hover:shadow-md`}
+                                className={`rounded-full flex items-center justify-center h-10 w-10 custom_border`}
                                 onClick={onClose}
                             >
                                 <XIcon strokeWidth={2.5} className="w-4 h-4 text-gray-700 dark:text-gray-300 z-20" />
@@ -76,7 +74,7 @@ const Modal = ({
                     exit={{ opacity: 0 }}
                     transition={{ duration: 0.2, ease: 'easeInOut' }}
                     onClick={onClose}
-                    className="fixed inset-0 z-50 bg-black/5  backdrop-blur-md flex items-center justify-center overflow-hidden"
+                    className="fixed inset-0 z-50 bg-black/5  backdrop-blur-md flex items-center justify-center overflow-hidden md:py-4"
                 >
                     <motion.div
                         layout
@@ -87,9 +85,9 @@ const Modal = ({
                         className={`
                             ${isMobile ?
                                 'h-full w-full' :
-                                'w-full md:max-w-[700px] h-auto max-h-[80vh] rounded-3xl'} 
-                            z-[9999] relative overflow-y-auto flex flex-col
-                            md:border-2 border-gray-200 dark:border-gray-900 bg-white dark:bg-gray-950
+                                'h-max overflow-y-auto pb-4 rounded-3xl max-h-[90vh] md:max-h-full w-[90vw] md:max-w-[750px]'} 
+                            z-[9999] relative overflow-y-auto lg:overflow-y-hidden flex flex-col
+                            custom_border bg-white dark:bg-gray-950 dark:!border-gray-900
                             ${className}
                             `}
                         onClick={(e) => e.stopPropagation()}

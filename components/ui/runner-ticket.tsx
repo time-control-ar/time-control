@@ -1,14 +1,14 @@
 'use client'
 
 import { EventResponse } from '@/lib/schemas/event.schema'
-import { parseRacechecks, Runner } from '@/lib/utils'
+import { parseRacechecks, RacecheckRunner } from '@/lib/utils'
 import React, { useRef } from 'react'
 import { ArrowLeftIcon, CalendarIcon, ClockIcon, DownloadIcon, MapPinIcon } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import html2canvas from 'html2canvas'
 
-const RunnerTicket = ({ runner, event }: { runner: Runner, event: EventResponse }) => {
+const RunnerTicket = ({ runner, event }: { runner: RacecheckRunner, event: EventResponse }) => {
     const { name, sex, category, time, position, positionSex, positionCategory, dorsal, pace } = runner;
     const router = useRouter()
     const ticketRef = useRef<HTMLDivElement>(null);
@@ -19,11 +19,11 @@ const RunnerTicket = ({ runner, event }: { runner: Runner, event: EventResponse 
         ? event?.date.split('T')[0].split('-')[2]
         : 'Día'
 
-    const parsedRacecheck = parseRacechecks(event.racecheck || '', event.categories, event.modalities)
+    const parsedRacecheck = parseRacechecks(event.racecheck || '')
 
     const runnersAmount = parsedRacecheck?.runners?.length
-    const runnersInThisCategory = parsedRacecheck?.runners?.filter((runner: Runner) => runner.category === category).length
-    const runnersInThisSex = parsedRacecheck?.runners?.filter((runner: Runner) => runner.sex === sex).length
+    const runnersInThisCategory = parsedRacecheck?.runners?.filter((runner: RacecheckRunner) => runner.category === category).length
+    const runnersInThisSex = parsedRacecheck?.runners?.filter((runner: RacecheckRunner) => runner.sex === sex).length
 
     const handleDownload = async () => {
         if (ticketRef.current) {

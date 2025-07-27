@@ -2,13 +2,13 @@
 
 import { ObjectId } from "mongodb";
 import { connectToDatabase } from "@/lib/mongodb";
-import { parseRacechecks, Runner } from "../utils";
+import { parseRacechecks, RacecheckRunner } from "../utils";
 import { EventResponse } from "../schemas/event.schema";
 
 export async function obtainTicketServer(
  eventId: string,
  dorsal: string
-): Promise<{ ticket: Runner; event: EventResponse } | null> {
+): Promise<{ ticket: RacecheckRunner; event: EventResponse } | null> {
  try {
   const db = await connectToDatabase();
 
@@ -29,7 +29,7 @@ export async function obtainTicketServer(
   );
 
   const ticket = runners?.find(
-   (result: Runner) => result.dorsal === parseInt(dorsal)
+   (result: RacecheckRunner) => result.dorsal === parseInt(dorsal)
   );
 
   if (!ticket) {
