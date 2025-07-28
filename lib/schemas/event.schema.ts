@@ -108,7 +108,7 @@ export const eventCreateSchema = z.object({
   .array(
    z.object({
     name: z.string(),
-    matchsWith: z.string(),
+    matchsWith: z.string().optional(),
    })
   )
   .optional(),

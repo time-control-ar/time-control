@@ -243,7 +243,7 @@ const EventsListSearch = ({ eventsData }: { eventsData: EventResponse[] }) => {
             <motion.div className="max-w-max mx-auto w-full h-max grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-4 pb-20 px-3">
 
                 {isAdmin && (
-                    <div className="flex items-center justify-center w-full h-[200px] relative rounded-3xl z-10 rounded-bl-3xl border border-dashed border-gray-300 dark:border-gray-700 gap-2 cursor-pointer md:hover:shadow-xl dark:hover:border-gray-600 transition-all duration-100"
+                    <div className="flex items-center justify-center w-full h-[200px] relative rounded-xl z-10 rounded-bl-3xl border border-dashed border-gray-300 dark:border-gray-700 gap-2 cursor-pointer md:hover:shadow-xl dark:hover:border-gray-600 transition-all duration-100"
                         onClick={() => router.push('/eventos/nuevo')}
                     >
                         <PlusIcon className="w-4 h-4 text-gray-500 dark:text-white" />

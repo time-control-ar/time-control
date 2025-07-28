@@ -1,6 +1,6 @@
 'use client'
 
-import { Category, Gender, Modality, parseRacechecks, RacecheckRunner } from '@/lib/utils'
+import { Category, Gender, Modality, RacecheckRunner } from '@/lib/utils'
 import { ArrowLeftIcon, ArrowRightIcon, SearchIcon, TicketIcon, CheckIcon, SlidersIcon, ArrowUp, XIcon, BrushCleaning } from 'lucide-react'
 import { useState, useMemo } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
@@ -8,19 +8,18 @@ import { useRouter } from 'next/navigation'
 
 
 interface RaceCheckProps {
-    categories: Category[]
     modalities: Modality[]
     genders: Gender[]
-    racecheck: string
+    runners: RacecheckRunner[]
     previewMode: {
         eventId: string
     }
 }
 
-const RaceCheckTable = ({ categories, modalities, genders, racecheck, previewMode }: RaceCheckProps) => {
+const RaceCheckTable = ({ modalities, genders, runners, previewMode }: RaceCheckProps) => {
     const router = useRouter()
-    const runners = parseRacechecks(racecheck || '')
 
+    const categories = modalities.flatMap(modality => modality.categories ?? [])
     const [currentPage, setCurrentPage] = useState(1)
     const [filtersOpen, setFiltersOpen] = useState(false)
     const [search, setSearch] = useState('')
@@ -30,8 +29,7 @@ const RaceCheckTable = ({ categories, modalities, genders, racecheck, previewMod
     const [itemsPerPage] = useState(100)
 
     const filteredParticipants: RacecheckRunner[] = useMemo(() => {
-        if (!runners) return []
-
+        if (!runners || runners.length === 0) return []
         const filteredBySearch = runners.filter(participant => {
             if (!search) return true
             return participant.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -52,7 +50,7 @@ const RaceCheckTable = ({ categories, modalities, genders, racecheck, previewMod
             return selectedGenders.length > 0 ? selectedGenders.some(gender => participant.sex.toLowerCase().includes(gender.toLowerCase())) : true
         })
         return filteredByGenders
-    }, [runners, search, selectedCategories, selectedModalities, selectedGenders])
+    }, [search, selectedCategories, selectedModalities, selectedGenders])
 
     const filtersCount = useMemo(() => {
         return selectedCategories.length + selectedModalities.length + selectedGenders.length

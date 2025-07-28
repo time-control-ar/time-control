@@ -267,7 +267,6 @@ export const EventCard = ({ event, previewMode = false }: { event: EventResponse
                                 >
 
                                     <RaceCheckTable
-                                        categories={event?.categories ?? []}
                                         modalities={event?.modalities ?? []}
                                         genders={event?.genders ?? []}
                                         racecheck={event?.racecheck || ''}

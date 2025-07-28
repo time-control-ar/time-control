@@ -1,5 +1,5 @@
 'use client'
-import { useForm } from 'react-hook-form'
+import { useFieldArray, useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { eventCreateSchema, EventFormData, EventResponse } from '@/lib/schemas/event.schema'
 import { File, Loader2, CheckIcon, ListIcon, ListOrderedIcon, UnderlineIcon, BoldIcon, ItalicIcon, TrashIcon, ArrowLeftIcon, MapPinIcon, PlusIcon, SettingsIcon, InfoIcon } from 'lucide-react'
@@ -10,7 +10,7 @@ const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10MB
 const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp']
 const ALLOWED_FILE_EXTENSIONS = ['.racecheck']
 
-import { adminEmails, Category, eventTypes, Modality, validateFile } from '@/lib/utils'
+import { adminEmails, Category, eventTypes, Modality, parseRacechecks, validateFile } from '@/lib/utils'
 import { SignInButton } from '../ui/sign-in-button'
 import { useEffect, useState } from 'react'
 import { useSession } from 'next-auth/react'
@@ -58,6 +58,8 @@ export default function EventForm({ event }: EventFormProps) {
 
   const isNewEvent = !event?._id
 
+  const defaultGenders = [{ name: 'Masculino', matchsWith: 'M' }, { name: 'Femenino', matchsWith: 'F' }]
+
   const defaultValues = {
     _id: event?._id ?? "",
     name: event?.name ?? "",
@@ -72,6 +74,7 @@ export default function EventForm({ event }: EventFormProps) {
     modalities: event?.modalities ?? [],
     racecheck: event?.racecheck ?? null,
     type: event?.type ?? "",
+    genders: event?.genders ?? defaultGenders
   }
 
   const {
@@ -80,12 +83,37 @@ export default function EventForm({ event }: EventFormProps) {
     reset,
     watch,
     setValue,
+    control,
     formState: { errors, isSubmitting }
   } = useForm<EventFormData>({
     resolver: zodResolver(eventCreateSchema),
     mode: 'onBlur',
     defaultValues
   })
+  const { append, remove, update } = useFieldArray({
+    control: control,
+    name: 'modalities'
+  })
+
+  const handleRemoveCategory = (categoryIndex: number, modalityIndex: number) => {
+    const currentModality = modalities?.[modalityIndex];
+    if (currentModality && currentModality.categories) {
+      const updatedCategories = currentModality.categories.filter((_, index) => index !== categoryIndex);
+      update(modalityIndex, { ...currentModality, categories: updatedCategories });
+    }
+  }
+  const handleRemoveModality = (index: number) => {
+    remove(index)
+  }
+  const handleAddCategory = (category: Category, index: number) => {
+    const currentModality = modalities?.[index];
+    if (currentModality) {
+      update(index, {
+        ...currentModality,
+        categories: [...(currentModality.categories ?? []), category]
+      });
+    }
+  }
 
   const editor = useEditor({
     extensions: [
@@ -245,18 +273,6 @@ export default function EventForm({ event }: EventFormProps) {
     }
   }
 
-  const handleAddModality = (modality: Modality) => {
-    const currentModalities = watch('modalities') || []
-    setValue('modalities', [...currentModalities, modality])
-  }
-
-  const handleRemoveModality = (index: number) => {
-    const currentModalities = watch('modalities') || []
-    const newModalities = currentModalities.filter((_, i) => i !== index)
-    setValue('modalities', newModalities)
-  }
-
-
 
   if (!session?.user?.email && status === 'unauthenticated') return (
     <div className="h-screen w-full flex items-center justify-center">
@@ -317,7 +333,7 @@ export default function EventForm({ event }: EventFormProps) {
         className="w-full flex flex-col min-h-max mt-12"
       >
         <div className="flex flex-col lg:flex-row gap-6 h-full w-full items-center lg:items-start max-w-6xl mx-auto px-3 lg:px-0">
-          <div className="flex flex-col w-full gap-8 max-w-sm h-max lg:pb-12">
+          <div className="flex flex-col w-full gap-8 max-w-sm h-max lg:pb-12 px-3 md:px-6">
             <div className="flex items-center gap-2">
               <button
                 type="button"
@@ -341,13 +357,13 @@ export default function EventForm({ event }: EventFormProps) {
               </label>
             </div>
 
-            <div className="flex h-max gap-1 w-full">
+            <div className="flex h-max gap-2 w-full">
 
               <div className="flex flex-col items-start gap-1 w-full">
                 <label className="label-input">Título *</label>
                 <input
                   {...register("name")}
-                  className="input"
+                  className="input !text-sm "
                   placeholder="Ej: Carrera 5K Primavera"
                 />
                 {errors.name && (
@@ -372,6 +388,7 @@ export default function EventForm({ event }: EventFormProps) {
                 />
               </div>
             </div>
+
             <div className='w-full flex flex-col gap-1'>
               <label className="label-input">
                 Imagen del evento
@@ -397,7 +414,9 @@ export default function EventForm({ event }: EventFormProps) {
                         setValue('image', '')
                       }}
                     >
-                      <TrashIcon className="w-4 h-4 text-white" strokeWidth={2.5} />
+                      <TrashIcon
+                        className="w-4 h-4 text-white" strokeWidth={2.5}
+                      />
                     </button>
                   </div>
                 </div>
@@ -411,7 +430,7 @@ export default function EventForm({ event }: EventFormProps) {
                       <span className="text-sm font-medium ml-2">Actualizando imagen...</span>
                     </div>
                   ) : (
-                    <div className="text-center p-3">
+                    <div className="text-center py-6">
                       <input
                         accept={ALLOWED_IMAGE_TYPES.join(',')}
                         onChange={handleImageChange}
@@ -433,11 +452,7 @@ export default function EventForm({ event }: EventFormProps) {
               )}
             </div>
 
-
-
             <div className="flex flex-col gap-2">
-
-
               <label className="label-input">Fecha y hora *</label>
 
               <div className="flex items-center w-full gap-6">
@@ -606,7 +621,6 @@ export default function EventForm({ event }: EventFormProps) {
             </div>
           </div>
 
-
           <div className="flex flex-col gap-8 w-full mt-[60px] lg:px-6">
             <div className="flex items-center gap-2 px-3 lg:px-6 pb-3">
               <SettingsIcon className="w-4 h-4 text-gray-500 dark:text-gray-400" />
@@ -616,8 +630,15 @@ export default function EventForm({ event }: EventFormProps) {
             </div>
 
             <div className='flex flex-col gap-2'>
-              <p className="label-input">Modalidades</p>
-              <ModalityForm handleAddModality={handleAddModality} />
+              <div className="flex flex-col gap-2 max-w-md ">
+                <ModalityForm append={append} />
+                {modalities && modalities.length > 0 && (
+                  <CategoryForm
+                    handleAddCategory={handleAddCategory}
+                    modalities={modalities}
+                  />
+                )}
+              </div>
 
               <div className={`modern-table w-full ${modalities?.length === 0 ? "hidden" : ""}`}>
                 <table>
@@ -628,47 +649,20 @@ export default function EventForm({ event }: EventFormProps) {
                       <th className="w-max !text-center">Acciones</th>
                     </tr>
                   </thead>
+
                   <tbody className="modern-table-body">
-                    {modalities?.map((modality: Modality, index: number) => (
-                      <tr key={index} className="group">
-                        <td className='!text-center items-center justify-start flex max-w-max !px-4'>
-                          <div className="chip_filter max-w-max">
-                            <p className='text-sm text-gray-500 dark:text-gray-400 px-2'>
-                              {modality.name}
-                            </p>
-                          </div>
-                        </td>
-
-                        <td className="!px-4">
-                          <div className="flex w-full gap-2">
-                            <ul>
-                              {modality.categories?.map((category: Category) => (
-                                <li key={category.name} className='text-sm font-mono opacity-50 text-gray-500 dark:text-gray-400'>
-                                  {category.name}
-                                </li>
-                              ))}
-                            </ul>
-
-                            <button
-                              type="button"
-                              className='w-8 h-8 flex items-center justify-center transition-all duration-100 gap-2 rounded-full custom_border'
-                            >
-                              <PlusIcon className='w-4 h-4 text-gray-500 dark:text-gray-400' />
-                            </button>
-                          </div>
-                        </td>
-
-                        <td className="py-2 px-3 !text-center items-center justify-center flex">
-                          <button
-                            type="button"
-                            className="rounded-full bg-red-600 flex items-center justify-center p-2 hover:bg-red-700 transition-all duration-75 w-max"
-                            onClick={() => handleRemoveModality(index)}
-                          >
-                            <TrashIcon className="w-4 h-4 text-white" strokeWidth={2.5} />
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
+                    {modalities?.map((modality: Modality, index: number) => {
+                      return (
+                        <ModalityRow
+                          key={`${modality.name}-${index}`}
+                          modality={modality}
+                          index={index}
+                          handleRemoveCategory={handleRemoveCategory}
+                          handleRemoveModality={handleRemoveModality}
+                        />
+                      )
+                    }
+                    )}
                   </tbody>
                 </table>
               </div>
@@ -702,10 +696,7 @@ export default function EventForm({ event }: EventFormProps) {
               </div>
             ) :
               <div className='w-full flex flex-col h-max max-h-[90vh]'>
-                <div className="flex items-center justify-between gap-2 w-full pb-3 px-3 lg:px-6">
-                  <div className="flex">
-                    <label className="label-input">Resultados (.racecheck)</label>
-                  </div>
+                <div className="p-3 rounded-xl  custom_border">
 
                   <button
                     type="button"
@@ -719,10 +710,9 @@ export default function EventForm({ event }: EventFormProps) {
                 </div>
 
                 <RaceCheckTable
-                  categories={event?.categories ?? []}
                   modalities={event?.modalities ?? []}
                   genders={event?.genders ?? []}
-                  racecheck={racecheck}
+                  runners={parseRacechecks(racecheck ?? '')}
                   previewMode={{
                     eventId: event?._id ?? ''
                   }}
@@ -750,9 +740,7 @@ export default function EventForm({ event }: EventFormProps) {
             </div>
           </button>
         </div>
-
       </form>
-
 
       {toast?.show && (
         <Toast
@@ -761,31 +749,89 @@ export default function EventForm({ event }: EventFormProps) {
           dismissible={true}
           onDismiss={() => setToast({ message: '', type: 'info', show: false })}
         />
-      )
-      }
-
-
+      )}
     </div >
   )
 }
 
-const ModalityForm = ({ handleAddModality }: { handleAddModality: (modality: Modality) => void }) => {
+const ModalityRow = ({ modality, handleRemoveModality, handleRemoveCategory, index }: { modality: Modality, handleRemoveModality: (index: number) => void, handleRemoveCategory: (categoryIndex: number, modalityIndex: number) => void, index: number }) => {
+
+  return (
+
+    <tr key={index}>
+      <td className='!px-4 '>
+        <div className="chip_filter max-w-max">
+          <p className='text-sm text-gray-500 dark:text-gray-400 px-2'>
+            {modality.name}
+          </p>
+        </div>
+      </td>
+
+      <td className="flex  gap-2">
+        {modality?.categories?.map((category: Category, categoryIndex: number) => {
+          return (
+            <li
+              key={`${category.name}-${categoryIndex}`}
+              className='flex items-center justify-between gap-2 text-sm'
+            >
+              <div>
+                <div className='chip_filter'>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 px-2">
+                    {category?.name}
+                  </p>
+                </div>
+                <p className='font-mono'>
+                  {category?.matchsWith}
+                </p>
+              </div>
+
+              <button
+                type="button"
+                className='w-8 h-8 flex items-center justify-center transition-all duration-100 gap-2 rounded-full bg-red-600 hover:bg-red-700'
+                onClick={() => handleRemoveCategory(categoryIndex, index)}
+              >
+                <TrashIcon className="w-4 h-4 text-white" strokeWidth={2.5} />
+              </button>
+            </li>
+          )
+        })}
+      </td>
+
+      <td className="py-2 px-3 !text-center items-center justify-center w-max">
+        <button
+          type="button"
+          className="rounded-full bg-red-600 flex items-center justify-center p-2 hover:bg-red-700 transition-all duration-75 w-max"
+          onClick={() => handleRemoveModality(index)}
+        >
+          <TrashIcon className="w-4 h-4 text-white" strokeWidth={2.5} />
+        </button>
+      </td>
+    </tr>
+  )
+}
+
+const ModalityForm = ({ append }: { append: (modality: Modality) => void }) => {
   const [name, setName] = useState<string>('')
+
 
   const handleSubmit = () => {
     if (name.trim()) {
-      handleAddModality({ name: name.trim(), categories: [] })
+      append({ name: name.trim(), categories: [] })
       setName('') // Limpiar el input después de agregar
     }
   }
 
   return (
-    <div className="flex items-center gap-2 w-full max-w-sm px-3">
-      <div className="flex flex-col gap-1 w-full">
+    <div className="flex flex-col justify-end gap-2 w-full max-w-sm">
+      <p className="label-input">
+        Modalidades
+      </p>
+
+      <div className="flex gap-2 w-full">
         <input
           type="text"
           className="input"
-          placeholder="Cree una nueva modalidad"
+          placeholder="Crear modalidad"
           value={name}
           onChange={(e) => setName(e.target.value)}
           onKeyPress={(e) => {
@@ -795,16 +841,107 @@ const ModalityForm = ({ handleAddModality }: { handleAddModality: (modality: Mod
             }
           }}
         />
+        <div className="w-max mt-1">
+          <button
+            type="button"
+            className="rounded-full bg-gray-100 flex items-center justify-center p-2 hover:bg-gray-200 transition-all duration-75"
+            onClick={handleSubmit}
+            disabled={!name.trim()}
+          >
+            <PlusIcon className="w-4 h-4 text-gray  -500 dark:text-gray-400" strokeWidth={2.5} />
+          </button>
+        </div>
       </div>
-
-      <button
-        type="button"
-        className="custom_border rounded-full min-w-10 min-h-10 flex items-center justify-center"
-        onClick={handleSubmit}
-        disabled={!name.trim()}
-      >
-        <PlusIcon className="w-4 h-4" strokeWidth={2.5} />
-      </button>
     </div>
   )
 }
+
+const CategoryForm = ({ modalities, handleAddCategory }: { modalities: Modality[], handleAddCategory: (category: Category, index: number) => void }) => {
+  const [newCategory, setNewCategory] = useState<Category>({ name: '', matchsWith: '' })
+  const [selectedModality, setSelectedModality] = useState<Modality | null>(modalities.length > 0 ? modalities[0] : null)
+
+  // Actualizar selectedModality cuando cambien las modalidades
+  useEffect(() => {
+    if (modalities.length > 0 && !selectedModality) {
+      setSelectedModality(modalities[0]);
+    } else if (modalities.length === 0) {
+      setSelectedModality(null);
+    }
+  }, [modalities, selectedModality]);
+
+  const handleSubmit = () => {
+    if (newCategory.name.trim() && selectedModality) {
+      handleAddCategory(newCategory, modalities.indexOf(selectedModality))
+      setNewCategory({ name: '', matchsWith: '' })
+    }
+  }
+  useEffect(() => {
+    setSelectedModality(modalities[0])
+  }, [modalities])
+
+  if (modalities.length === 0) return null
+
+  return (
+    <div className="flex gap-2 w-full flex-col">
+      <p className='label-input'>Categoría *</p>
+
+      <div className="flex flex-col gap-2 w-full">
+        <div className="flex flex-col md:flex-row gap-2 w-full">
+          <input
+            type="text"
+            className="input"
+            placeholder="Nombre"
+            value={newCategory.name}
+            onChange={(e) => setNewCategory({ name: e.target.value, matchsWith: newCategory.matchsWith })}
+            onKeyPress={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault()
+                handleSubmit()
+              }
+            }}
+          />
+
+          <input
+            type="text"
+            className="input"
+            placeholder="Valor en racecheck"
+            value={newCategory.matchsWith}
+            onChange={(e) => setNewCategory({ name: newCategory.name, matchsWith: e.target.value })}
+            onKeyPress={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault()
+                handleSubmit()
+              }
+            }}
+          />
+
+          <select
+            className="input !py-0"
+            value={selectedModality?.name ?? ''}
+            required
+            disabled={modalities.length === 0}
+            onChange={(e) => setSelectedModality(modalities.find((m) => m.name === e.target.value) ?? modalities[0])}
+          >
+            <option value="" disabled>Selecciona una modalidad</option>
+            {modalities.map((modality) => (
+              <option key={modality.name} value={modality.name}>
+                {modality.name}
+              </option>
+            ))}
+          </select>
+
+          <div>
+            <button
+              type="button"
+              className="rounded-full bg-gray-100 flex items-center justify-center p-2 hover:bg-gray-200 transition-all duration-75"
+              onClick={handleSubmit}
+              disabled={!newCategory.name.trim()}
+            >
+              <PlusIcon className="w-4 h-4 text-gray-500 dark:text-gray-400" strokeWidth={2.5} />
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+} 

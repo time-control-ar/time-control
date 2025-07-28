@@ -163,7 +163,7 @@ export function parseRacechecks(fileContent: string): RacecheckRunner[] {
  // Función para validar si una línea tiene datos válidos
  const isValidDataLine = (line: string): boolean => {
   const parts = line.split("|").map((item) => item.trim());
-  return parts.length >= 11 && !isHeaderLine(line) && line.trim().length > 10;
+  return parts.length >= 11 && !isHeaderLine(line);
  };
 
  // Filtrar líneas válidas
