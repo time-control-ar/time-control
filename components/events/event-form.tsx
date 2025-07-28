@@ -10,7 +10,7 @@ const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10MB
 const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp']
 const ALLOWED_FILE_EXTENSIONS = ['.racecheck']
 
-import { adminEmails, Category, eventTypes, Modality, parseRacechecks, validateFile } from '@/lib/utils'
+import { adminEmails, Category, eventTypes, Gender, Modality, parseRacechecks, validateFile } from '@/lib/utils'
 import { SignInButton } from '../ui/sign-in-button'
 import { useEffect, useState } from 'react'
 import { useSession } from 'next-auth/react'
@@ -94,6 +94,10 @@ export default function EventForm({ event }: EventFormProps) {
     control: control,
     name: 'modalities'
   })
+  const { append: appendGender, remove: removeGender } = useFieldArray({
+    control: control,
+    name: 'genders'
+  })
 
   const handleRemoveCategory = (categoryIndex: number, modalityIndex: number) => {
     const currentModality = modalities?.[modalityIndex];
@@ -113,6 +117,12 @@ export default function EventForm({ event }: EventFormProps) {
         categories: [...(currentModality.categories ?? []), category]
       });
     }
+  }
+  const handleAddGender = (gender: Gender) => {
+    appendGender(gender)
+  }
+  const handleRemoveGender = (index: number) => {
+    removeGender(index)
   }
 
   const editor = useEditor({
@@ -630,41 +640,77 @@ export default function EventForm({ event }: EventFormProps) {
             </div>
 
             <div className='flex flex-col gap-2'>
-              <div className="flex flex-col gap-2 max-w-md ">
-                <ModalityForm append={append} />
-                {modalities && modalities.length > 0 && (
-                  <CategoryForm
-                    handleAddCategory={handleAddCategory}
-                    modalities={modalities}
-                  />
-                )}
-              </div>
+              <div className="flex flex-col gap-2">
+                <div className={`modern-table w-full ${watch('genders')?.length === 0 ? "hidden" : ""}`}>
+                  <table>
+                    <thead className="modern-table-header">
+                      <tr>
+                        <th className="w-max max-w-max">Nombre</th>
+                        <th className="w-full">Valor en racecheck</th>
+                        <th className="w-max !text-center">Acciones</th>
+                      </tr>
+                    </thead>
 
-              <div className={`modern-table w-full ${modalities?.length === 0 ? "hidden" : ""}`}>
-                <table>
-                  <thead className="modern-table-header">
-                    <tr>
-                      <th className="w-max max-w-max">Nombre</th>
-                      <th className="w-full">Categorías</th>
-                      <th className="w-max !text-center">Acciones</th>
-                    </tr>
-                  </thead>
+                    <tbody className="modern-table-body">
+                      {watch('genders')?.map((gender: Gender, index: number) => {
+                        return (
+                          <GenderRow
+                            key={`${gender.name}-${index}`}
+                            gender={gender}
+                            index={index}
+                            handleRemoveGender={handleRemoveGender}
+                          />
+                        )
+                      }
+                      )}
+                    </tbody>
+                  </table>
+                  <GendersForm handleAddGender={handleAddGender} />
+                </div>
 
-                  <tbody className="modern-table-body">
-                    {modalities?.map((modality: Modality, index: number) => {
-                      return (
-                        <ModalityRow
-                          key={`${modality.name}-${index}`}
-                          modality={modality}
-                          index={index}
-                          handleRemoveCategory={handleRemoveCategory}
-                          handleRemoveModality={handleRemoveModality}
-                        />
-                      )
-                    }
+                <div className={`modern-table w-full ${modalities?.length === 0 ? "hidden" : ""}`}>
+                  <table>
+                    <thead className="modern-table-header">
+                      <tr>
+                        <th className="w-max max-w-max">Nombre</th>
+                        <th className="w-full">Categorías</th>
+                        <th className="w-max !text-center">Acciones</th>
+                      </tr>
+                    </thead>
+
+                    <tbody className="modern-table-body">
+                      {modalities?.map((modality: Modality, index: number) => {
+                        return (
+                          <ModalityRow
+                            key={`${modality.name}-${index}`}
+                            modality={modality}
+                            index={index}
+                            handleRemoveCategory={handleRemoveCategory}
+                            handleRemoveModality={handleRemoveModality}
+                          />
+                        )
+                      }
+                      )}
+                    </tbody>
+                  </table>
+                  <div className='p-6 border-t border-gray-200 dark:border-gray-800 flex flex-col gap-2'>
+                    <p className='text-sm font-medium font-mono mb-3 tracking-tight text-gray-500 dark:text-gray-400'>
+                      Modalidades
+                    </p>
+
+                    <ModalityForm append={append} />
+
+                    <p className='text-sm font-medium font-mono my-3 tracking-tight text-gray-500 dark:text-gray-400'>
+                      Categorías
+                    </p>
+                    {modalities && modalities.length > 0 && (
+                      <CategoryForm
+                        handleAddCategory={handleAddCategory}
+                        modalities={modalities}
+                      />
                     )}
-                  </tbody>
-                </table>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -696,17 +742,30 @@ export default function EventForm({ event }: EventFormProps) {
               </div>
             ) :
               <div className='w-full flex flex-col h-max max-h-[90vh]'>
-                <div className="p-3 rounded-xl  custom_border">
+                <div className="p-3 rounded-xl custom_border bg-gradient-to-b from-gray-100 to-gray-200 dark:from-gray-900 dark:to-gray-950">
+                  <div className="p-3 flex items-center justify-between">
+                    <p className='text-sm font-medium tracking-tight text-gray-500 dark:text-gray-400'>
+                      {racecheck?.split('\n')[0]}
+                    </p>
 
-                  <button
-                    type="button"
-                    className="rounded-full bg-red-600 flex items-center justify-center p-2 hover:bg-red-700 transition-all duration-75 w-max"
-                    onClick={() => {
-                      setValue('racecheck', null)
-                    }}
-                  >
-                    <TrashIcon className="w-4 h-4 text-white" strokeWidth={2.5} />
-                  </button>
+                    <button
+                      type="button"
+                      className="rounded-full bg-red-600 flex items-center justify-center p-2 hover:bg-red-700 transition-all duration-75 w-max"
+                      onClick={() => {
+                        setValue('racecheck', null)
+                      }}
+                    >
+                      <TrashIcon className="w-4 h-4 text-white" strokeWidth={2.5} />
+                    </button>
+                  </div>
+
+                  <div className="flex flex-col gap-2">
+                    { }
+                    <p className='text-sm font-medium tracking-tight text-gray-500 dark:text-gray-400'>
+                      {racecheck?.split('\n')[0]}
+                    </p>
+                  </div>
+
                 </div>
 
                 <RaceCheckTable
@@ -754,61 +813,7 @@ export default function EventForm({ event }: EventFormProps) {
   )
 }
 
-const ModalityRow = ({ modality, handleRemoveModality, handleRemoveCategory, index }: { modality: Modality, handleRemoveModality: (index: number) => void, handleRemoveCategory: (categoryIndex: number, modalityIndex: number) => void, index: number }) => {
 
-  return (
-
-    <tr key={index}>
-      <td className='!px-4 '>
-        <div className="chip_filter max-w-max">
-          <p className='text-sm text-gray-500 dark:text-gray-400 px-2'>
-            {modality.name}
-          </p>
-        </div>
-      </td>
-
-      <td className="flex  gap-2">
-        {modality?.categories?.map((category: Category, categoryIndex: number) => {
-          return (
-            <li
-              key={`${category.name}-${categoryIndex}`}
-              className='flex items-center justify-between gap-2 text-sm'
-            >
-              <div>
-                <div className='chip_filter'>
-                  <p className="text-sm text-gray-500 dark:text-gray-400 px-2">
-                    {category?.name}
-                  </p>
-                </div>
-                <p className='font-mono'>
-                  {category?.matchsWith}
-                </p>
-              </div>
-
-              <button
-                type="button"
-                className='w-8 h-8 flex items-center justify-center transition-all duration-100 gap-2 rounded-full bg-red-600 hover:bg-red-700'
-                onClick={() => handleRemoveCategory(categoryIndex, index)}
-              >
-                <TrashIcon className="w-4 h-4 text-white" strokeWidth={2.5} />
-              </button>
-            </li>
-          )
-        })}
-      </td>
-
-      <td className="py-2 px-3 !text-center items-center justify-center w-max">
-        <button
-          type="button"
-          className="rounded-full bg-red-600 flex items-center justify-center p-2 hover:bg-red-700 transition-all duration-75 w-max"
-          onClick={() => handleRemoveModality(index)}
-        >
-          <TrashIcon className="w-4 h-4 text-white" strokeWidth={2.5} />
-        </button>
-      </td>
-    </tr>
-  )
-}
 
 const ModalityForm = ({ append }: { append: (modality: Modality) => void }) => {
   const [name, setName] = useState<string>('')
@@ -823,10 +828,6 @@ const ModalityForm = ({ append }: { append: (modality: Modality) => void }) => {
 
   return (
     <div className="flex flex-col justify-end gap-2 w-full max-w-sm">
-      <p className="label-input">
-        Modalidades
-      </p>
-
       <div className="flex gap-2 w-full">
         <input
           type="text"
@@ -882,66 +883,205 @@ const CategoryForm = ({ modalities, handleAddCategory }: { modalities: Modality[
   if (modalities.length === 0) return null
 
   return (
-    <div className="flex gap-2 w-full flex-col">
-      <p className='label-input'>Categoría *</p>
 
-      <div className="flex flex-col gap-2 w-full">
-        <div className="flex flex-col md:flex-row gap-2 w-full">
-          <input
-            type="text"
-            className="input"
-            placeholder="Nombre"
-            value={newCategory.name}
-            onChange={(e) => setNewCategory({ name: e.target.value, matchsWith: newCategory.matchsWith })}
-            onKeyPress={(e) => {
-              if (e.key === 'Enter') {
-                e.preventDefault()
-                handleSubmit()
-              }
-            }}
-          />
+    <div className="flex flex-col md:flex-row gap-2 w-full">
+      <input
+        type="text"
+        className="input"
+        placeholder="Nombre"
+        value={newCategory.name}
+        onChange={(e) => setNewCategory({ name: e.target.value, matchsWith: newCategory.matchsWith })}
+        onKeyPress={(e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault()
+            handleSubmit()
+          }
+        }}
+      />
 
-          <input
-            type="text"
-            className="input"
-            placeholder="Valor en racecheck"
-            value={newCategory.matchsWith}
-            onChange={(e) => setNewCategory({ name: newCategory.name, matchsWith: e.target.value })}
-            onKeyPress={(e) => {
-              if (e.key === 'Enter') {
-                e.preventDefault()
-                handleSubmit()
-              }
-            }}
-          />
+      <input
+        type="text"
+        className="input"
+        placeholder="Valor en racecheck"
+        value={newCategory.matchsWith}
+        onChange={(e) => setNewCategory({ name: newCategory.name, matchsWith: e.target.value })}
+        onKeyPress={(e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault()
+            handleSubmit()
+          }
+        }}
+      />
 
-          <select
-            className="input !py-0"
-            value={selectedModality?.name ?? ''}
-            required
-            disabled={modalities.length === 0}
-            onChange={(e) => setSelectedModality(modalities.find((m) => m.name === e.target.value) ?? modalities[0])}
-          >
-            <option value="" disabled>Selecciona una modalidad</option>
-            {modalities.map((modality) => (
-              <option key={modality.name} value={modality.name}>
-                {modality.name}
-              </option>
-            ))}
-          </select>
+      <select
+        className="input !py-0"
+        value={selectedModality?.name ?? ''}
+        required
+        disabled={modalities.length === 0}
+        onChange={(e) => setSelectedModality(modalities.find((m) => m.name === e.target.value) ?? modalities[0])}
+      >
+        <option value="" disabled>Selecciona una modalidad</option>
+        {modalities.map((modality) => (
+          <option key={modality.name} value={modality.name}>
+            {modality.name}
+          </option>
+        ))}
+      </select>
 
-          <div>
-            <button
-              type="button"
-              className="rounded-full bg-gray-100 flex items-center justify-center p-2 hover:bg-gray-200 transition-all duration-75"
-              onClick={handleSubmit}
-              disabled={!newCategory.name.trim()}
-            >
-              <PlusIcon className="w-4 h-4 text-gray-500 dark:text-gray-400" strokeWidth={2.5} />
-            </button>
-          </div>
-        </div>
+      <div>
+        <button
+          type="button"
+          className="rounded-full bg-gray-100 flex items-center justify-center p-2 hover:bg-gray-200 transition-all duration-75"
+          onClick={handleSubmit}
+          disabled={!newCategory.name.trim()}
+        >
+          <PlusIcon className="w-4 h-4 text-gray-500 dark:text-gray-400" strokeWidth={2.5} />
+        </button>
       </div>
     </div>
   )
-} 
+}
+
+const GendersForm = ({ handleAddGender }: { handleAddGender: (gender: Gender) => void }) => {
+  const [newGender, setNewGender] = useState<Gender>({ name: '', matchsWith: '' })
+
+
+  return (
+    <div key={`new-gender`} className='p-3 flex w-full items-start gap-2'>
+      <div className='flex flex-col gap-1'>
+        <input
+          type="text"
+          className="input"
+          placeholder="Nombre"
+          value={newGender.name}
+          onChange={(e) => setNewGender({ name: e.target.value, matchsWith: newGender.matchsWith })}
+          onKeyPress={(e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault()
+              handleAddGender(newGender)
+              setNewGender({ name: '', matchsWith: '' })
+            }
+          }}
+        />
+      </div>
+
+      <div className="flex flex-col gap-1">
+        <input
+          type="text"
+          className="input"
+          placeholder="Valor en racecheck"
+          value={newGender.matchsWith}
+          onChange={(e) => setNewGender({ name: newGender.name, matchsWith: e.target.value })}
+          onKeyPress={(e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault()
+              handleAddGender(newGender)
+              setNewGender({ name: '', matchsWith: '' })
+            }
+          }}
+        />
+      </div>
+
+      <div className="flex flex-col gap-1 px-3 md:px-4 items-center">
+        <button
+          type="button"
+          className="rounded-full bg-gray-100 flex items-center justify-center p-2 hover:bg-gray-200 transition-all duration-75"
+          onClick={() => {
+            handleAddGender(newGender)
+            setNewGender({ name: '', matchsWith: '' })
+          }}
+          disabled={!newGender.name.trim()}
+        >
+          <PlusIcon className="w-4 h-4 text-gray-500 dark:text-gray-400" strokeWidth={2.5} />
+        </button>
+      </div >
+    </div>
+  )
+}
+
+
+const ModalityRow = ({ modality, handleRemoveModality, handleRemoveCategory, index }: { modality: Modality, handleRemoveModality: (index: number) => void, handleRemoveCategory: (categoryIndex: number, modalityIndex: number) => void, index: number }) => {
+
+  return (
+
+    <tr key={index}>
+      <td className='!px-4 '>
+        <div className="chip_filter max-w-max">
+          <p className='text-sm text-gray-500 dark:text-gray-400 px-2'>
+            {modality.name}
+          </p>
+        </div>
+      </td>
+
+      <td className="flex w-full gap-2">
+        {modality?.categories?.map((category: Category, categoryIndex: number) => {
+          return (
+            <li
+              key={`${category.name}-${categoryIndex}`}
+              className='flex items-center justify-between gap-2 text-sm'
+            >
+              <div className='flex flex-col gap-1'>
+                <div className='chip_filter'>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 px-2">
+                    {category?.name}
+                  </p>
+                </div>
+                <p className='font-mono'>
+                  {category?.matchsWith}
+                </p>
+              </div>
+
+              <button
+                type="button"
+                className='w-8 h-8 flex items-center justify-center transition-all duration-100 gap-2 rounded-full bg-red-600 hover:bg-red-700'
+                onClick={() => handleRemoveCategory(categoryIndex, index)}
+              >
+                <TrashIcon className="w-4 h-4 text-white" strokeWidth={2.5} />
+              </button>
+            </li>
+          )
+        })}
+      </td>
+
+      <td className="py-2 px-3 flex items-center justify-center">
+        <button
+          type="button"
+          className="rounded-full bg-red-600 flex items-center justify-center p-2 hover:bg-red-700 transition-all duration-75 w-max"
+          onClick={() => handleRemoveModality(index)}
+        >
+          <TrashIcon className="w-4 h-4 text-white" strokeWidth={2.5} />
+        </button>
+      </td>
+    </tr>
+  )
+}
+
+const GenderRow = ({ gender, index, handleRemoveGender }: { gender: Gender, index: number, handleRemoveGender: (index: number) => void }) => {
+  return (
+    <tr key={index}>
+      <td className='!px-4 '>
+        <div className="chip_filter max-w-max">
+          <p className='text-sm text-gray-500 dark:text-gray-400 px-2'>
+            {gender.name}
+          </p>
+        </div>
+      </td>
+
+      <td className="py-2 px-3 items-center justify-center w-max">
+        <p className='font-mono text-sm text-gray-500 dark:text-gray-400 px-2'>
+          {gender.matchsWith}
+        </p>
+      </td>
+
+      <td className="py-2 px-3 flex items-center justify-center">
+        <button
+          type="button"
+          className="rounded-full bg-red-600 flex items-center justify-center p-2 hover:bg-red-700 transition-all duration-75 w-max"
+          onClick={() => handleRemoveGender(index)}
+        >
+          <TrashIcon className="w-4 h-4 text-white" strokeWidth={2.5} />
+        </button>
+      </td>
+    </tr>
+  )
+}

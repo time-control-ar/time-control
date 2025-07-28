@@ -101,15 +101,15 @@ const RaceCheckTable = ({ modalities, genders, runners, previewMode }: RaceCheck
         setSearch('')
     }
 
-    // if (!runners || runners.length === 0) {
-    //     return (
-    //         <div className="w-full flex flex-col items-center justify-center mb-36 mt-12">
-    //             <div className="text-gray-500 dark:text-gray-400 text-sm font-medium tracking-tight">
-    //                 No hay datos disponibles
-    //             </div>
-    //         </div>
-    //     )
-    // }
+    if (!runners || runners.length === 0) {
+        return (
+            <div className="w-full flex flex-col items-center justify-center mb-36 mt-12">
+                <div className="text-gray-500 dark:text-gray-400 text-sm font-medium tracking-tight">
+                    No hay datos disponibles
+                </div>
+            </div>
+        )
+    }
 
     return (
         <div className='w-full flex flex-col h-full max-h-[700px] overflow-auto sticky top-10'>
