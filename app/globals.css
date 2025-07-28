@@ -174,7 +174,7 @@
 }
 
 .input {
-  @apply w-full px-4 rounded-2xl shadow-lg md:shadow-none p-3 h-10 custom_border bg-white dark:bg-gray-950 active:border-gray-400 dark:active:border-gray-300
+  @apply w-full px-4 rounded-2xl p-3 h-10 custom_border bg-white dark:bg-gray-950 custom_border active:!border-gray-400 dark:active:!border-gray-300
   outline-none ring-0 transition-all duration-75 placeholder:text-gray-300 dark:placeholder:text-gray-400 placeholder:text-sm font-medium tracking-tight;
 }
 .file-input {
@@ -201,7 +201,7 @@
 }
 
 .custom_border {
-  @apply border border-gray-200 dark:border-gray-700
+  @apply border border-gray-200 dark:border-gray-700 focus:!border-gray-400 dark:focus:!border-gray-300
   disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-75;
 }
 
@@ -212,7 +212,7 @@
 
 /* Modern Table Styles */
 .modern-table {
-  @apply w-full h-full flex flex-col overflow-auto bg-white dark:bg-gray-950 dark:!border-gray-900 rounded-xl custom_border;
+  @apply w-full h-auto flex flex-col overflow-auto rounded-xl custom_border shadow-lg;
 }
 
 .modern-table-header {
