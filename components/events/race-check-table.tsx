@@ -1,6 +1,6 @@
 'use client'
 
-import { Category, Gender, Modality, RacecheckRunner } from '@/lib/utils'
+import { Category, Gender, Modality, Runners } from '@/lib/utils'
 import { ArrowLeftIcon, ArrowRightIcon, SearchIcon, TicketIcon, CheckIcon, SlidersIcon, ArrowUp, XIcon, BrushCleaning } from 'lucide-react'
 import { useState, useMemo } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
@@ -10,9 +10,9 @@ import { useRouter } from 'next/navigation'
 interface RaceCheckProps {
     modalities: Modality[]
     genders: Gender[]
-    runners: RacecheckRunner[]
-    previewMode: {
-        eventId: string
+    runners: Runners[]
+    previewMode?: {
+        eventId?: string
     }
 }
 
@@ -28,29 +28,29 @@ const RaceCheckTable = ({ modalities, genders, runners, previewMode }: RaceCheck
     const [selectedGenders, setSelectedGenders] = useState<string[]>([])
     const [itemsPerPage] = useState(100)
 
-    const filteredParticipants: RacecheckRunner[] = useMemo(() => {
+    const filteredParticipants: Runners[] = useMemo(() => {
         if (!runners || runners.length === 0) return []
         const filteredBySearch = runners.filter(participant => {
             if (!search) return true
-            return participant.name.toLowerCase().includes(search.toLowerCase()) ||
-                participant.time.toLowerCase().includes(search.toLowerCase()) ||
-                participant.position.toString().includes(search) ||
+            return participant.nombre.toLowerCase().includes(search.toLowerCase()) ||
+                participant.tiempo.toLowerCase().includes(search.toLowerCase()) ||
+                participant.posicion.toString().includes(search) ||
                 participant.dorsal.toString().includes(search)
         })
         const filteredByCategories = filteredBySearch.filter(participant => {
             if (!selectedCategories.length) return true
-            return selectedCategories.length > 0 ? selectedCategories.some(category => participant.category.toLowerCase().includes(category.matchsWith?.toLowerCase() || '')) : true
+            return selectedCategories.length > 0 ? selectedCategories.some(category => participant.categoria.toLowerCase().includes(category.matchsWith?.toLowerCase() ?? '')) : true
         })
         const filteredByModalities = filteredByCategories.filter(participant => {
             if (!selectedModalities.length) return true
-            return selectedModalities.length > 0 ? selectedModalities.some(modality => participant.modality === modality.name) : true
+            return selectedModalities.length > 0 ? selectedModalities.some(modality => participant.modalidad === modality.name) : true
         })
         const filteredByGenders = filteredByModalities.filter(participant => {
             if (!selectedGenders.length) return true
-            return selectedGenders.length > 0 ? selectedGenders.some(gender => participant.sex.toLowerCase().includes(gender.toLowerCase())) : true
+            return selectedGenders.length > 0 ? selectedGenders.some(gender => participant.sexo.toLowerCase().includes(gender.toLowerCase())) : true
         })
         return filteredByGenders
-    }, [search, selectedCategories, selectedModalities, selectedGenders])
+    }, [search, selectedCategories, selectedModalities, selectedGenders, runners])
 
     const filtersCount = useMemo(() => {
         return selectedCategories.length + selectedModalities.length + selectedGenders.length
@@ -193,7 +193,7 @@ const RaceCheckTable = ({ modalities, genders, runners, previewMode }: RaceCheck
                         >
 
                             <div className="flex flex-col gap-2 pb-3">
-                                {modalities.length > 0 && (
+                                {modalities?.length > 0 && (
                                     <div className="flex items-center gap-2 w-full h-max overflow-auto scrollbar-hide pb-1 px-3 md:px-6">
                                         {modalities?.map((modality, index) => {
                                             const isSelected = selectedModalities.includes(modality)
@@ -223,7 +223,7 @@ const RaceCheckTable = ({ modalities, genders, runners, previewMode }: RaceCheck
                                     </div>
                                 )}
 
-                                {genders.length > 0 && (
+                                {genders?.length > 0 && (
                                     <div className="flex items-center gap-2 w-full h-max overflow-auto scrollbar-hide pb-1 px-3 md:px-6">
                                         {genders?.map((gender, index) => {
                                             const isSelected = selectedGenders.includes(gender.matchsWith || '')
@@ -314,7 +314,7 @@ const RaceCheckTable = ({ modalities, genders, runners, previewMode }: RaceCheck
                                                 {index + 1}
                                             </p>
                                             <p className="text-xs font-medium tracking-tight text-gray-700 dark:text-gray-300 font-mono-italic">
-                                                {participant.pace.split('m')[0]}
+                                                {participant.ritmo.split('m')[0]}
                                                 <span className="opacity-50">
                                                     m/km
                                                 </span>
@@ -324,10 +324,10 @@ const RaceCheckTable = ({ modalities, genders, runners, previewMode }: RaceCheck
                                     <td>
                                         <div className="flex flex-col items-center justify-center w-[100px] gap-1">
                                             <p className="text-xl font-medium tracking-tight text-gray-800 dark:text-gray-200 font-mono-italic">
-                                                {participant.positionCategory}
+                                                {participant.posCat}
                                             </p>
                                             <p className="text-xs font-medium text-gray-600 dark:text-gray-300">
-                                                {participant.category}
+                                                {participant.categoria}
                                             </p>
                                         </div>
                                     </td>
@@ -350,7 +350,7 @@ const RaceCheckTable = ({ modalities, genders, runners, previewMode }: RaceCheck
                                         <div className="flex flex-col gap-1 px-3">
 
                                             <p className="font-medium text-gray-900 dark:text-white text-base capitalize leading-tight">
-                                                {participant.name.toLowerCase()}
+                                                {participant.nombre.toLowerCase()}
                                             </p>
 
                                         </div>
@@ -359,17 +359,17 @@ const RaceCheckTable = ({ modalities, genders, runners, previewMode }: RaceCheck
                                     <td>
                                         <div className="flex items-center gap-1 w-max rounded-2xl border-2 border-gray-100 dark:border-gray-800 pl-2 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-950 dark:to-gray-900 h-[38px]">
                                             <div className="font-mono text-base text-gray-700 dark:text-gray-300 pr-2">
-                                                {participant.time?.split('.')[0]}
+                                                {participant.tiempo?.split('.')[0]}
                                                 <span className="text-gray-500 dark:text-gray-600 text-xs font-mono">
-                                                    .{participant.time?.split('.')[1]}
+                                                    .{participant.tiempo?.split('.')[1]}
                                                 </span>
                                             </div>
 
-                                            {!previewMode.eventId && participant.dorsal && participant.dorsal !== 'N/A' && (
+                                            {!previewMode?.eventId && participant.dorsal && participant.dorsal !== 'N/A' && participant.chip && (
                                                 <button
                                                     type='button'
                                                     onClick={() => {
-                                                        router.push(`${process.env.NEXT_PUBLIC_QR_URL}/?eventId=${previewMode.eventId}&dorsal=${participant.dorsal}`)
+                                                        router.push(`${process.env.NEXT_PUBLIC_QR_URL}/?eventId=${previewMode?.eventId}&dorsal=${participant.dorsal}`)
                                                     }}
                                                     className="w-max flex items-center gap-0.5 px-3 py-1.5 bg-blue-500 text-white rounded-xl hover:bg-blue-600 transition-all duration-75 ml-auto">
                                                     <TicketIcon className="w-6 h-6" />

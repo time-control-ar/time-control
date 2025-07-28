@@ -1,15 +1,16 @@
 'use client'
 
 import { EventResponse } from '@/lib/schemas/event.schema'
-import { parseRacechecks, RacecheckRunner } from '@/lib/utils'
+import { parseRaceData, Runners } from '@/lib/utils'
+
 import React, { useRef } from 'react'
 import { ArrowLeftIcon, CalendarIcon, ClockIcon, DownloadIcon, MapPinIcon } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import html2canvas from 'html2canvas'
 
-const RunnerTicket = ({ runner, event }: { runner: RacecheckRunner, event: EventResponse | undefined }) => {
-    const { name, sex, category, time, position, positionSex, positionCategory, dorsal, pace } = runner;
+const RunnerTicket = ({ runner, event }: { runner: Runners, event: EventResponse | undefined }) => {
+    const { nombre, sexo, categoria, tiempo, posicion, posSex, posCat, dorsal, ritmo } = runner;
     const router = useRouter()
     const ticketRef = useRef<HTMLDivElement>(null);
     const eventMonth = event?.date
@@ -19,11 +20,12 @@ const RunnerTicket = ({ runner, event }: { runner: RacecheckRunner, event: Event
         ? event?.date.split('T')[0].split('-')[2]
         : 'Día'
 
-    const parsedRacecheck = parseRacechecks(event?.racecheck || '')
+    if (!event) return null
 
-    const runnersAmount = parsedRacecheck.length
-    const runnersInThisCategory = parsedRacecheck.filter((runner: RacecheckRunner) => runner.category === category).length
-    const runnersInThisSex = parsedRacecheck.filter((runner: RacecheckRunner) => runner.sex === sex).length
+    const racecheckData = parseRaceData(event.racecheck ?? '')
+    const runnersAmount = racecheckData.runners?.length ?? 0
+    const runnersInThisCategory = racecheckData.runners?.filter((runner: Runners) => runner.categoria === categoria).length ?? 0
+    const runnersInThisSex = racecheckData.runners?.filter((runner: Runners) => runner.sexo === sexo).length ?? 0
 
     const handleDownload = async () => {
         if (ticketRef.current) {
@@ -31,7 +33,7 @@ const RunnerTicket = ({ runner, event }: { runner: RacecheckRunner, event: Event
             const image = canvas.toDataURL('image/png')
             const link = document.createElement('a')
             link.href = image
-            link.download = `ticket-${dorsal}-${name}.png`
+            link.download = `ticket-${nombre}-${dorsal}.png`
             link.click()
         }
     }
@@ -81,7 +83,7 @@ const RunnerTicket = ({ runner, event }: { runner: RacecheckRunner, event: Event
                                     </p>
                                 </div>
                                 <p className="text-gray-800 text-2xl font-semibold tracking-tight text-start w-full">
-                                    {name}
+                                    {nombre}
                                 </p>
 
                                 <div className="flex gap-4 h-full">
@@ -107,11 +109,11 @@ const RunnerTicket = ({ runner, event }: { runner: RacecheckRunner, event: Event
 
                                         <div className="flex items-end justify-end h-[50px]">
                                             <p className="font-mono tracking-tight text-[30px] text-gray-700">
-                                                {time?.split('.')[0] || '00'}
+                                                {tiempo?.split('.')[0] || '00'}
                                             </p>
 
                                             <p className="text-gray-500 text-base mb-1 font-mono">
-                                                ,{time?.split('.')[1]}
+                                                ,{tiempo?.split('.')[1]}
                                             </p>
                                         </div>
                                     </div>
@@ -121,33 +123,33 @@ const RunnerTicket = ({ runner, event }: { runner: RacecheckRunner, event: Event
                                 <div className='max-w-max mx-auto'>
                                     <div className="flex flex-col items-center">
                                         <h1 className="text-[40px] -mt-2 font-normal tracking-tight text-gray-700 italic font-mono">
-                                            {positionCategory} <span className="text-gray-400 text-xl font-mono -ml-3">
+                                            {posCat} <span className="text-gray-400 text-xl font-mono -ml-3">
                                                 / {runnersInThisCategory || 'N/A'}
                                             </span>
                                         </h1>
                                     </div>
                                     <p className="text-gray-500 text-xs font-normal tracking-tight font-mono">
-                                        {category}
+                                        {categoria}
                                     </p>
                                 </div>
 
                                 <div className='max-w-max mx-auto'>
                                     <div className="flex flex-col items-center">
                                         <h1 className="text-[40px] -mt-2 font-normal tracking-tight text-gray-700 italic font-mono">
-                                            {positionSex} <span className="text-gray-400 text-xl font-mono -ml-3">
+                                            {posSex} <span className="text-gray-400 text-xl font-mono -ml-3">
                                                 / {runnersInThisSex || 'N/A'}
                                             </span>
                                         </h1>
                                     </div>
                                     <p className="text-gray-500 text-xs font-normal tracking-tight font-mono">
-                                        {sex === 'M' ? 'Masculino' : 'Femenino'}
+                                        {sexo}
                                     </p>
                                 </div>
 
                                 <div className='max-w-max mx-auto'>
                                     <div className="flex flex-col items-center">
                                         <h1 className="text-[40px] -mt-2 font-normal tracking-tight text-gray-700 italic font-mono">
-                                            {position} <span className="text-gray-400 text-xl font-mono -ml-3">
+                                            {posicion} <span className="text-gray-400 text-xl font-mono -ml-3">
                                                 / {runnersAmount || 'N/A'}
                                             </span>
                                         </h1>
@@ -162,7 +164,7 @@ const RunnerTicket = ({ runner, event }: { runner: RacecheckRunner, event: Event
                                         Ritmo
                                     </p>
                                     <h1 className="text-base  font-normal tracking-tight text-gray-700 italic font-mono">
-                                        {pace}
+                                        {ritmo}
                                     </h1>
                                 </div>
                             </div>
@@ -190,7 +192,7 @@ const RunnerTicket = ({ runner, event }: { runner: RacecheckRunner, event: Event
                             </div>
 
                             <p className="font-inter tracking-tight text-2xl font-black text-gray-700 absolute bottom-6 right-6 z-10">
-                                {runner.modality}
+                                {runner.modalidad}
                             </p>
                         </div>
 

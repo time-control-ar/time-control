@@ -11,10 +11,10 @@ export function cn(...inputs: ClassValue[]) {
  return twMerge(clsx(inputs));
 }
 
-export function orderByTime(runners: RacecheckRunner[]): RacecheckRunner[] {
+export function orderByTime(runners: Runners[]): Runners[] {
  return runners.sort((a, b) => {
-  const timeA = a.time.split(":");
-  const timeB = b.time.split(":");
+  const timeA = a.tiempo.split(":");
+  const timeB = b.tiempo.split(":");
   return (
    parseInt(timeA[0]) - parseInt(timeB[0]) ||
    parseInt(timeA[1]) - parseInt(timeB[1]) ||
@@ -122,127 +122,91 @@ export interface Category {
  matchsWith?: string;
 }
 
-export interface RacecheckRunner {
- sex: string;
- name: string;
+export interface Runners {
+ sexo: string;
+ nombre: string;
  chip: string;
  dorsal: string;
- modality: string;
- category: string;
- time: string;
- position: string;
- positionSex: string;
- positionCategory: string;
- pace: string;
+ modalidad: string;
+ categoria: string;
+ tiempo: string;
+ posicion: number;
+ posSex: number;
+ posCat: number;
+ ritmo: string;
 }
 
-export function parseRacechecks(fileContent: string): RacecheckRunner[] {
- // Validar entrada
- if (!fileContent || typeof fileContent !== "string") {
-  console.warn("parseRacechecks: Contenido del archivo inválido");
-  return [];
- }
+interface RaceData {
+ categories: string[];
+ modalities: string[];
+ runners: Runners[];
+}
 
- const lines = fileContent.trim().split("\n");
+export function parseRaceData(fileContent: string): RaceData {
+ const lines = fileContent
+  .split("\n")
+  .map((line) => line.trim())
+  .filter((line) => line && !line.startsWith(";") && !line.startsWith("1|"));
+ const categories = new Set<string>();
+ const modalities = new Set<string>();
+ const runners: Runners[] = [];
 
- // Validar que hay contenido
- if (lines.length <= 1) {
-  console.warn("parseRacechecks: Archivo vacío o sin datos válidos");
-  return [];
- }
+ // Define expected headers
+ // const headers = ['SEXO', 'NOMBRE', 'CHIP', 'DORSAL', 'MODALIDAD', 'CATEGORIA', 'TIEMPO', 'POSICION', 'POS.SEX.', 'POS.CAT.', 'RITMO'];
+ let isHeaderRow = true;
 
- // Eliminar la primera línea (nombre del evento)
- lines.splice(0, 1);
-
- // Función para validar si una línea es un header
- const isHeaderLine = (line: string): boolean => {
-  const parts = line.split("|").map((item) => item.trim());
-  return parts.length < 11 && parts[0]?.toUpperCase() === "SEXO";
- };
-
- // Función para validar si una línea tiene datos válidos
- const isValidDataLine = (line: string): boolean => {
-  const parts = line.split("|").map((item) => item.trim());
-  return parts.length >= 11 && !isHeaderLine(line);
- };
-
- // Filtrar líneas válidas
- const validLines = lines.filter(isValidDataLine);
-
- if (validLines.length === 0) {
-  console.warn("parseRacechecks: No se encontraron líneas de datos válidas");
-  return [];
- }
-
- const runners: RacecheckRunner[] = [];
-
- for (const line of validLines) {
-  try {
-   const parts = line.split("|").map((item) => item.trim());
-
-   // Validar que tenemos suficientes partes
-   if (parts.length < 11) {
-    console.warn(`parseRacechecks: Línea con formato inválido: ${line}`);
-    continue;
-   }
-
-   const [
-    name,
-    chip,
-    dorsal,
-    modality,
-    category,
-    sex,
-    time,
-    position,
-    positionSex,
-    positionCategory,
-    pace,
-   ] = parts;
-
-   // Validar campos requeridos
-   if (!name || !time) {
-    console.warn(
-     `parseRacechecks: Campos requeridos faltantes en línea: ${line}`
-    );
-    continue;
-   }
-
-   // Validar formato de tiempo (HH:MM:SS.mmm)
-   const timeRegex = /^\d{1,2}:\d{2}:\d{2}\.\d{3}$/;
-   if (!timeRegex.test(time)) {
-    console.warn(`parseRacechecks: Formato de tiempo inválido: ${time}`);
-    continue;
-   }
-
-   const parsedRunner: RacecheckRunner = {
-    name: name || "N/A",
-    chip: chip || "N/A",
-    sex: sex || "N/A",
-    time: time,
-    modality: modality || "N/A",
-    category: category || "N/A",
-    dorsal: dorsal || "N/A",
-    position: position || "N/A",
-    positionSex: positionSex || "N/A",
-    positionCategory: positionCategory || "N/A",
-    pace: pace || "N/A",
-   };
-
-   runners.push(parsedRunner);
-  } catch (error) {
-   console.error(`parseRacechecks: Error procesando línea: ${line}`, error);
+ for (const line of lines) {
+  if (line.startsWith("SEXO|")) {
+   isHeaderRow = true;
    continue;
   }
+  if (!isHeaderRow) {
+   const [
+    sexo,
+    nombre,
+    chip,
+    dorsal,
+    modalidad,
+    categoria,
+    tiempo,
+    posicion,
+    posSex,
+    posCat,
+    ritmo,
+   ] = line.split("|");
+   categories.add(categoria);
+   modalities.add(modalidad);
+   runners.push({
+    sexo,
+    nombre,
+    chip,
+    dorsal,
+    modalidad,
+    categoria,
+    tiempo,
+    posicion: parseInt(posicion),
+    posSex: parseInt(posSex),
+    posCat: parseInt(posCat),
+    ritmo,
+   });
+  }
+  isHeaderRow = false;
  }
 
- if (runners.length === 0) {
-  console.warn("parseRacechecks: No se pudieron procesar corredores válidos");
-  return [];
+ // Convert tiempo to seconds for sorting
+ function timeToSeconds(time: string): number {
+  const [hours, minutes, seconds] = time
+   .split(":")
+   .map((part) => parseFloat(part));
+  return hours * 3600 + minutes * 60 + seconds;
  }
 
- console.log(
-  `parseRacechecks: Procesados ${runners.length} corredores exitosamente`
- );
- return orderByTime(runners);
+ // Sort runners by tiempo
+ runners.sort((a, b) => timeToSeconds(a.tiempo) - timeToSeconds(b.tiempo));
+
+ return {
+  categories: Array.from(categories).sort(),
+  modalities: Array.from(modalities).sort(),
+  runners,
+ };
 }

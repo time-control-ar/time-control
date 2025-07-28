@@ -10,7 +10,7 @@ const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10MB
 const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp']
 const ALLOWED_FILE_EXTENSIONS = ['.racecheck']
 
-import { adminEmails, Category, eventTypes, Gender, Modality, parseRacechecks, validateFile } from '@/lib/utils'
+import { adminEmails, Category, eventTypes, Gender, Modality, validateFile, parseRaceData } from '@/lib/utils'
 import { SignInButton } from '../ui/sign-in-button'
 import { useEffect, useState } from 'react'
 import { useSession } from 'next-auth/react'
@@ -46,6 +46,7 @@ export default function EventForm({ event }: EventFormProps) {
   const [stayAfterCreation, setStayAfterCreation] = useState(false)
   const [isUpdatingImage, setIsUpdatingImage] = useState(false)
   const [currentImageUrl, setCurrentImageUrl] = useState<string>(event?.image || '')
+  const [newCategoryModality, setNewCategoryModality] = useState<Modality | null>(null)
   const [toast, setToast] = useState<{
     message: string;
     type: 'success' | 'error' | 'info';
@@ -133,12 +134,6 @@ export default function EventForm({ event }: EventFormProps) {
     immediatelyRender: false
   })
 
-  // Actualizar el editor cuando cambien los valores por defecto
-  useEffect(() => {
-    if (editor && defaultValues.description !== editor.getHTML()) {
-      editor.commands.setContent(defaultValues.description)
-    }
-  }, [editor, defaultValues.description])
 
   const handleRemoveCategory = (categoryIndex: number, modalityIndex: number) => {
     const currentModality = modalities?.[modalityIndex];
@@ -150,10 +145,10 @@ export default function EventForm({ event }: EventFormProps) {
   const handleRemoveModality = (index: number) => {
     remove(index)
   }
-  const handleAddCategory = (category: Category, index: number) => {
-    const currentModality = modalities?.[index];
+  const handleAddCategory = (category: Category, modality: Modality) => {
+    const currentModality = modalities?.find((m) => m.name === modality.name);
     if (currentModality) {
-      update(index, {
+      update(modalities?.indexOf(currentModality) ?? 0, {
         ...currentModality,
         categories: [...(currentModality.categories ?? []), category]
       });
@@ -284,6 +279,13 @@ export default function EventForm({ event }: EventFormProps) {
     }
   }
 
+  // Actualizar el editor cuando cambien los valores por defecto
+  useEffect(() => {
+    if (editor && defaultValues.description !== editor.getHTML()) {
+      editor.commands.setContent(defaultValues.description)
+    }
+  }, [editor, defaultValues.description])
+
 
   if (!session?.user?.email && status === 'unauthenticated') return (
     <div className="h-screen w-full flex items-center justify-center">
@@ -326,7 +328,8 @@ export default function EventForm({ event }: EventFormProps) {
     </div>
   )
 
-  const racecheck = watch('racecheck')
+  const racecheckData = parseRaceData(watch('racecheck') ?? '')
+
   const modalities = watch('modalities')
   return (
     <div className='h-screen w-screen flex flex-col overflow-auto'>
@@ -642,18 +645,18 @@ export default function EventForm({ event }: EventFormProps) {
 
             <div className="flex flex-col gap-6">
               <div className={`modern-table w-full ${watch('genders')?.length === 0 ? "hidden" : ""}`}>
-                <div className="p-3 lg:p-6 border-b border-gray-200 dark:border-gray-800">
-                  <p className='text-sm font-medium font-mono tracking-tight text-gray-500 dark:text-gray-400'>
+                <div className="p-3 lg:p-6 border-b border-gray-200 dark:border-gray-900">
+                  <p className='text-sm font-medium font-mono tracking-tight text-gray-700 dark:text-gray-200'>
                     Géneros
                   </p>
                 </div>
                 <div className="flex flex-col gap-2 w-full max-h-[400px] overflow-y-auto">
                   <table>
-                    <thead className="modern-table-header">
+                    <thead className="modern-table-header !border-b border-gray-200 dark:border-gray-900">
                       <tr>
-                        <th className="w-max max-w-max">Nombre</th>
+                        <th className="w-max max-w-max px-3 lg:!px-6">Nombre</th>
                         <th className="w-full">Valor en racecheck</th>
-                        <th className="w-max !text-center">Acciones</th>
+                        <th className="w-max !text-center"></th>
                       </tr>
                     </thead>
 
@@ -673,7 +676,7 @@ export default function EventForm({ event }: EventFormProps) {
                   </table>
                 </div>
 
-                <div className='p-6 border-t border-gray-200 dark:border-gray-800 flex flex-col gap-2'>
+                <div className='p-6 border-t border-gray-200 dark:border-gray-900 flex flex-col gap-2'>
                   <div className="flex flex-col gap-1">
                     <p className="label-input">Crear género</p>
                     <GendersForm handleAddGender={handleAddGender} />
@@ -682,18 +685,19 @@ export default function EventForm({ event }: EventFormProps) {
               </div>
 
               <div className={`modern-table w-full ${modalities?.length === 0 ? "hidden" : ""}`}>
-                <div className="p-3 lg:p-6 border-b border-gray-200 dark:border-gray-800">
-                  <p className='text-sm font-medium font-mono tracking-tight text-gray-500 dark:text-gray-400'>
+                <div className="p-3 lg:p-6 border-b border-gray-200 dark:border-gray-900">
+                  <p className='text-sm font-medium font-mono tracking-tight text-gray-700 dark:text-gray-200'>
                     Modalidades y categorías
                   </p>
                 </div>
+
                 <div className="flex flex-col gap-2 w-full max-h-[400px] overflow-y-auto">
                   <table>
                     <thead className="modern-table-header">
                       <tr>
-                        <th className="w-max max-w-max">Nombre</th>
-                        <th className="w-full !border-x border-gray-200 dark:border-gray-800">Categorías</th>
-                        <th className="w-max !text-center">Acciones</th>
+                        <th className="w-max max-w-max px-3 lg:!px-6">Nombre</th>
+                        <th className="w-full !border-x border-gray-200 dark:border-gray-900">Categorías</th>
+                        <th className="w-max !text-center"></th>
                       </tr>
                     </thead>
 
@@ -713,7 +717,7 @@ export default function EventForm({ event }: EventFormProps) {
                     </tbody>
                   </table>
                 </div>
-                <div className='p-6 border-t border-gray-200 dark:border-gray-800 flex flex-col gap-3'>
+                <div className='p-6 border-t border-gray-200 dark:border-gray-900 flex flex-col gap-3'>
                   <div className="flex flex-col gap-1">
                     <p className="label-input">Crear modalidad</p>
                     <ModalityForm append={append} />
@@ -725,6 +729,8 @@ export default function EventForm({ event }: EventFormProps) {
                       <CategoryForm
                         handleAddCategory={handleAddCategory}
                         modalities={modalities}
+                        selectedModality={newCategoryModality}
+                        setSelectedModality={setNewCategoryModality}
                       />
                     )}
                   </div>
@@ -734,66 +740,74 @@ export default function EventForm({ event }: EventFormProps) {
 
 
 
+            <div className="custom_border flex flex-col rounded-xl">
+              <div className="p-3 lg:p-6 border-b border-gray-200 dark:border-gray-900">
+                <p className='text-sm font-medium font-mono tracking-tight text-gray-700 dark:text-gray-200'>
+                  Resultados
+                </p>
+              </div>
 
-            {!racecheck ? (
-              <div className="w-full flex flex-col items-center justify-center lg:p-6">
+              {!racecheckData.runners?.length ? (
+                <div className="w-full flex flex-col items-center justify-center lg:p-6">
 
-                <div className={`w-full flex flex-col h-max rounded-2xl shadow-lg md:shadow-none p-3 border border-dashed border-gray-200 dark:border-gray-800`}>
-                  <div className="text-center w-full py-6">
-                    <input
-                      accept={ALLOWED_FILE_EXTENSIONS.join(',')}
-                      onChange={handleFileChange}
-                      disabled={isSubmitting}
-                      className="hidden"
-                      id="race-check-file"
-                      type="file"
+                  <div className={`w-full flex flex-col h-max rounded-2xl shadow-lg md:shadow-none p-3 border border-dashed border-gray-200 dark:border-gray-900`}>
+                    <div className="text-center w-full py-6">
+                      <input
+                        accept={ALLOWED_FILE_EXTENSIONS.join(',')}
+                        onChange={handleFileChange}
+                        disabled={isSubmitting}
+                        className="hidden"
+                        id="race-check-file"
+                        type="file"
+                      />
+
+                      <label htmlFor="race-check-file" className={`cursor-pointer ${isSubmitting ? 'opacity-50' : ''}`}>
+                        <div className="text-gray-500 flex flex-col items-center justify-center">
+                          <File size={24} className="mx-auto mb-2" />
+                          <p className='text-sm'>Haz clic para seleccionar archivo de resultados</p>
+                          <p className="text-xs">Archivos .racecheck hasta 10MB</p>
+                        </div>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              ) :
+                <>
+                  <div className="p-6 flex flex-col gap-2">
+                    <div className="flex items-center justify-between">
+                      <p className='text-sm font-medium tracking-tight text-gray-500 dark:text-gray-400'>
+                        {racecheckName}
+                      </p>
+
+                      <button
+                        type="button"
+                        className="rounded-full bg-red-600 flex items-center justify-center p-2 hover:bg-red-700 transition-all duration-75 w-max"
+                        onClick={() => {
+                          setValue('racecheck', null)
+                        }}
+                      >
+                        <TrashIcon className="w-4 h-4 text-white" strokeWidth={2.5} />
+                      </button>
+                    </div>
+
+                    <div className="flex flex-col gap-2">
+                      <p className="text-sm font-medium tracking-tight text-gray-500 dark:text-gray-400 font-mono">
+                        {racecheckData.runners?.length} participantes cargados
+                      </p>
+                    </div>
+                  </div>
+                  <div className='w-full flex flex-col h-max gap-6 p-3'>
+
+                    <RaceCheckTable
+                      modalities={watch('modalities') ?? []}
+                      genders={watch('genders') ?? []}
+                      runners={racecheckData.runners}
+                      previewMode={event?._id ? { eventId: event?._id } : undefined}
                     />
-
-                    <label htmlFor="race-check-file" className={`cursor-pointer ${isSubmitting ? 'opacity-50' : ''}`}>
-                      <div className="text-gray-500 flex flex-col items-center justify-center">
-                        <File size={24} className="mx-auto mb-2" />
-                        <p className='text-sm'>Haz clic para seleccionar archivo de resultados</p>
-                        <p className="text-xs">Archivos .racecheck hasta 10MB</p>
-                      </div>
-                    </label>
                   </div>
-                </div>
-              </div>
-            ) :
-              <div className='w-full flex flex-col h-max max-h-[90vh]'>
-                <div className="p-3 rounded-xl custom_border bg-gradient-to-b from-gray-100 to-gray-200 dark:from-gray-900 dark:to-gray-950">
-                  <div className="p-3 flex items-center justify-between">
-                    <p className='text-sm font-medium tracking-tight text-gray-500 dark:text-gray-400'>
-                      {racecheckName}
-                    </p>
-
-                    <button
-                      type="button"
-                      className="rounded-full bg-red-600 flex items-center justify-center p-2 hover:bg-red-700 transition-all duration-75 w-max"
-                      onClick={() => {
-                        setValue('racecheck', null)
-                      }}
-                    >
-                      <TrashIcon className="w-4 h-4 text-white" strokeWidth={2.5} />
-                    </button>
-                  </div>
-
-                  <div className="flex flex-col gap-2">
-
-                  </div>
-
-                </div>
-
-                <RaceCheckTable
-                  modalities={event?.modalities ?? []}
-                  genders={event?.genders ?? []}
-                  runners={parseRacechecks(racecheck ?? '')}
-                  previewMode={{
-                    eventId: event?._id ?? ''
-                  }}
-                />
-              </div>
-            }
+                </>
+              }
+            </div>
           </div>
         </div>
 
@@ -873,28 +887,16 @@ const ModalityForm = ({ append }: { append: (modality: Modality) => void }) => {
   )
 }
 
-const CategoryForm = ({ modalities, handleAddCategory }: { modalities: Modality[], handleAddCategory: (category: Category, index: number) => void }) => {
+const CategoryForm = ({ selectedModality, setSelectedModality, modalities, handleAddCategory }: { selectedModality: Modality | null, setSelectedModality: (modality: Modality | null) => void, modalities: Modality[], handleAddCategory: (category: Category, modality: Modality) => void }) => {
   const [newCategory, setNewCategory] = useState<Category>({ name: '', matchsWith: '' })
-  const [selectedModality, setSelectedModality] = useState<Modality | null>(modalities.length > 0 ? modalities[0] : null)
-
-  // Actualizar selectedModality cuando cambien las modalidades
-  useEffect(() => {
-    if (modalities.length > 0 && !selectedModality) {
-      setSelectedModality(modalities[0]);
-    } else if (modalities.length === 0) {
-      setSelectedModality(null);
-    }
-  }, [modalities, selectedModality]);
 
   const handleSubmit = () => {
-    if (newCategory.name.trim() && selectedModality) {
-      handleAddCategory(newCategory, modalities.indexOf(selectedModality))
+    if (!selectedModality) return
+    if (newCategory.name.trim()) {
+      handleAddCategory(newCategory, selectedModality)
       setNewCategory({ name: '', matchsWith: '' })
     }
   }
-  useEffect(() => {
-    setSelectedModality(modalities[0])
-  }, [modalities])
 
   if (modalities.length === 0) return null
 
@@ -1021,7 +1023,7 @@ const ModalityRow = ({ modality, handleRemoveModality, handleRemoveCategory, ind
   return (
 
     <tr key={index}>
-      <td className='!pl-4 h-full flex flex-col items-start'>
+      <td className='!pl-4 lg:!pl-6 h-full flex flex-col items-start'>
         <div className="chip_filter max-w-max">
           <p className='text-sm text-gray-500 dark:text-gray-400 px-2'>
             {modality.name}
@@ -1029,7 +1031,7 @@ const ModalityRow = ({ modality, handleRemoveModality, handleRemoveCategory, ind
         </div>
       </td>
 
-      <td className='border-x border-gray-200 dark:border-gray-800 divide-y divide-gray-200 dark:divide-gray-800 !px-4'>
+      <td className='!px-4'>
         <div className="flex flex-col gap-2 ">
           {modality?.categories?.map((category: Category, categoryIndex: number) => {
             return (
@@ -1064,7 +1066,7 @@ const ModalityRow = ({ modality, handleRemoveModality, handleRemoveCategory, ind
         </div>
       </td>
 
-      <td className='!px-4 '>
+      <td className='!px-4 flex items-center justify-end'>
         <button
           type="button"
           className="rounded-full bg-red-600 flex items-center justify-center p-2 hover:bg-red-700 transition-all duration-75 w-max"
@@ -1080,7 +1082,7 @@ const ModalityRow = ({ modality, handleRemoveModality, handleRemoveCategory, ind
 const GenderRow = ({ gender, index, handleRemoveGender }: { gender: Gender, index: number, handleRemoveGender: (index: number) => void }) => {
   return (
     <tr key={index}>
-      <td className='!px-4 '>
+      <td className='!px-4 lg:!px-6'>
         <div className="chip_filter max-w-max">
           <p className='text-sm text-gray-500 dark:text-gray-400 px-2'>
             {gender.name}
@@ -1094,7 +1096,7 @@ const GenderRow = ({ gender, index, handleRemoveGender }: { gender: Gender, inde
         </p>
       </td>
 
-      <td className="py-2 px-3 flex items-center justify-center">
+      <td className="!px-4">
         <button
           type="button"
           className="rounded-full bg-red-600 flex items-center justify-center p-2 hover:bg-red-700 transition-all duration-75 w-max"
