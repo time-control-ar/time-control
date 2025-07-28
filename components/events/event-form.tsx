@@ -794,6 +794,13 @@ export default function EventForm({ event }: EventFormProps) {
                       <p className="text-sm font-medium tracking-tight text-gray-500 dark:text-gray-400 font-mono">
                         {racecheckData.runners?.length} participantes cargados
                       </p>
+
+                      <p className="text-sm font-medium tracking-tight text-gray-500 dark:text-gray-400 font-mono">
+                        {racecheckData.modalities?.map((category) => category).join(', ')}
+                      </p>
+                      <p className="text-sm font-medium tracking-tight text-gray-500 dark:text-gray-400 font-mono">
+                        {racecheckData.categories?.map((category) => category).join(', ')}
+                      </p>
                     </div>
                   </div>
                   <div className='w-full flex flex-col h-max gap-6 p-3'>

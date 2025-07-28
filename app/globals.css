@@ -216,7 +216,7 @@
 }
 
 .modern-table-header {
-  @apply sticky top-0 z-20 w-full backdrop-blur-xl;
+  @apply sticky top-0 z-20 w-full backdrop-blur-xl rounded-t-xl;
 }
 
 .modern-table-header th {

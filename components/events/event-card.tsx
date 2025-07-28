@@ -4,7 +4,7 @@ import { motion } from "framer-motion"
 import SafeImage from '@/components/ui/safe-image'
 import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
-import { adminEmails } from '@/lib/utils'
+import { adminEmails, parseRaceData } from '@/lib/utils'
 import Modal from '../ui/modal'
 import { useState } from 'react'
 import { AnimatePresence } from 'framer-motion'
@@ -113,6 +113,7 @@ export const EventCard = ({ event, previewMode = false }: { event: EventResponse
         }
     }
 
+    const racecheckData = parseRaceData(event?.racecheck || '')
 
     return (
         <>
@@ -201,7 +202,7 @@ export const EventCard = ({ event, previewMode = false }: { event: EventResponse
                                     onClick={() => handleTabChange(tab.value)}
                                     className={` transition-colors flex items-center justify-center gap-2 rounded-[11px] px-3 h-10 ${selectedTab === tab.value ? '' : 'opacity-60'}`}
                                 >       <tab.icon className={`w-5 h-5 ${selectedTab === tab.value ? 'text-cyan-300' : 'text-gray-800 dark:text-white'}`} />
-                                    <p className={`text-sm font-semibold tracking-tight text-gray-800 dark:text-white`}>
+                                    <p className={`text-sm font-mono font-semibold tracking-tight text-gray-800 dark:text-white`}>
                                         {tab.label}
                                     </p>
                                 </button>
@@ -263,13 +264,13 @@ export const EventCard = ({ event, previewMode = false }: { event: EventResponse
                                     animate={{ opacity: 1, y: 0 }}
                                     exit={{ opacity: 0, y: 10 }}
                                     transition={{ duration: 0.2 }}
-                                    className="h-full overflow-y-auto"
+                                    className="h-full overflow-y-auto lg:px-3"
                                 >
 
                                     <RaceCheckTable
                                         modalities={event?.modalities ?? []}
                                         genders={event?.genders ?? []}
-                                        racecheck={event?.racecheck || ''}
+                                        runners={racecheckData.runners ?? []}
                                         previewMode={{
                                             eventId: event?._id ?? ''
                                         }}
