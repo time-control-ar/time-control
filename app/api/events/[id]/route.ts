@@ -72,6 +72,7 @@ export async function PUT(
    createdAt: updatedEvent.createdAt,
    updatedAt: updatedEvent.updatedAt,
    type: updatedEvent.type,
+   genders: updatedEvent.genders,
   };
 
   return NextResponse.json({
