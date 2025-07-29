@@ -1,14 +1,14 @@
 import EventForm from '@/components/events/event-form'
-import { getEventById } from '@/lib/server/eventService';
+import { getEventById } from '@/lib/server/eventService'
 
-export default async function Page({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params
+interface PageProps {
+  params: {
+    id: string
+  }
+}
 
-  const event = await getEventById(id)
+export default async function EditarEvento({ params }: PageProps) {
+  const event = await getEventById(params.id)
 
-  return (
-    <div className="font-[family-name:var(--font-geist-sans)] relative bg-white dark:bg-gray-950 items-center justify-center">
-      <EventForm event={event} />
-    </div>
-  )
+  return <EventForm event={event} />
 }
