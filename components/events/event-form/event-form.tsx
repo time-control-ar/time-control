@@ -2,7 +2,7 @@
 import { useFieldArray, useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { eventCreateSchema, EventFormData, EventResponse } from '@/lib/schemas/event.schema'
-import { Loader2, CheckIcon, ArrowLeftIcon, InfoIcon, SettingsIcon } from 'lucide-react'
+import { Loader2, CheckIcon, ArrowLeftIcon } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { useSession } from 'next-auth/react'
@@ -47,6 +47,11 @@ export default function EventForm({ event }: EventFormProps) {
     const [isUpdatingImage, setIsUpdatingImage] = useState(false)
     const [currentImageUrl, setCurrentImageUrl] = useState<string>(event?.image || '')
     const [newCategoryModality, setNewCategoryModality] = useState<Modality | null>(null)
+    const [editingCategory, setEditingCategory] = useState<{
+        category: Category;
+        categoryIndex: number;
+        modalityIndex: number;
+    } | null>(null)
     const [toast, setToast] = useState<{
         message: string;
         type: 'success' | 'error' | 'info';
@@ -124,7 +129,7 @@ export default function EventForm({ event }: EventFormProps) {
         ],
         editorProps: {
             attributes: {
-                class: 'w-full h-full p-3.5 rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-950 outline-none min-h-32 focus:border-gray-400 dark:focus:border-gray-700'
+                class: 'w-full h-full p-3.5 rounded-2xl custom_border input outline-none !h-max'
             }
         },
         content: defaultValues.description,
@@ -135,7 +140,8 @@ export default function EventForm({ event }: EventFormProps) {
     })
 
     const handleRemoveCategory = (categoryIndex: number, modalityIndex: number) => {
-        const currentModality = watch('modalities')?.[modalityIndex];
+        const currentModalities = watch('modalities') || [];
+        const currentModality = currentModalities[modalityIndex];
         if (currentModality && currentModality.categories) {
             const updatedCategories = currentModality.categories.filter((_, index) => index !== categoryIndex);
             update(modalityIndex, { ...currentModality, categories: updatedCategories });
@@ -147,12 +153,27 @@ export default function EventForm({ event }: EventFormProps) {
     }
 
     const handleAddCategory = (category: Category, modality: Modality) => {
-        const currentModality = watch('modalities')?.find((m) => m.name === modality.name);
+        const currentModalities = watch('modalities') || [];
+        const currentModality = currentModalities.find((m) => m.name === modality.name);
         if (currentModality) {
-            update(watch('modalities')?.indexOf(currentModality) ?? 0, {
-                ...currentModality,
-                categories: [...(currentModality.categories ?? []), category]
-            });
+            const modalityIndex = currentModalities.indexOf(currentModality);
+
+            if (editingCategory) {
+                // Modo edición: actualizar la categoría existente
+                const updatedCategories = [...(currentModality.categories ?? [])];
+                updatedCategories[editingCategory.categoryIndex] = category;
+                update(modalityIndex, {
+                    ...currentModality,
+                    categories: updatedCategories
+                });
+                setEditingCategory(null);
+            } else {
+                // Modo adición: agregar nueva categoría
+                update(modalityIndex, {
+                    ...currentModality,
+                    categories: [...(currentModality.categories ?? []), category]
+                });
+            }
         }
     }
 
@@ -162,6 +183,29 @@ export default function EventForm({ event }: EventFormProps) {
 
     const handleRemoveGender = (index: number) => {
         removeGender(index)
+    }
+
+    const handleCancelEdit = () => {
+        setEditingCategory(null);
+        setNewCategoryModality(null);
+    }
+
+    const handleEditCategory = (categoryIndex: number, modalityIndex: number) => {
+        const currentModalities = watch('modalities') || [];
+        const currentModality = currentModalities[modalityIndex];
+        if (currentModality && currentModality.categories) {
+            const categoryToEdit = currentModality.categories[categoryIndex];
+            if (categoryToEdit) {
+                // Configurar la categoría para editar en el formulario
+                setEditingCategory({
+                    category: categoryToEdit,
+                    categoryIndex,
+                    modalityIndex
+                });
+                // Seleccionar la modalidad correspondiente
+                setNewCategoryModality(currentModality);
+            }
+        }
     }
 
     const onSubmit = async (data: EventFormData) => {
@@ -257,7 +301,13 @@ export default function EventForm({ event }: EventFormProps) {
         </div>
     )
 
-    const racecheckData = parseRaceData(watch('racecheck') ?? '')
+    const racecheckData = {
+        eventId: event?._id ?? '',
+        eventName: watch('name') ?? '',
+        categories: watch('racecheck') ? parseRaceData(watch('racecheck') ?? '').categories : [],
+        modalities: watch('racecheck') ? parseRaceData(watch('racecheck') ?? '').modalities : [],
+        racecheck: watch('racecheck') ?? null
+    }
 
     return (
         <div className='h-full w-full flex flex-col overflow-auto'>
@@ -275,15 +325,15 @@ export default function EventForm({ event }: EventFormProps) {
                 className="w-full flex flex-col min-h-max mt-12"
             >
                 <div className="flex flex-col lg:flex-row gap-6 h-full w-full items-center lg:items-start max-w-6xl mx-auto px-3 lg:px-0">
-                    <div className="flex flex-col w-full gap-8 max-w-sm h-max lg:pb-12 px-3 md:px-6">
+                    <div className="flex flex-col w-full gap-8 max-w-sm h-max lg:pb-12 px-3">
                         <EventFormHeader event={event} router={router} />
 
-                        <div className="flex items-center gap-2 px-3 lg:px-6 pb-3">
+                        {/* <div className="flex items-center gap-2 px-3 lg:px-6 pb-3">
                             <InfoIcon className="w-4 h-4 text-gray-500 dark:text-gray-400" />
                             <label className="text-sm font-light opacity-50 font-mono tracking-tight">
                                 Información
                             </label>
-                        </div>
+                        </div> */}
 
                         <EventFormInfo
                             register={register}
@@ -336,25 +386,28 @@ export default function EventForm({ event }: EventFormProps) {
                     </div>
 
                     <div className="flex flex-col gap-8 w-full mt-[60px] lg:px-6 overflow-y-auto">
-                        <div className="flex items-center gap-2 px-3 lg:px-6 pb-3">
+                        {/* <div className="flex items-center gap-2 px-3 lg:px-6 pb-3">
                             <SettingsIcon className="w-4 h-4 text-gray-500 dark:text-gray-400" />
                             <label className="text-sm font-light opacity-50 font-mono tracking-tight">
                                 Configuración
                             </label>
-                        </div>
+                        </div> */}
+
 
                         <EventFormConfig
                             watch={watch}
                             handleRemoveCategory={handleRemoveCategory}
                             handleRemoveModality={handleRemoveModality}
+                            handleEditCategory={handleEditCategory}
                             handleAddCategory={handleAddCategory}
                             handleAddGender={handleAddGender}
                             handleRemoveGender={handleRemoveGender}
                             append={append}
                             newCategoryModality={newCategoryModality}
                             setNewCategoryModality={setNewCategoryModality}
+                            editingCategory={editingCategory}
+                            handleCancelEdit={handleCancelEdit}
                         />
-
                         <EventFormResults
                             racecheckData={racecheckData}
                             watch={watch}

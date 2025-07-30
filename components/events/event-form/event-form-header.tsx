@@ -12,10 +12,7 @@ export function EventFormHeader({ event, router }: EventFormHeaderProps) {
         <div className="flex items-center gap-2">
             <button
                 type="button"
-                className={`h-8 rounded-full w-8 flex items-center justify-center
-          relative select-none gap-2
-          bg-gradient-to-b from-white to-white dark:from-gray-950 dark:to-gray-950
-          border-2 border-gray-100 dark:border-gray-800 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors`}
+                className={`h-8 w-8 custom_border rounded-full flex items-center justify-center`}
                 onClick={() => router.push('/')}
             >
                 <ArrowLeftIcon className="w-5 h-5 text-gray-500 dark:text-gray-400" />

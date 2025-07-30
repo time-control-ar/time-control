@@ -17,12 +17,12 @@ export function ModalityForm({ append }: ModalityFormProps) {
     }
 
     return (
-        <div className="flex flex-col justify-end gap-2 w-full max-w-sm">
-            <div className="flex gap-2 w-full">
+        <div className="flex gap-2 w-full items-end max-w-sm">
+            <div className="flex-1">
                 <input
                     type="text"
-                    className="input"
-                    placeholder="Nombre"
+                    className="input w-full"
+                    placeholder="Nombre de modalidad"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     onKeyPress={(e) => {
@@ -32,16 +32,17 @@ export function ModalityForm({ append }: ModalityFormProps) {
                         }
                     }}
                 />
-                <div className="w-max mt-1">
-                    <button
-                        type="button"
-                        className="rounded-full bg-gray-800 dark:bg-gray-300 flex items-center justify-center p-2 transition-all duration-75"
-                        onClick={handleSubmit}
-                        disabled={!name.trim()}
-                    >
-                        <PlusIcon className="w-4 h-4 text-white dark:text-gray-950" strokeWidth={2.5} />
-                    </button>
-                </div>
+            </div>
+
+            <div>
+                <button
+                    type="button"
+                    className="rounded-full bg-gray-800 dark:bg-gray-300 flex items-center justify-center p-2 transition-all duration-75 disabled:opacity-50 disabled:cursor-not-allowed"
+                    onClick={handleSubmit}
+                    disabled={!name.trim()}
+                >
+                    <PlusIcon className="w-4 h-4 text-white dark:text-gray-950" strokeWidth={2.5} />
+                </button>
             </div>
         </div>
     )

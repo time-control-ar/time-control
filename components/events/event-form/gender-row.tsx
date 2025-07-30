@@ -10,21 +10,23 @@ interface GenderRowProps {
 export function GenderRow({ gender, index, handleRemoveGender }: GenderRowProps) {
     return (
         <tr key={index}>
-            <td className='!px-4 lg:!px-6'>
+            <td className='!px-4 lg:!px-6 flex items-center gap-2'>
                 <div className="chip_filter max-w-max">
                     <p className='text-sm text-gray-500 dark:text-gray-400 px-2'>
                         {gender.name}
                     </p>
                 </div>
+                {gender?.matchsWith && (
+                    <div className='flex items-center gap-1'>
+                        <span className='text-xs text-gray-400 dark:text-gray-500'>→</span>
+                        <p className='font-mono text-xs text-gray-500 dark:text-gray-400 px-2 py-1 bg-gray-100 dark:bg-cgray rounded'>
+                            {gender?.matchsWith}
+                        </p>
+                    </div>
+                )}
             </td>
 
-            <td className="py-2 px-3 items-center justify-center w-max">
-                <p className='font-mono text-sm text-gray-500 dark:text-gray-400 px-2'>
-                    {gender.matchsWith}
-                </p>
-            </td>
-
-            <td className="!px-4">
+            <td className="!px-4 max-w-max">
                 <button
                     type="button"
                     className="rounded-full bg-red-600 flex items-center justify-center p-2 hover:bg-red-700 transition-all duration-75 w-max"

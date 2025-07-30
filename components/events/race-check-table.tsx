@@ -5,6 +5,8 @@ import { ArrowLeftIcon, ArrowRightIcon, SearchIcon, TicketIcon, CheckIcon, Slide
 import { useState, useMemo } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useRouter } from 'next/navigation'
+import DorsalComponent from '../ui/dorsal-component'
+import ChipFilterOption from '../ui/chip-filter-option'
 
 
 interface RaceCheckProps {
@@ -84,12 +86,12 @@ const RaceCheckTable = ({ modalities, genders, runners, previewMode }: RaceCheck
         })
         setCurrentPage(1)
     }
-    const handleGenderToggle = (gender: string) => {
+    const handleGenderToggle = (gender: Gender) => {
         setSelectedGenders(prev => {
-            if (prev.includes(gender)) {
-                return prev.filter(g => g !== gender)
+            if (prev.includes(gender.name)) {
+                return prev.filter(g => g !== gender.name)
             } else {
-                return [...prev, gender]
+                return [...prev, gender.name]
             }
         })
         setCurrentPage(1)
@@ -112,17 +114,14 @@ const RaceCheckTable = ({ modalities, genders, runners, previewMode }: RaceCheck
     }
 
     return (
-        <div className='w-full flex flex-col h-full max-h-[700px] overflow-auto sticky top-10'>
+        <div className='w-full flex flex-col gap-3 h-full max-h-[700px] overflow-auto px-3 md:px-6'>
             <motion.div
-                className={`flex flex-col h-max items-start justify-between`}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                transition={{ duration: 0.1 }}
+                className={`max-w-screen-lg mx-auto w-full flex flex-col items-start justify-between`}
             >
-                <div className="flex items-center justify-start lg:justify-between w-full gap-6 px-3 md:px-6 pt-1 pb-3">
+                <div className="flex items-center justify-start w-full gap-3 px-4 md:px-6">
                     <div className="flex relative w-full max-w-[300px]">
-                        <SearchIcon className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-white z-20" />
+                        <SearchIcon className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-700 dark:text-gray-300 z-20" />
                         <input
                             type="text"
                             placeholder="Buscar"
@@ -148,115 +147,70 @@ const RaceCheckTable = ({ modalities, genders, runners, previewMode }: RaceCheck
                     </div>
 
                     <div className='flex items-center justify-center gap-2'>
-                        <motion.div>
+                        <div>
                             <button
                                 type="button"
-                                className={`rounded-full flex items-center justify-center h-10 w-10 custom_border`}
+                                className={`rounded-full flex items-center justify-center h-10 w-10`}
                                 onClick={() => setFiltersOpen(!filtersOpen)}
                             >
                                 {filtersOpen ? (
-                                    <ArrowUp strokeWidth={2.5} className="w-4 h-4 text-gray-500 dark:text-gray-400 z-20" />
+                                    <ArrowUp strokeWidth={2.5} className="w-5 h-5 text-gray-700 dark:text-gray-300 z-20" />
                                 ) : (
-                                    <SlidersIcon strokeWidth={2.5} className="w-4 h-4 text-gray-500 dark:text-gray-400 z-20" />
+                                    <SlidersIcon strokeWidth={2.5} className="w-5 h-5 text-gray-700 dark:text-gray-300 z-20" />
                                 )}
                             </button>
-                        </motion.div>
+                        </div>
+
                         <div className='relative overflow-visible' onClick={() => handleClearFilters()}>
                             {filtersCount > 0 && (
-                                <div className='absolute -top-0.5 -right-0.5 w-4 h-4 bg-red-500 rounded-full z-20'>
-                                    <p className='text-white text-[10px] font-medium tracking-tight flex items-center justify-center'>
+                                <div className='absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full z-20 flex items-center justify-center'>
+                                    <p className='text-white font-mono text-[11px] font-medium tracking-tight justify-center'>
                                         {filtersCount}
                                     </p>
                                 </div>
                             )}
+
                             <button
                                 type="button"
                                 disabled={filtersCount === 0}
-                                className={`rounded-full flex items-center justify-center h-10 w-10 custom_border
-                                    `}
-
+                                className={`rounded-full flex items-center justify-center h-10 w-10 disabled:opacity-50 disabled:cursor-not-allowed`}
                             >
-                                <BrushCleaning className="w-5 h-5 text-gray-500 z-20 hover:text-gray-700 dark:hover:text-gray-300 transition-all duration-75 disabled:opacity-50 disabled:cursor-not-allowed" />
+                                <BrushCleaning className="w-5 h-5 text-gray-700 dark:text-gray-300 z-20 transition-all duration-75 disabled:cursor-not-allowed" />
                             </button>
                         </div>
                     </div>
                 </div>
 
-                <AnimatePresence>
+                <AnimatePresence mode="wait">
                     {filtersOpen && (
                         <motion.div
-                            initial={{ opacity: 0, height: 0, y: -10 }}
-                            animate={{ opacity: 1, height: 'auto', y: 0 }}
-                            exit={{ opacity: 0, height: 0, y: 10 }}
-                            transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                            className='flex flex-col gap-2 w-full overflow-hidden'
+                            initial={{ opacity: 0, y: 20, height: 0, overflow: 'hidden' }}
+                            animate={{ opacity: 1, y: 0, height: 'auto', overflow: 'hidden' }}
+                            exit={{ opacity: 0, y: -20, height: 0, overflow: 'hidden', transition: { duration: 0.1 } }}
+                            transition={{ type: "spring", stiffness: 300, damping: 30, duration: 0.2 }}
+                            className='flex flex-col gap-2 w-full'
                         >
 
-                            <div className="flex flex-col gap-2 pb-3">
-                                {modalities?.length > 0 && (
-                                    <div className="flex items-center gap-2 w-full h-max overflow-auto scrollbar-hide pb-1 px-3 md:px-6">
-                                        {modalities?.map((modality, index) => {
-                                            const isSelected = selectedModalities.includes(modality)
-                                            return (
-                                                <motion.button
-                                                    type='button'
-                                                    key={`${modality.name}-${index}`}
-                                                    className={`chip_filter ${isSelected ? "" : "opacity-50"}`}
-                                                    onClick={() => handleModalityToggle(modality)}
-                                                    whileTap={{ scale: 0.95 }}
-                                                    transition={{ type: "spring", stiffness: 400, damping: 17 }}
-                                                >
-                                                    <div className="rounded-xl p-1 h-5 w-5 bg-gray-100 dark:bg-gray-800 flex items-center justify-center transition-all duration-75">
-                                                        {isSelected && (
-                                                            <div>
-                                                                <CheckIcon className="w-5 h-5 text-green-500 dark:text-green-500" />
-                                                            </div>
-                                                        )}
-
-                                                    </div>
-                                                    <p className={`text-xs font-medium ${isSelected ? "text-gray-950 dark:text-white" : "text-gray-500 dark:text-gray-400"}`}>
-                                                        {modality.name}
-                                                    </p>
-                                                </motion.button>
-                                            )
-                                        })}
-                                    </div>
-                                )}
-
-                                {genders?.length > 0 && (
-                                    <div className="flex items-center gap-2 w-full h-max overflow-auto scrollbar-hide pb-1 px-3 md:px-6">
-                                        {genders?.map((gender, index) => {
-                                            const isSelected = selectedGenders.includes(gender.matchsWith || '')
-
-                                            return (
-                                                <motion.button
-                                                    type='button'
-                                                    key={`${gender.matchsWith}-${index}`}
-                                                    className={`chip_filter ${isSelected ? "" : "opacity-50"}`}
-                                                    onClick={() => handleGenderToggle(gender.matchsWith || '')}
-                                                    whileTap={{ scale: 0.95 }}
-                                                    transition={{ type: "spring", stiffness: 400, damping: 17 }}
-                                                >
-                                                    <div className="rounded-xl p-1 h-5 w-5 bg-gray-100 dark:bg-gray-800 flex items-center justify-center transition-all duration-75">
-                                                        {isSelected && (
-                                                            <div>
-                                                                <CheckIcon className="w-5 h-5 text-green-500 dark:text-green-500" />
-                                                            </div>
-                                                        )}
-
-                                                    </div>
-                                                    <p className={`text-xs font-medium ${isSelected ? "text-gray-950 dark:text-white" : "text-gray-500 dark:text-gray-400"}`}>
-                                                        {gender.name}
-                                                    </p>
-                                                </motion.button>
-                                            )
-                                        })}
-                                    </div>
-                                )}
-
+                            <div className="flex flex-col gap-2 pt-3">
                                 <div className="flex items-center gap-2 w-full h-max overflow-auto scrollbar-hide pb-1 px-3 md:px-6">
-                                    {categories?.map((category, index) => {
+                                    {modalities.map((type, index) => {
+                                        const isSelected = selectedModalities.includes(type)
+
+                                        return (
+                                            <ChipFilterOption
+                                                key={`${type.name}-${index}`}
+                                                type={{ value: type.name, name: type.name }}
+                                                isSelected={isSelected}
+                                                handleCategoryToggle={() => handleModalityToggle(type)}
+                                                index={index}
+                                            />
+                                        )
+                                    })}
+                                </div>
+                                <div className="flex items-center gap-2 w-full h-max overflow-auto scrollbar-hide pb-1 px-3 md:px-6">
+                                    {categories.map((category, index) => {
                                         const isSelected = selectedCategories.includes(category)
+
                                         return (
                                             <motion.button
                                                 type='button'
@@ -266,7 +220,7 @@ const RaceCheckTable = ({ modalities, genders, runners, previewMode }: RaceCheck
                                                 whileTap={{ scale: 0.95 }}
                                                 transition={{ type: "spring", stiffness: 400, damping: 17 }}
                                             >
-                                                <div className="rounded-xl p-1 h-5 w-5 bg-gray-100 dark:bg-gray-800 flex items-center justify-center transition-all duration-75">
+                                                <div className="rounded-xl p-1 h-5 w-5 bg-gray-100 dark:bg-cgray flex items-center justify-center transition-all duration-75">
                                                     {isSelected && (
                                                         <div>
                                                             <CheckIcon className="w-5 h-5 text-green-500 dark:text-green-500" />
@@ -281,10 +235,39 @@ const RaceCheckTable = ({ modalities, genders, runners, previewMode }: RaceCheck
                                         )
                                     })}
                                 </div>
+                                <div className="flex items-center gap-2 w-full h-max overflow-auto scrollbar-hide pb-1 px-3 md:px-6">
+                                    {genders.map((gender, index) => {
+                                        const isSelected = selectedGenders.includes(gender.name)
+
+                                        return (
+                                            <motion.button
+                                                type='button'
+                                                key={`${gender.name}-${index}`}
+                                                className={`chip_filter ${isSelected ? "" : "opacity-50"}`}
+                                                onClick={() => handleGenderToggle(gender)}
+                                                whileTap={{ scale: 0.95 }}
+                                                transition={{ type: "spring", stiffness: 400, damping: 17 }}
+                                            >
+                                                <div className="rounded-xl p-1 h-5 w-5 bg-gray-100 dark:bg-cgray flex items-center justify-center transition-all duration-75">
+                                                    {isSelected && (
+                                                        <div>
+                                                            <CheckIcon className="w-5 h-5 text-green-500 dark:text-green-500" />
+                                                        </div>
+                                                    )}
+
+                                                </div>
+                                                <p className={`text-xs font-medium ${isSelected ? "text-gray-950 dark:text-white" : "text-gray-500 dark:text-gray-400"}`}>
+                                                    {gender.name}
+                                                </p>
+                                            </motion.button>
+                                        )
+                                    })}
+                                </div>
                             </div>
+
                         </motion.div>
                     )}
-                </AnimatePresence >
+                </AnimatePresence>
             </motion.div>
 
             <div className="pb-4 w-full h-full flex flex-col overflow-auto">
@@ -293,11 +276,11 @@ const RaceCheckTable = ({ modalities, genders, runners, previewMode }: RaceCheck
                         <thead className="modern-table-header">
                             <tr>
                                 <th className="w-max !text-center">
-                                    Pos. <br />
+                                    Pos.
                                     General
                                 </th>
                                 <th className="w-max !text-center">
-                                    Pos. <br />
+                                    Pos.
                                     Categoría
                                 </th>
                                 <th className="w-max">Dorsal</th>
@@ -326,31 +309,20 @@ const RaceCheckTable = ({ modalities, genders, runners, previewMode }: RaceCheck
                                             <p className="text-xl font-medium tracking-tight text-gray-800 dark:text-gray-200 font-mono-italic">
                                                 {participant.posCat}
                                             </p>
-                                            <p className="text-xs font-medium text-gray-600 dark:text-gray-300">
-                                                {participant.categoria}
-                                            </p>
                                         </div>
                                     </td>
 
                                     <td>
-                                        <div className="flex flex-col justify-between items-center rounded-md overflow-hidden h-[45px] w-[60px] shadow">
-                                            <div className="w-full h-3 bg-red-400 dark:bg-slate-800 justify-between flex items-center py-1.5 px-3">
-                                                <div className="w-1 h-1 rounded-full bg-white dark:bg-gray-100"></div>
-                                                <div className="w-1 h-1 rounded-full bg-white dark:bg-gray-100"></div>
-                                            </div>
-
-                                            <div className="bg-white dark:bg-gray-100 w-full h-full flex items-center justify-center">
-                                                <p className="font-bold text-xl text-gray-700 dark:text-gray-800 text-center">
-                                                    {participant.dorsal}
-                                                </p>
-                                            </div>
-                                        </div>
+                                        <DorsalComponent dorsal={Number(participant.dorsal)} />
                                     </td>
-                                    <td className="!min-w-[150px] md:!max-w-max">
+                                    <td className="!min-w-[200px] md:!max-w-max">
                                         <div className="flex flex-col gap-1 px-3">
 
                                             <p className="font-medium text-gray-900 dark:text-white text-base capitalize leading-tight">
                                                 {participant.nombre.toLowerCase()}
+                                            </p>
+                                            <p className="text-xs font-medium text-gray-600 dark:text-gray-300">
+                                                {participant.categoria}
                                             </p>
 
                                         </div>

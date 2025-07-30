@@ -4,4 +4,5 @@ export interface RaceCheckProps {
  categories: string[];
  modalities: string[];
  racecheck: string | null;
+ runners?: any[];
 }

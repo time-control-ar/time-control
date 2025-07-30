@@ -51,7 +51,7 @@ const Modal = ({
                         <div>
                             <button
                                 type="button"
-                                className={`rounded-full flex items-center justify-center h-10 w-10 custom_border`}
+                                className={`rounded-full flex items-center justify-center h-10 w-10`}
                                 onClick={onClose}
                             >
                                 <XIcon strokeWidth={2.5} className="w-4 h-4 text-gray-700 dark:text-gray-300 z-20" />
@@ -85,9 +85,9 @@ const Modal = ({
                         className={`
                             ${isMobile ?
                                 'h-full w-full' :
-                                'h-max overflow-y-auto pb-4 rounded-3xl max-h-[90vh] md:max-h-full w-[90vw] md:max-w-[750px]'} 
+                                'custom_border h-max overflow-y-auto pb-4 rounded-3xl max-h-[90vh] md:max-h-full w-[90vw] md:max-w-[750px]'} 
                             z-[9999] relative overflow-y-auto lg:overflow-y-hidden flex flex-col
-                            custom_border bg-white dark:bg-gray-950 dark:!border-gray-900
+                             bg-white dark:bg-black
                             ${className}
                             `}
                         onClick={(e) => e.stopPropagation()}

@@ -8,6 +8,7 @@ import { EventResponse } from '@/lib/schemas/event.schema'
 import { useSession } from 'next-auth/react'
 import { adminEmails, eventTypes } from '@/lib/utils'
 import { useRouter } from 'next/navigation'
+import ChipFilterOption from '@/components/ui/chip-filter-option'
 
 function serializeText(text: string) {
     return text.toLowerCase()
@@ -93,7 +94,7 @@ const EventsListSearch = ({ eventsData }: { eventsData: EventResponse[] }) => {
                     w-full flex flex-col items-start justify-between gap-3
                     bg-gradient-to-b
                     from-white via-white to-white/90
-                    dark:from-gray-950 dark:via-gray-950/90 dark:to-gray-950/90
+                    dark:from-black dark:via-black/90 dark:to-black/90
                     `}
             >
 
@@ -101,9 +102,9 @@ const EventsListSearch = ({ eventsData }: { eventsData: EventResponse[] }) => {
                     transition={{ duration: 0.1 }}
                     className={`max-w-screen-lg mx-auto w-full flex flex-col items-start justify-between`}
                 >
-                    <div className="flex items-center justify-start w-full gap-6 px-3 md:px-6">
+                    <div className="flex items-center justify-start w-full gap-3 px-4 md:px-6">
                         <div className="flex relative w-full max-w-[300px]">
-                            <SearchIcon className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-white z-20" />
+                            <SearchIcon className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-700 dark:text-gray-300 z-20" />
                             <input
                                 type="text"
                                 placeholder="Buscar"
@@ -132,21 +133,21 @@ const EventsListSearch = ({ eventsData }: { eventsData: EventResponse[] }) => {
                             <div>
                                 <button
                                     type="button"
-                                    className={`rounded-full flex items-center justify-center h-10 w-10 custom_border`}
+                                    className={`rounded-full flex items-center justify-center h-10 w-10`}
                                     onClick={() => setFiltersOpen(!filtersOpen)}
                                 >
                                     {filtersOpen ? (
-                                        <ArrowUp strokeWidth={2.5} className="w-4 h-4 text-gray-500 dark:text-gray-400 z-20" />
+                                        <ArrowUp strokeWidth={2.5} className="w-5 h-5 text-gray-700 dark:text-gray-300 z-20" />
                                     ) : (
-                                        <SlidersIcon strokeWidth={2.5} className="w-4 h-4 text-gray-500 dark:text-gray-400 z-20" />
+                                        <SlidersIcon strokeWidth={2.5} className="w-5 h-5 text-gray-700 dark:text-gray-300 z-20" />
                                     )}
                                 </button>
                             </div>
 
                             <div className='relative overflow-visible' onClick={() => handleClearFilters()}>
                                 {filtersCount > 0 && (
-                                    <div className='absolute -top-0.5 -right-0.5 w-4 h-4 bg-red-500 rounded-full z-20'>
-                                        <p className='text-white text-[10px] font-medium tracking-tight flex items-center justify-center'>
+                                    <div className='absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full z-20 flex items-center justify-center'>
+                                        <p className='text-white font-mono text-[11px] font-medium tracking-tight justify-center'>
                                             {filtersCount}
                                         </p>
                                     </div>
@@ -155,11 +156,9 @@ const EventsListSearch = ({ eventsData }: { eventsData: EventResponse[] }) => {
                                 <button
                                     type="button"
                                     disabled={filtersCount === 0}
-                                    className={`rounded-full flex items-center justify-center h-10 w-10 custom_border
-                                        `}
-
+                                    className={`rounded-full flex items-center justify-center h-10 w-10 disabled:opacity-50 disabled:cursor-not-allowed`}
                                 >
-                                    <BrushCleaning className="w-5 h-5 text-gray-500 z-20 hover:text-gray-700 dark:hover:text-gray-300 transition-all duration-75 disabled:opacity-50 disabled:cursor-not-allowed" />
+                                    <BrushCleaning className="w-5 h-5 text-gray-700 dark:text-gray-300 z-20 transition-all duration-75 disabled:cursor-not-allowed" />
                                 </button>
                             </div>
                         </div>
@@ -181,26 +180,13 @@ const EventsListSearch = ({ eventsData }: { eventsData: EventResponse[] }) => {
                                             const isSelected = selectedEventTypes.includes(type.value)
 
                                             return (
-                                                <motion.button
-                                                    type='button'
+                                                <ChipFilterOption
                                                     key={`${type.value}-${index}`}
-                                                    className={`chip_filter ${isSelected ? "" : "opacity-50"}`}
-                                                    onClick={() => handleCategoryToggle(type.value)}
-                                                    whileTap={{ scale: 0.95 }}
-                                                    transition={{ type: "spring", stiffness: 400, damping: 17 }}
-                                                >
-                                                    <div className="rounded-xl p-1 h-5 w-5 bg-gray-100 dark:bg-gray-800 flex items-center justify-center transition-all duration-75">
-                                                        {isSelected && (
-                                                            <div>
-                                                                <CheckIcon className="w-5 h-5 text-green-500 dark:text-green-500" />
-                                                            </div>
-                                                        )}
-
-                                                    </div>
-                                                    <p className={`text-xs font-medium ${isSelected ? "text-gray-950 dark:text-white" : "text-gray-500 dark:text-gray-400"}`}>
-                                                        {type.name}
-                                                    </p>
-                                                </motion.button>
+                                                    type={type}
+                                                    isSelected={isSelected}
+                                                    handleCategoryToggle={handleCategoryToggle}
+                                                    index={index}
+                                                />
                                             )
                                         })}
                                     </div>
@@ -217,7 +203,7 @@ const EventsListSearch = ({ eventsData }: { eventsData: EventResponse[] }) => {
                                                     whileTap={{ scale: 0.95 }}
                                                     transition={{ type: "spring", stiffness: 400, damping: 17 }}
                                                 >
-                                                    <div className="rounded-xl p-1 h-5 w-5 bg-gray-100 dark:bg-gray-800 flex items-center justify-center transition-all duration-75">
+                                                    <div className="rounded-xl p-1 h-5 w-5 bg-gray-100 dark:bg-cgray flex items-center justify-center transition-all duration-75">
                                                         {isSelected && (
                                                             <div>
                                                                 <CheckIcon className="w-5 h-5 text-green-500 dark:text-green-500" />
@@ -240,12 +226,15 @@ const EventsListSearch = ({ eventsData }: { eventsData: EventResponse[] }) => {
                 </motion.div>
             </motion.div>
 
-            <motion.div className="max-w-max mx-auto w-full h-max grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-4 pb-20 px-3">
+            <motion.div className="mx-auto w-full h-max grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-4 pb-20 px-3 max-w-screen-lg items-start justify-center">
 
                 {isAdmin && (
-                    <div className="flex items-center justify-center w-full h-[200px] relative rounded-xl z-10 rounded-bl-3xl border border-dashed border-gray-300 dark:border-gray-700 gap-2 cursor-pointer md:hover:shadow-xl dark:hover:border-gray-600 transition-all duration-100"
+                    <div className="flex items-center justify-center h-[200px] relative rounded-xl z-10 rounded-bl-3xl border border-dashed border-gray-300 dark:border-gray-700 gap-2 cursor-pointer md:hover:shadow-xl dark:hover:border-gray-600 transition-all duration-100 w-full max-w-[350px] mx-auto"
                         onClick={() => router.push('/eventos/nuevo')}
                     >
+                        <button>
+
+                        </button>
                         <PlusIcon className="w-4 h-4 text-gray-500 dark:text-white" />
                         <p className="text-sm font-medium tracking-tight text-gray-600 dark:text-gray-400">Nuevo evento</p>
                     </div>

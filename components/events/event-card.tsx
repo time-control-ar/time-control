@@ -1,4 +1,4 @@
-import { ChartBarIcon, ClockIcon, ExternalLinkIcon, InfoIcon, MapPinIcon, PencilIcon, TrashIcon } from 'lucide-react'
+import { ChartBarIcon, ClockIcon, InfoIcon, MapPinIcon, PencilIcon, TrashIcon } from 'lucide-react'
 import { EventResponse } from '@/lib/schemas/event.schema'
 import { motion } from "framer-motion"
 import SafeImage from '@/components/ui/safe-image'
@@ -119,7 +119,7 @@ export const EventCard = ({ event, previewMode = false }: { event: EventResponse
         <>
             <div className="mx-auto group relative w-[350px] h-max">
                 <div
-                    className={`w-full mx-auto rounded-xl select-none bg-white dark:bg-gray-950 cursor-pointer relative overflow-hidden`}
+                    className={`w-full mx-auto rounded-xl select-none cursor-pointer relative overflow-hidden`}
                     onClick={() => setIsOpen(true)}
                 >
                     {isAdmin && !previewMode && (
@@ -220,28 +220,32 @@ export const EventCard = ({ event, previewMode = false }: { event: EventResponse
                                     className="flex flex-col gap-3 px-4 md:px-6 h-max pb-4 overflow-y-auto"
                                 >
                                     <div className="flex flex-col gap-3 pb-6 relative">
-                                        <div className="rounded-bl-3xl rounded-xl overflow-hidden relative">
-                                            <SafeImage
-                                                src={event?.image || ''}
-                                                alt={event?.name || ''}
-                                                className="z-10 object-cover md:!min-h-[300px]"
-                                                fill
-                                                priority
-                                                fallbackText="Imagen"
-                                            />
+                                        <div className="flex flex-col md:flex-row gap-3 w-full">
+                                            <div className="rounded-bl-3xl rounded-xl overflow-hidden relative w-full">
+                                                <SafeImage
+                                                    src={event?.image || ''}
+                                                    alt={event?.name || ''}
+                                                    className="z-10 object-cover md:!min-h-[250px]"
+                                                    fill
+                                                    priority
+                                                    fallbackText="Imagen"
+                                                />
 
-                                            <div className="absolute bottom-2 left-2 z-10">
-                                                <EventDate eventDate={event?.date || ''} />
+                                                <div className="absolute bottom-2 left-2 z-10">
+                                                    <EventDate eventDate={event?.date || ''} />
+                                                </div>
                                             </div>
-                                        </div>
+                                            <div className="px-3 pb-4 md:hidden">
+                                                <div
+                                                    className="whitespace-pre-wrap break-words text-base text-gray-700 dark:text-gray-300" dangerouslySetInnerHTML={{ __html: event?.description || '' }}
+                                                />
+                                            </div>
 
-
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-2 items-start w-full">
-                                            <div className="rounded-bl-3xl rounded-xl overflow-hidden w-full h-full relative">
+                                            <div className="rounded-bl-3xl rounded-xl overflow-hidden h-[200px] md:h-[250px] w-full md:w-[494px]">
                                                 {!previewMode ? (
                                                     <EventLocationMap event={event} />
                                                 ) : (
-                                                    <div className="w-full h-[150px] rounded-tl-3xl rounded-xl bg-gray-100 dark:bg-gray-900 flex items-center justify-center">
+                                                    <div className="w-full max-w-[100px] rounded-tl-3xl rounded-xl bg-gray-100 dark:bg-cgray flex items-center justify-center">
                                                         <p className="text-xs text-gray-500 dark:text-gray-400 text-center px-2">
                                                             Vista previa de la ubicación solo disponible en el sitio web
                                                         </p>
@@ -250,7 +254,7 @@ export const EventCard = ({ event, previewMode = false }: { event: EventResponse
                                             </div>
                                         </div>
 
-                                        <div className="px-3 pt-4">
+                                        <div className="px-3 pt-4 hidden md:block">
                                             <div
                                                 className="whitespace-pre-wrap break-words text-base text-gray-700 dark:text-gray-300" dangerouslySetInnerHTML={{ __html: event?.description || '' }}
                                             />
@@ -370,19 +374,18 @@ const EventLocationMap = ({ event }: { event: EventResponse }) => {
             <button
                 disabled={!center}
                 type='button'
-                className="absolute bottom-2 right-2 z-10 rounded-xl w-max h-[39px] backdrop-blur-sm border bg-gray-100/50 border-gray-300 shadow-lg flex items-center gap-2 px-3 shadow-black/50 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="absolute top-2 left-2 z-10 rounded-xl w-max h-[39px] backdrop-blur-sm border bg-gray-100/90 border-gray-300 shadow-lg flex items-center gap-1 px-3 shadow-black/50 disabled:opacity-50 disabled:cursor-not-allowed"
                 onClick={() => {
                     const url = `https://www.google.com/maps?q=${center?.lat},${center?.lng}`;
                     window.open(url, '_blank', 'noopener,noreferrer');
                 }}
             >
-                <div className="w-[16px] h-[22px] relative">
+                <div className="w-[16px] h-[22px] relative scale-90">
                     <Image src="/googlemaps.png" alt="Google Maps" fill />
                 </div>
                 <p className="text-sm font-medium tracking-tight text-gray-700">
                     Abrir en Google Maps
                 </p>
-                <ExternalLinkIcon className="w-4 h-4 text-gray-700" />
             </button>
         </div>
     );

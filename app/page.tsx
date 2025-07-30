@@ -22,7 +22,7 @@ export default async function Home({
 
   return (
     <>
-      <div className="font-[family-name:var(--font-geist-sans)] bg-white dark:bg-gray-950 min-h-screen">
+      <div className="font-[family-name:var(--font-geist-sans)] min-h-screen">
         <div className="w-full flex flex-col gap-4 relative">
           <div className="px-6 w-full flex justify-between items-center max-w-5xl mx-auto">
             <AnimatedLogo />

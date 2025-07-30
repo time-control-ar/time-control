@@ -151,8 +151,6 @@ export function parseRaceData(fileContent: string): RaceData {
  const modalities = new Set<string>();
  const runners: Runners[] = [];
 
- // Define expected headers
- // const headers = ['SEXO', 'NOMBRE', 'CHIP', 'DORSAL', 'MODALIDAD', 'CATEGORIA', 'TIEMPO', 'POSICION', 'POS.SEX.', 'POS.CAT.', 'RITMO'];
  let isHeaderRow = true;
 
  for (const line of lines) {
