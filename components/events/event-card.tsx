@@ -268,7 +268,7 @@ export const EventCard = ({ event, previewMode = false }: { event: EventResponse
                                     animate={{ opacity: 1, y: 0 }}
                                     exit={{ opacity: 0, y: 10 }}
                                     transition={{ duration: 0.2 }}
-                                    className="h-full overflow-y-auto lg:px-3"
+                                    className="h-full overflow-y-auto"
                                 >
 
                                     <RaceCheckTable

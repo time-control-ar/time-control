@@ -102,7 +102,7 @@ const EventsListSearch = ({ eventsData }: { eventsData: EventResponse[] }) => {
                     transition={{ duration: 0.1 }}
                     className={`max-w-screen-lg mx-auto w-full flex flex-col items-start justify-between`}
                 >
-                    <div className="flex items-center justify-start w-full gap-3 px-4 md:px-6">
+                    <div className="flex items-center justify-between w-full gap-3 px-4 md:px-6">
                         <div className="flex relative w-full max-w-[300px]">
                             <SearchIcon className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-700 dark:text-gray-300 z-20" />
                             <input
@@ -133,13 +133,13 @@ const EventsListSearch = ({ eventsData }: { eventsData: EventResponse[] }) => {
                             <div>
                                 <button
                                     type="button"
-                                    className={`rounded-full flex items-center justify-center h-10 w-10`}
+                                    className={`rounded-full flex items-center justify-center h-10 w-10 custom_border dark:bg-cgray`}
                                     onClick={() => setFiltersOpen(!filtersOpen)}
                                 >
                                     {filtersOpen ? (
-                                        <ArrowUp strokeWidth={2.5} className="w-5 h-5 text-gray-700 dark:text-gray-300 z-20" />
+                                        <ArrowUp strokeWidth={2.5} className="w-4 h-4 text-gray-700 dark:text-gray-300 z-20" />
                                     ) : (
-                                        <SlidersIcon strokeWidth={2.5} className="w-5 h-5 text-gray-700 dark:text-gray-300 z-20" />
+                                        <SlidersIcon strokeWidth={2.5} className="w-4 h-4 text-gray-700 dark:text-gray-300 z-20" />
                                     )}
                                 </button>
                             </div>
@@ -156,7 +156,7 @@ const EventsListSearch = ({ eventsData }: { eventsData: EventResponse[] }) => {
                                 <button
                                     type="button"
                                     disabled={filtersCount === 0}
-                                    className={`rounded-full flex items-center justify-center h-10 w-10 disabled:opacity-50 disabled:cursor-not-allowed`}
+                                    className={`rounded-full flex items-center justify-center h-10 w-10 custom_border dark:bg-cgray disabled:opacity-50 disabled:cursor-not-allowed`}
                                 >
                                     <BrushCleaning className="w-5 h-5 text-gray-700 dark:text-gray-300 z-20 transition-all duration-75 disabled:cursor-not-allowed" />
                                 </button>
@@ -226,7 +226,7 @@ const EventsListSearch = ({ eventsData }: { eventsData: EventResponse[] }) => {
                 </motion.div>
             </motion.div>
 
-            <motion.div className="mx-auto w-full h-max grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-4 pb-20 px-3 max-w-screen-lg items-start justify-center">
+            <motion.div className="mx-auto w-full h-max grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 pb-20 px-3 max-w-screen-lg items-start justify-center">
 
                 {isAdmin && (
                     <div className="flex items-center justify-center h-[200px] relative rounded-xl z-10 rounded-bl-3xl border border-dashed border-gray-300 dark:border-gray-700 gap-2 cursor-pointer md:hover:shadow-xl dark:hover:border-gray-600 transition-all duration-100 w-full max-w-[350px] mx-auto"

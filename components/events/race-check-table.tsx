@@ -114,12 +114,12 @@ const RaceCheckTable = ({ modalities, genders, runners, previewMode }: RaceCheck
     }
 
     return (
-        <div className='w-full flex flex-col gap-3 h-full max-h-[700px] overflow-auto px-3 md:px-6'>
+        <div className='w-full flex flex-col gap-3 h-full max-h-[700px] overflow-auto'>
             <motion.div
                 transition={{ duration: 0.1 }}
-                className={`max-w-screen-lg mx-auto w-full flex flex-col items-start justify-between`}
+                className={`max-w-screen-lg mx-auto w-full flex flex-col items-start justify-between pt-1`}
             >
-                <div className="flex items-center justify-start w-full gap-3 px-4 md:px-6">
+                <div className="flex items-center justify-between w-full gap-3 px-4 md:px-6">
                     <div className="flex relative w-full max-w-[300px]">
                         <SearchIcon className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-700 dark:text-gray-300 z-20" />
                         <input
@@ -146,17 +146,18 @@ const RaceCheckTable = ({ modalities, genders, runners, previewMode }: RaceCheck
                         )}
                     </div>
 
+
                     <div className='flex items-center justify-center gap-2'>
                         <div>
                             <button
                                 type="button"
-                                className={`rounded-full flex items-center justify-center h-10 w-10`}
+                                className={`rounded-full flex items-center justify-center h-10 w-10 custom_border dark:bg-cgray`}
                                 onClick={() => setFiltersOpen(!filtersOpen)}
                             >
                                 {filtersOpen ? (
-                                    <ArrowUp strokeWidth={2.5} className="w-5 h-5 text-gray-700 dark:text-gray-300 z-20" />
+                                    <ArrowUp strokeWidth={2.5} className="w-4 h-4 text-gray-700 dark:text-gray-300 z-20" />
                                 ) : (
-                                    <SlidersIcon strokeWidth={2.5} className="w-5 h-5 text-gray-700 dark:text-gray-300 z-20" />
+                                    <SlidersIcon strokeWidth={2.5} className="w-4 h-4 text-gray-700 dark:text-gray-300 z-20" />
                                 )}
                             </button>
                         </div>
@@ -173,7 +174,7 @@ const RaceCheckTable = ({ modalities, genders, runners, previewMode }: RaceCheck
                             <button
                                 type="button"
                                 disabled={filtersCount === 0}
-                                className={`rounded-full flex items-center justify-center h-10 w-10 disabled:opacity-50 disabled:cursor-not-allowed`}
+                                className={`rounded-full flex items-center justify-center h-10 w-10 custom_border dark:bg-cgray disabled:opacity-50 disabled:cursor-not-allowed`}
                             >
                                 <BrushCleaning className="w-5 h-5 text-gray-700 dark:text-gray-300 z-20 transition-all duration-75 disabled:cursor-not-allowed" />
                             </button>
@@ -270,7 +271,7 @@ const RaceCheckTable = ({ modalities, genders, runners, previewMode }: RaceCheck
                 </AnimatePresence>
             </motion.div>
 
-            <div className="pb-4 w-full h-full flex flex-col overflow-auto">
+            <div className="pb-4 w-full h-full flex flex-col overflow-auto px-3 md:px-6">
                 <div className="modern-table">
                     <table>
                         <thead className="modern-table-header">

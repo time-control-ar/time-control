@@ -51,7 +51,7 @@ const Modal = ({
                         <div>
                             <button
                                 type="button"
-                                className={`rounded-full flex items-center justify-center h-10 w-10`}
+                                className={`rounded-full flex items-center justify-center h-10 w-10 custom_border`}
                                 onClick={onClose}
                             >
                                 <XIcon strokeWidth={2.5} className="w-4 h-4 text-gray-700 dark:text-gray-300 z-20" />
@@ -74,7 +74,7 @@ const Modal = ({
                     exit={{ opacity: 0 }}
                     transition={{ duration: 0.2, ease: 'easeInOut' }}
                     onClick={onClose}
-                    className="fixed inset-0 z-50 bg-black/5  backdrop-blur-md flex items-center justify-center overflow-hidden md:py-4"
+                    className="fixed inset-0 z-50 bg-black/5 backdrop-blur-md flex items-center justify-center overflow-hidden md:py-4"
                 >
                     <motion.div
                         layout
@@ -85,7 +85,7 @@ const Modal = ({
                         className={`
                             ${isMobile ?
                                 'h-full w-full' :
-                                'custom_border h-max overflow-y-auto pb-4 rounded-3xl max-h-[90vh] md:max-h-full w-[90vw] md:max-w-[750px]'} 
+                                'h-max overflow-y-auto pb-4 rounded-3xl max-h-[90vh] md:max-h-full w-[90vw] md:max-w-[750px] custom_border'} 
                             z-[9999] relative overflow-y-auto lg:overflow-y-hidden flex flex-col
                              bg-white dark:bg-black
                             ${className}
