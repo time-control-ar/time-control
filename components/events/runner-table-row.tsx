@@ -1,7 +1,7 @@
 import { TicketIcon } from 'lucide-react'
 import { DorsalComponent } from '../ui/dorsal-component'
 import { useRouter } from 'next/navigation'
-import { Runner } from '@/lib/utils'
+import { Runner } from '@/lib/schemas/event.schema'
 
 interface RunnerTableRowProps {
     runner: Runner

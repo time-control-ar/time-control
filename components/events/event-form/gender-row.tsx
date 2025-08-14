@@ -1,5 +1,5 @@
 import { TrashIcon } from 'lucide-react'
-import { Gender } from '@/lib/utils'
+import { Gender } from '@/lib/schemas/event.schema'
 
 interface GenderRowProps {
     gender: Gender;

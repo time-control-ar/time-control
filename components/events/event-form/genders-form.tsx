@@ -1,6 +1,6 @@
 import { PlusIcon } from 'lucide-react'
 import { useState } from 'react'
-import { Gender } from '@/lib/utils'
+import { Gender } from '@/lib/schemas/event.schema'
 
 interface GendersFormProps {
     handleAddGender: (gender: Gender) => void;

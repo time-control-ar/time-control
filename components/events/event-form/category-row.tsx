@@ -1,5 +1,6 @@
 import { EditIcon, TrashIcon } from 'lucide-react'
-import { Category, Modality } from '@/lib/utils'
+import { Category } from '@/lib/schemas/event.schema'
+import { Modality } from '@/lib/schemas/event.schema'
 
 interface CategoryRowProps {
     category: Category;

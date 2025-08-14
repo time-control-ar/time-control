@@ -1,6 +1,6 @@
 import { PlusIcon } from 'lucide-react'
 import { useState } from 'react'
-import { Modality } from '@/lib/utils'
+import { Modality } from '@/lib/schemas/event.schema'
 
 interface ModalityFormProps {
     append: (modality: Modality) => void;

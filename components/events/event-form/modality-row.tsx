@@ -1,5 +1,5 @@
 import { TrashIcon } from 'lucide-react'
-import { Modality } from '@/lib/utils'
+import { Modality } from '@/lib/schemas/event.schema'
 
 interface ModalityRowProps {
     modality: Modality;

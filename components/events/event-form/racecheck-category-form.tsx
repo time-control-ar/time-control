@@ -1,7 +1,6 @@
 import { PlusIcon } from 'lucide-react'
 import { useState } from 'react'
-import { Category, Modality } from '@/lib/utils'
-
+import { Category, Modality } from '@/lib/schemas/event.schema'
 interface RacecheckCategoryFormProps {
     category: string;
     modalities: Modality[];

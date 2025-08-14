@@ -1,4 +1,4 @@
-import { RacecheckRunner } from '@/lib/utils'
+import { RacecheckRunner } from '@/lib/schemas/racecheck.schema'
 import { DorsalComponent } from '@/components/ui/dorsal-component'
 import { useSession } from 'next-auth/react'
 
