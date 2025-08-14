@@ -6,6 +6,8 @@ export const useGoogleMaps = () => {
     const { isLoaded, loadError } = useLoadScript({
         googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!,
         libraries,
+        // Asegurar que se cargue la versión más reciente de la API
+        version: 'weekly',
     });
 
     return { isLoaded, loadError };

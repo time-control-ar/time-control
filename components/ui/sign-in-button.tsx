@@ -26,7 +26,7 @@ export function SignInButton() {
         return (
             <>
                 <button type="button" className="bg-gray-950 dark:bg-white rounded-full text-white dark:text-gray-950 flex items-center gap-2 hover:opacity-80 transition-all duration-300" onClick={() => handleOpenSignOutModal()}>
-                    <div className="relative h-8 w-8 md:w-10 md:h-10 overflow-hidden rounded-full">
+                    <div className="relative h-10 w-10 overflow-hidden rounded-full">
                         <Image src={session.user?.image || ''} alt="User" width={40} height={40} className="object-cover" />
                     </div>
                 </button>
@@ -42,11 +42,11 @@ export function SignInButton() {
                             <Image src={session.user?.image || ''} alt="User" layout='fill' className="object-cover" />
                         </div>
                         <p className="text-sm text-gray-500 dark:text-gray-400">
-                            ¿Desea cerrar sesión de <span className="font-medium">{session.user?.name}</span>?
+                            ¿Desea cerrar sesión de <span className="font-medium dark:text-white">{session.user?.name}</span>?
                         </p>
 
                         <div className="flex justify-end gap-2 mt-auto">
-                            <button type="button" className="rounded-btn w-max" onClick={handleConfirm}>
+                            <button type="button" className="rounded-btn min-w-max" onClick={handleConfirm}>
                                 <p className="text-xs font-semibold tracking-tight">
                                     Si, cerrar sesión
                                 </p>
@@ -59,7 +59,7 @@ export function SignInButton() {
     }
     return (
         <>
-            <button type="button" className="rounded-btn !border-0 w-max" onClick={() => signIn("google")}>
+            <button type="button" className="rounded-btn !border-0 !w-max" onClick={() => signIn("google")}>
                 <p className="text-xs font-semibold tracking-tight">
                     Iniciar sesión
                 </p>

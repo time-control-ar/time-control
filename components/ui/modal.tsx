@@ -39,25 +39,23 @@ const Modal = ({
     const renderModalContent = () => (
         <>
             {(title || showCloseButton) && (
-                <div className="flex items-center justify-between px-4 md:px-6 pt-5 pb-3 sticky top-0 z-10 overflow-visible gap-3">
+                <div className="flex items-center justify-between px-4 md:px-6 sticky top-0 z-10 overflow-visible gap-3">
                     {title ? (
-                        <h1 className="text-gray-950 dark:text-gray-50 text-xl font-semibold tracking-tight">
+                        <h1 className="text-gray-950 dark:text-gray-50 text-xl font-semibold tracking-tight pt-5 pb-3">
                             {title}
                         </h1>
-                    ) : (
-                        <div className="w-full h-10" />
-                    )}
-                    {showCloseButton && (
-                        <div>
-                            <button
-                                type="button"
-                                className={`rounded-full flex items-center justify-center h-10 w-10 custom_border`}
-                                onClick={onClose}
-                            >
-                                <XIcon strokeWidth={2.5} className="w-4 h-4 text-gray-700 dark:text-gray-300 z-20" />
-                            </button>
-                        </div>
-                    )}
+                    ) : null}
+                </div>
+            )}
+            {showCloseButton && (
+                <div>
+                    <button
+                        type="button"
+                        className={`custom_button ${!title ? 'absolute right-3 top-3' : ''}`}
+                        onClick={onClose}
+                    >
+                        <XIcon strokeWidth={2.5} className="w-4 h-4 text-gray-700 dark:text-gray-300 z-20" />
+                    </button>
                 </div>
             )}
 
@@ -74,7 +72,7 @@ const Modal = ({
                     exit={{ opacity: 0 }}
                     transition={{ duration: 0.2, ease: 'easeInOut' }}
                     onClick={onClose}
-                    className="fixed inset-0 z-50 bg-black/5 backdrop-blur-md flex items-center justify-center overflow-hidden md:py-4"
+                    className="fixed inset-0 z-50 bg-cdark/5 backdrop-blur-md flex items-center justify-center overflow-hidden md:py-4"
                 >
                     <motion.div
                         layout
@@ -85,9 +83,9 @@ const Modal = ({
                         className={`
                             ${isMobile ?
                                 'h-full w-full' :
-                                'h-max overflow-y-auto pb-4 rounded-3xl max-h-[90vh] md:max-h-full w-[90vw] md:max-w-[750px] custom_border'} 
+                                'h-max overflow-y-auto pb-4 rounded-3xl max-h-[90vh] md:max-h-full w-[90vw] md:max-w-[790px] custom_border !border-opacity-50'} 
                             z-[9999] relative overflow-y-auto lg:overflow-y-hidden flex flex-col
-                             bg-white dark:bg-black
+                             bg-white dark:bg-cdark
                             ${className}
                             `}
                         onClick={(e) => e.stopPropagation()}

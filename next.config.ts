@@ -6,15 +6,11 @@ const nextConfig: NextConfig = {
   remotePatterns: [
    {
     protocol: "https",
-    hostname: "www.timecontrolonline.com.ar",
+    hostname: "vlgjuzcoyyoajuil.public.blob.vercel-storage.com",
    },
    {
     protocol: "https",
     hostname: "lh3.googleusercontent.com",
-   },
-   {
-    protocol: "https",
-    hostname: "timecontrol.blob.core.windows.net",
    },
   ],
   unoptimized: false,

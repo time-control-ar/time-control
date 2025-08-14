@@ -1,7 +1,8 @@
-import { CheckIcon } from 'lucide-react'
+
 import { UseFormWatch, UseFormSetValue, FieldErrors } from 'react-hook-form'
 import { EventFormData } from '@/lib/schemas/event.schema'
 import { eventTypes } from '@/lib/utils'
+import ChipFilterOption from '@/components/ui/chip-filter-option';
 
 interface EventFormTypeProps {
     watch: UseFormWatch<EventFormData>;
@@ -19,23 +20,13 @@ export function EventFormType({ watch, setValue, errors }: EventFormTypeProps) {
                     {eventTypes?.map((type, index) => {
                         const isSelected = watch("type") === type.value
                         return (
-                            <button
-                                type='button'
+                            <ChipFilterOption
                                 key={`${type.value}-${index}`}
-                                className={`chip_filter ${isSelected ? "" : "text-gray-500 dark:text-gray-400"}`}
-                                onClick={() => setValue("type", type.value)}
-                            >
-                                <div className="rounded-xl p-1 h-5 w-5 flex items-center justify-center transition-all duration-75">
-                                    {isSelected && (
-                                        <div>
-                                            <CheckIcon className="w-5 h-5 text-cblack dark:text-cwhite" />
-                                        </div>
-                                    )}
-                                </div>
-                                <p className={`px-2 py-1 text-sm font-medium ${isSelected ? "text-cblack dark:text-cwhite" : "text-gray-500 dark:text-gray-400"}`}>
-                                    {type.name}
-                                </p>
-                            </button>
+                                type={type}
+                                isSelected={isSelected}
+                                handleCategoryToggle={() => setValue("type", type.value)}
+                                index={index}
+                            />
                         )
                     })}
                 </div>

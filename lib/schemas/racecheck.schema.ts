@@ -1,8 +1,10 @@
-export interface RaceCheckProps {
- eventId: string;
- eventName: string;
- categories: string[];
- modalities: string[];
- racecheck: string | null;
- runners?: any[];
+export interface RacecheckRunner {
+ sexo: string;
+ nombre: string;
+ chip: string;
+ dorsal: string;
+ modalidad: string;
+ categoria: string;
+ tiempo: string;
+ ritmo: string;
 }

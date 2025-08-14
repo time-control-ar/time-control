@@ -14,7 +14,7 @@ export function EventFormDateTime({ register, errors, event }: EventFormDateTime
             <label className="label-input">Fecha y hora *</label>
 
             <div className="flex items-center w-full gap-6">
-                <div className="w-full flex flex-col gap-2">
+                <div className="w-full flex flex-col gap-2 max-w-[250px]">
                     <div className="w-full max-w-md flex flex-col">
                         <input
                             type="date"
@@ -27,32 +27,32 @@ export function EventFormDateTime({ register, errors, event }: EventFormDateTime
                     </div>
 
                     <div className="flex items-center gap-2 w-full">
-                        <div className="w-full">
+                        <div className="w-full max-w-xs">
                             <input
                                 type="time"
                                 {...register("startTime")}
                                 className="input w-full"
                             />
-                            {errors.startTime && (
-                                <p className="error-input">{errors.startTime.message}</p>
-                            )}
                         </div>
                         <p className="text-gray-500 dark:text-gray-400">a</p>
-                        <div className="w-full">
+                        <div className="w-full max-w-xs">
                             <input
                                 type="time"
                                 {...register("endTime")}
                                 className="input w-full"
                             />
-                            {errors.endTime && (
-                                <p className="error-input">{errors.endTime.message}</p>
-                            )}
                         </div>
                     </div>
                 </div>
 
-                <EventDate eventDate={event?.date || ''} />
+                <EventDate eventDate={event?.date || ''} previewMode={true} />
             </div>
+            {errors.startTime && (
+                <p className="error-input">{errors.startTime.message}</p>
+            )}
+            {errors.endTime && (
+                <p className="error-input">{errors.endTime.message}</p>
+            )}
         </div>
     )
 }

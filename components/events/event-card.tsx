@@ -1,18 +1,18 @@
-import { ChartBarIcon, ClockIcon, InfoIcon, MapPinIcon, PencilIcon, TrashIcon } from 'lucide-react'
+import { ClockIcon, InfoIcon, MapPinIcon, PencilIcon, TrashIcon, TrophyIcon } from 'lucide-react'
 import { EventResponse } from '@/lib/schemas/event.schema'
 import { motion } from "framer-motion"
 import SafeImage from '@/components/ui/safe-image'
 import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
-import { adminEmails, parseRaceData } from '@/lib/utils'
+import { adminEmails, buildResults, getRacecheckRunners } from '@/lib/utils'
 import Modal from '../ui/modal'
 import { useState } from 'react'
 import { AnimatePresence } from 'framer-motion'
-import RaceCheckTable from './race-check-table'
-import { deleteEvent } from '@/services/eventService'
+import { deleteEvent } from '@/services/event'
 import { GoogleMap, Marker } from '@react-google-maps/api'
 import { useGoogleMaps } from '@/hooks/use-google-maps'
 import Image from 'next/image'
+import ResultsTable from './results-table'
 
 const tabs = [
     {
@@ -23,7 +23,7 @@ const tabs = [
     {
         value: 'results',
         label: 'Resultados',
-        icon: ChartBarIcon
+        icon: TrophyIcon
     }
 ]
 
@@ -39,7 +39,7 @@ export const EventSpaceTime = ({ event }: { event: EventResponse }) => {
                     <MapPinIcon className="w-4 h-4 text-red-500 dark:text-red-500" />
                 </div>
                 <p className="text-gray-800 dark:text-white text-sm tracking-tight">
-                    {event?.locationName || 'Ubicación'}
+                    {event?.location?.name || event?.location?.direction || 'Ubicación'}
                 </p>
             </div>
             <div className="flex gap-2 items-center w-full">
@@ -69,11 +69,11 @@ export const EventDate = ({ eventDate, previewMode }: { eventDate: string, previ
         : 'Día'
 
     return (
-        <div className="flex flex-col items-center justify-center rounded-2xl w-[50px] h-[60px] backdrop-blur-sm max-w-[50px] overflow-hidden z-20">
-            <p className={`${previewMode ? 'text-3xl text-black dark:text-white' : 'text-white text-2xl'} tracking-tighter font-bold -mb-1`}>
+        <div className="flex flex-col items-center justify-center rounded-[14px] w-[50px] h-[60px] backdrop-blur-sm max-w-[50px] overflow-hidden z-20">
+            <p className={`${previewMode ? 'text-3xl text-cdark dark:text-white' : 'text-white text-2xl'} tracking-tighter font-bold -mb-1`}>
                 {eventDay}
             </p>
-            <p className={`${previewMode ? 'text-[11px] text-black dark:text-white' : 'text-white text-xs'} tracking-tight font-medium capitalize truncate w-full text-center px-1`}>
+            <p className={`${previewMode ? 'text-[11px] text-cdark dark:text-white' : 'text-white text-xs'} tracking-tight font-medium capitalize truncate w-full text-center px-1`}>
                 {eventMonth}
             </p>
         </div>
@@ -104,20 +104,25 @@ export const EventCard = ({ event, previewMode = false }: { event: EventResponse
     }
 
     const handleConfirm = async () => {
-        try {
-            await deleteEvent(event._id)
-            router.refresh()
-            setIsOpenDeleteModal(false)
-        } catch (error) {
+
+        await deleteEvent(event._id).then((res) => {
+            if (res.success) {
+                setIsOpenDeleteModal(false)
+                router.refresh()
+            }
+        }).catch((error) => {
             console.error(error)
-        }
+            setIsOpenDeleteModal(false)
+        })
+
     }
 
-    const racecheckData = parseRaceData(event?.racecheck || '')
+    const { validLines } = getRacecheckRunners(event?.racecheck || '', event?.modalities || [], event?.genders || [])
+    const { runners: racecheckData } = buildResults(validLines, event?.modalities || [], event?.genders || [])
 
     return (
         <>
-            <div className="mx-auto group relative w-[350px] h-max">
+            <div className="mx-auto group relative !w-[350px] h-max">
                 <div
                     className={`w-full mx-auto rounded-xl select-none cursor-pointer relative overflow-hidden`}
                     onClick={() => setIsOpen(true)}
@@ -144,14 +149,14 @@ export const EventCard = ({ event, previewMode = false }: { event: EventResponse
                                 >
                                     <PencilIcon className="w-4 h-4 text-gray-500" strokeWidth={2.5} />
                                 </button>
-                                <div className="absolute -top-2 -right-2 w-[80px] h-[40px] blur-xl bg-gray-950/80 dark:bg-gray-950 -z-10" />
+                                <div className="absolute -top-2 -right-2 w-[80px] h-[40px] blur-xl bg-gray-950/50 dark:bg-gray-950 -z-10" />
                             </div>
                         </div>
                     )}
 
 
                     <motion.div
-                        className={`w-full  overflow-hidden flex flex-col h-max mx-auto relative`}
+                        className={`w-full overflow-hidden flex flex-col h-max mx-auto relative`}
                     >
                         <div className="z-20 absolute bottom-0 left-0 p-2 ">
                             <EventDate eventDate={event?.date || ''} />
@@ -160,17 +165,16 @@ export const EventCard = ({ event, previewMode = false }: { event: EventResponse
                         <SafeImage
                             src={event?.image || ''}
                             alt={event?.name || ''}
-                            className="z-10 object-cover rounded-bl-3xl rounded-xl"
+                            className="z-10 object-cover object-left-top rounded-bl-3xl rounded-xl"
                             fill
                             priority
                             fallbackText="Imagen"
                         />
                     </motion.div>
 
-                    <div className="flex flex-col w-full px-5 pt-4 pb-6 mx-auto md:h-[200px]">
+                    <div className="flex flex-col w-full px-5 pt-4 pb-6 mx-auto md:h-max">
                         <div className="flex flex-col gap-1 items-start justify-between w-full">
-
-                            <h2 className="text-gray-950 dark:text-gray-50 text-xl font-semibold tracking-tight">
+                            <h2 className="text-cdark dark:text-gray-50 text-xl font-semibold tracking-tight">
                                 {event?.name || 'Nombre'}
                             </h2>
 
@@ -178,9 +182,9 @@ export const EventCard = ({ event, previewMode = false }: { event: EventResponse
                                 <EventSpaceTime event={event} />
                             </div>
 
-                            <div
+                            {/* <div
                                 className="whitespace-pre-wrap break-words text-sm text-gray-700 dark:text-gray-300 line-clamp-2" dangerouslySetInnerHTML={{ __html: event?.description }}
-                            />
+                            /> */}
                         </div>
                     </div>
                 </div>
@@ -191,17 +195,18 @@ export const EventCard = ({ event, previewMode = false }: { event: EventResponse
                     <Modal
                         isOpen={isOpen}
                         onClose={() => setIsOpen(false)}
-                        title={event?.name}
+                        // title={}
                         showCloseButton={true}
                     >
-                        <div className="flex w-full items-center justify-start px-4 md:px-6 gap-1 pb-3">
+                        <div className="flex w-full items-center justify-start px-2 gap-1 pb-2 border-b border-gray-100 dark:border-cgray py-3">
                             {tabs.map((tab) => (
                                 <button
                                     key={tab.value}
                                     type="button"
                                     onClick={() => handleTabChange(tab.value)}
                                     className={` transition-colors flex items-center justify-center gap-2 rounded-[11px] px-3 h-10 ${selectedTab === tab.value ? '' : 'opacity-60'}`}
-                                >       <tab.icon className={`w-5 h-5 ${selectedTab === tab.value ? 'text-cyan-300' : 'text-gray-800 dark:text-white'}`} />
+                                >
+                                    <tab.icon className={`w-5 h-5 ${selectedTab === tab.value ? 'text-cyan-300' : 'text-gray-800 dark:text-white'}`} />
                                     <p className={`text-sm font-mono font-semibold tracking-tight text-gray-800 dark:text-white`}>
                                         {tab.label}
                                     </p>
@@ -213,35 +218,39 @@ export const EventCard = ({ event, previewMode = false }: { event: EventResponse
                             {selectedTab === 'info' ? (
                                 <motion.div
                                     key="info"
-                                    initial={{ opacity: 0, y: 10 }}
+                                    initial={{ opacity: 0 }}
                                     animate={{ opacity: 1, y: 0 }}
-                                    exit={{ opacity: 0, y: 10 }}
+                                    exit={{ opacity: 0 }}
                                     transition={{ duration: 0.2 }}
-                                    className="flex flex-col gap-3 px-4 md:px-6 h-max pb-4 overflow-y-auto"
+                                    className="flex flex-col gap-3 p-2 h-max overflow-y-auto pb-12"
                                 >
-                                    <div className="flex flex-col gap-3 pb-6 relative">
-                                        <div className="flex flex-col md:flex-row gap-3 w-full">
-                                            <div className="rounded-bl-3xl rounded-xl overflow-hidden relative w-full">
+                                    <div className="flex flex-col gap-3 pb-6">
+                                        <div className="flex flex-col md:flex-row gap-2 w-full h-full">
+                                            <div className="relative w-full h-[200px] md:h-[250px]">
+                                                <div className="absolute bottom-3 left-3 z-20">
+                                                    <EventDate eventDate={event?.date || ''} />
+                                                </div>
                                                 <SafeImage
                                                     src={event?.image || ''}
                                                     alt={event?.name || ''}
-                                                    className="z-10 object-cover md:!min-h-[250px]"
+                                                    className="z-10 object-cover object-left-top rounded-bl-3xl rounded-xl h-[200px] md:h-[250px]"
                                                     fill
                                                     priority
                                                     fallbackText="Imagen"
                                                 />
-
-                                                <div className="absolute bottom-2 left-2 z-10">
-                                                    <EventDate eventDate={event?.date || ''} />
-                                                </div>
                                             </div>
                                             <div className="px-3 pb-4 md:hidden">
+                                                <h1 className="text-2xl font-semibold tracking-tight text-gray-800 dark:text-white mb-2">
+                                                    {event?.name}
+                                                </h1>
+
                                                 <div
                                                     className="whitespace-pre-wrap break-words text-base text-gray-700 dark:text-gray-300" dangerouslySetInnerHTML={{ __html: event?.description || '' }}
                                                 />
                                             </div>
 
-                                            <div className="rounded-bl-3xl rounded-xl overflow-hidden h-[200px] md:h-[250px] w-full md:w-[494px]">
+
+                                            <div className="rounded-tr-3xl rounded-xl overflow-hidden h-[200px] md:h-[250px] w-full md:w-[494px]">
                                                 {!previewMode ? (
                                                     <EventLocationMap event={event} />
                                                 ) : (
@@ -252,9 +261,20 @@ export const EventCard = ({ event, previewMode = false }: { event: EventResponse
                                                     </div>
                                                 )}
                                             </div>
+                                            <div className="pb-3">
+                                                <p>
+                                                    {event.location.name}
+                                                </p>
+                                                <p className="text-sm text-gray-500 dark:text-gray-400 font-mono">
+                                                    {event.location.direction}
+                                                </p>
+                                            </div>
                                         </div>
 
-                                        <div className="px-3 pt-4 hidden md:block">
+                                        <div className="px-3 hidden md:block gap-2">
+                                            <h1 className="text-2xl font-semibold tracking-tight text-gray-800 dark:text-white mb-2">
+                                                {event?.name}
+                                            </h1>
                                             <div
                                                 className="whitespace-pre-wrap break-words text-base text-gray-700 dark:text-gray-300" dangerouslySetInnerHTML={{ __html: event?.description || '' }}
                                             />
@@ -268,16 +288,14 @@ export const EventCard = ({ event, previewMode = false }: { event: EventResponse
                                     animate={{ opacity: 1, y: 0 }}
                                     exit={{ opacity: 0, y: 10 }}
                                     transition={{ duration: 0.2 }}
-                                    className="h-full overflow-y-auto"
+                                    className="h-full overflow-auto flex p-2 pb-6"
                                 >
-
-                                    <RaceCheckTable
+                                    <ResultsTable
+                                        title={event?.name}
+                                        runners={racecheckData ?? []}
                                         modalities={event?.modalities ?? []}
                                         genders={event?.genders ?? []}
-                                        runners={racecheckData.runners ?? []}
-                                        previewMode={{
-                                            eventId: event?._id ?? ''
-                                        }}
+                                        eventId={event?._id}
                                     />
                                 </motion.div>
                             )}
@@ -292,12 +310,12 @@ export const EventCard = ({ event, previewMode = false }: { event: EventResponse
                     >
                         <div className="flex flex-col h-min gap-6 p-6">
                             <p className="text-sm text-gray-500 dark:text-gray-400">
-                                ¿Estás seguro de querer eliminar <span className="font-medium">{event?.name}</span>?
+                                ¿Estás seguro de querer eliminar <span className="font-medium text-black dark:text-white">{event?.name}</span>?
                                 <br />Esta acción no se puede deshacer.
                             </p>
 
                             <div className="flex justify-end gap-2 mt-auto">
-                                <button className="rounded-full bg-red-500 dark:bg-red-800 px-4 py-3 text-sm font-medium text-white hover:bg-red-600 dark:hover:bg-red-700 transition-all duration-75" onClick={handleConfirm}>
+                                <button className="rounded-full bg-red-500 dark:bg-red-600 px-4 py-3 text-sm font-medium text-white hover:bg-red-700 transition-all duration-75" onClick={handleConfirm}>
                                     Si, eliminar
                                 </button>
                             </div>
@@ -374,18 +392,18 @@ const EventLocationMap = ({ event }: { event: EventResponse }) => {
             <button
                 disabled={!center}
                 type='button'
-                className="absolute top-2 left-2 z-10 rounded-xl w-max h-[39px] backdrop-blur-sm border bg-gray-100/90 border-gray-300 shadow-lg flex items-center gap-1 px-3 shadow-black/50 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="absolute top-3 right-3 z-10 rounded-xl w-max h-[39px] backdrop-blur-sm bg-gray-100/90 border-gray-300 shadow-lg flex items-center gap-1 px-3 shadow-cdark/50 disabled:opacity-50 disabled:cursor-not-allowed"
                 onClick={() => {
                     const url = `https://www.google.com/maps?q=${center?.lat},${center?.lng}`;
                     window.open(url, '_blank', 'noopener,noreferrer');
                 }}
             >
+                <p className="text-sm font-medium tracking-tight text-gray-700">
+                    Ver en Maps
+                </p>
                 <div className="w-[16px] h-[22px] relative scale-90">
                     <Image src="/googlemaps.png" alt="Google Maps" fill />
                 </div>
-                <p className="text-sm font-medium tracking-tight text-gray-700">
-                    Abrir en Google Maps
-                </p>
             </button>
         </div>
     );

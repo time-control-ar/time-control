@@ -11,6 +11,7 @@ export default {
  theme: {
   extend: {
    colors: {
+    cdark: "#080808",
     cblack: "#181818",
     cgray: "#212325",
     cwhite: "#F3F4F6",

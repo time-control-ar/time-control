@@ -1,4 +1,4 @@
-import { searchEvents } from "@/lib/server/eventService";
+import { searchEvents } from "@/services/event";
 import { connectToDatabase } from "@/lib/mongodb";
 import { NextResponse } from "next/server";
 import { ObjectId } from "mongodb";
@@ -24,11 +24,11 @@ export async function POST(req: Request) {
  try {
   const { db } = await connectToDatabase();
   const newEvent = await req.json();
-  console.log("newEvent", newEvent);
+
+  delete newEvent.image;
 
   const result = await db.collection("events").insertOne(newEvent);
 
-  // Get the created event to return it
   const createdEvent = await db.collection("events").findOne({
    _id: result.insertedId,
   });
@@ -40,7 +40,6 @@ export async function POST(req: Request) {
    );
   }
 
-  // Serializar el evento para evitar problemas con ObjectId
   const serializedEvent = {
    ...createdEvent,
    _id: createdEvent._id.toString(),

@@ -1,37 +1,57 @@
-import { File, TrashIcon } from 'lucide-react'
-import { UseFormWatch, UseFormSetValue } from 'react-hook-form'
-import { EventFormData, EventResponse } from '@/lib/schemas/event.schema'
-import RaceCheckTable from '../race-check-table'
+import { File, TrashIcon, FileIcon, ListIcon } from 'lucide-react'
+import { UseFormSetValue } from 'react-hook-form'
+import { EventFormData, EventResponse, Gender, Modality, Runner } from '@/lib/schemas/event.schema'
 import { validateFile } from '@/lib/utils'
-import { RaceCheckProps } from '@/lib/schemas/racecheck.schema'
+import { useState } from 'react'
+import ResultsTable from '../results-table'
+import { cn } from '@/lib/utils'
+import { RacecheckRunner } from '@/lib/schemas/racecheck.schema'
+import RaceCheckTable from '../race-check-table'
 
-const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10MB
+const MAX_FILE_SIZE = 50 * 1024 * 1024 // 50MB
 const ALLOWED_FILE_EXTENSIONS = ['.racecheck']
 
+const tabs = [
+    {
+        icon: <FileIcon className="w-4 h-4" />,
+        title: 'Racecheck',
+        value: 'racecheck'
+    },
+    {
+        icon: <ListIcon className="w-4 h-4" />,
+        title: 'Resultados',
+        value: 'runners'
+    }
+]
 interface EventFormResultsProps {
-    racecheckData: RaceCheckProps;
-    watch: UseFormWatch<EventFormData>;
     setValue: UseFormSetValue<EventFormData>;
     isSubmitting: boolean;
     setToast: (toast: { message: string; type: 'success' | 'error' | 'info'; show: boolean }) => void;
     event?: EventResponse | null;
+    fileName: string;
+    runners: Runner[];
+    modalities: Modality[];
+    genders: Gender[];
+    racecheckErrors: RacecheckRunner[];
 }
 
 export function EventFormResults({
-    racecheckData,
-    watch,
+    fileName,
+    runners,
+    modalities,
+    genders,
     setValue,
     isSubmitting,
     setToast,
-    event
+    racecheckErrors
 }: EventFormResultsProps) {
+    const [activeTab, setActiveTab] = useState<'racecheck' | 'runners'>('racecheck')
 
     const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0]
         if (!file) return
 
         try {
-            // Validar el archivo antes de procesarlo
             validateFile(file, {
                 maxSize: MAX_FILE_SIZE,
                 allowedExtensions: ALLOWED_FILE_EXTENSIONS
@@ -47,7 +67,7 @@ export function EventFormResults({
                 show: true
             })
         } catch (error) {
-            console.error('Error al procesar el archivo:', error)
+            // console.error('Error al procesar el archivo:', error)
             setToast({
                 message: error instanceof Error ? error.message : 'Error al procesar el archivo',
                 type: 'error',
@@ -56,91 +76,90 @@ export function EventFormResults({
         }
     }
 
-    const racecheckName = watch('racecheck')?.split('\n')[0]
-
     return (
-        <>
-            <div className="custom_border flex flex-col rounded-xl  bg-white dark:bg-cblack">
-                <div className="p-3 lg:p-6 border-b border-gray-200 dark:border-gray-900">
-                    <div className="flex w-full justify-between items-center">
-                        <p className='text-sm font-medium font-mono tracking-tight text-gray-700 dark:text-gray-200'>
-                            Resultados
-                        </p>
+        <div className="flex flex-col gap-3 w-full h-full items-center justify-center">
+            <div className="flex items-center justify-start w-full gap-3 pt-1">
+                {tabs.map((tab) => {
+                    if (!fileName) return null
 
+                    return (
+                        <button
+                            key={tab.value}
+                            type="button"
+                            className={cn(
+                                "text-sm font-medium font-mono tracking-tight text-cblack dark:text-gray-100 text-center max-w-max flex items-center gap-2 px-2 py-2.5 rounded-full transition-all duration-75",
+                                activeTab === tab.value && "bg-gray-100 dark:bg-cgray rounded-full"
+                            )}
+                            onClick={() => setActiveTab(tab.value as 'racecheck' | 'runners')}
+                            disabled={isSubmitting || !fileName || runners.length === 0}
+                        >
+                            {tab.icon}
+                            <p className="text-sm font-medium font-mono tracking-tight text-center max-w-max">
+                                {tab.title}
+                            </p>
+                        </button>
+                    )
+                })}
+            </div>
 
-                        {racecheckData.racecheck && (
-                            <button
-                                type="button"
-                                className="rounded-full bg-red-600 flex items-center justify-center p-1.5 hover:bg-red-700 transition-all duration-75 w-max"
-                                onClick={() => {
-                                    setValue('racecheck', null)
-                                }}
-                            >
-                                <TrashIcon className="w-4 h-4 text-white" strokeWidth={2.5} />
-                            </button>
+            {!fileName ? (
+                <div className="w-full flex flex-col items-center justify-center">
+                    <div className={`w-full flex flex-col h-max rounded-2xl shadow-lg md:shadow-none p-3 border border-dashed custom_border bg-gray-100 dark:bg-cblack hover:opacity-80 transition-all duration-75`}>
+                        <div className="text-center w-full py-6">
+                            <input
+                                accept={ALLOWED_FILE_EXTENSIONS.join(',')}
+                                onChange={handleFileChange}
+                                disabled={isSubmitting}
+                                className="hidden"
+                                id="race-check-file"
+                                type="file"
+                            />
+
+                            <label htmlFor="race-check-file" className={`cursor-pointer ${isSubmitting ? 'opacity-50' : ''}`}>
+                                <div className="text-gray-500 flex flex-col items-center justify-center">
+                                    <File size={24} className="mx-auto mb-2" />
+                                    <p className='text-sm'>Haz clic para seleccionar archivo de resultados</p>
+                                    <p className="text-xs">Archivo .racecheck</p>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            ) : (
+                <div className="flex flex-col gap-6 w-full my-auto h-full">
+                    <div className="flex flex-col gap-3 w-full max-h-[80vh]">
+                        {activeTab === 'racecheck' && (
+                            <>
+                                {fileName && (
+                                    <div className="p-3 rounded-2xl border border-gray-200 dark:border-cgray flex items-center justify-between">
+                                        <p className='text-sm font-medium font-mono tracking-tight text-gray-700 dark:text-gray-200'>
+                                            {fileName}
+                                        </p>
+                                        <button
+                                            type="button"
+                                            className="rounded-full bg-red-600 flex items-center justify-center p-1.5 hover:bg-red-700 transition-all duration-75 w-max"
+                                            onClick={() => {
+                                                setValue('racecheck', null)
+                                            }}
+                                        >
+                                            <TrashIcon className="w-4 h-4 text-white" strokeWidth={2.5} />
+                                        </button>
+                                    </div>
+                                )}
+                                <RaceCheckTable
+                                    runners={runners}
+                                    racecheckErrors={racecheckErrors}
+                                />
+                            </>
+                        )}
+
+                        {/* Tabla de RacecheckRunner */}
+                        {activeTab === 'runners' && (
+                            <ResultsTable title={fileName} runners={runners} modalities={modalities} genders={genders} />
                         )}
                     </div>
                 </div>
-
-                {!racecheckData.racecheck ? (
-                    <div className="w-full flex flex-col items-center justify-center lg:p-6">
-                        <div className={`w-full flex flex-col h-max rounded-2xl shadow-lg md:shadow-none p-3 border border-dashed border-gray-200 dark:border-gray-900`}>
-                            <div className="text-center w-full py-6">
-                                <input
-                                    accept={ALLOWED_FILE_EXTENSIONS.join(',')}
-                                    onChange={handleFileChange}
-                                    disabled={isSubmitting}
-                                    className="hidden"
-                                    id="race-check-file"
-                                    type="file"
-                                />
-
-                                <label htmlFor="race-check-file" className={`cursor-pointer ${isSubmitting ? 'opacity-50' : ''}`}>
-                                    <div className="text-gray-500 flex flex-col items-center justify-center">
-                                        <File size={24} className="mx-auto mb-2" />
-                                        <p className='text-sm'>Haz clic para seleccionar archivo de resultados</p>
-                                        <p className="text-xs">Archivos .racecheck hasta 10MB</p>
-                                    </div>
-                                </label>
-                            </div>
-                        </div>
-                    </div>
-                ) : (
-                    <>
-                        <div className="p-6 flex flex-col gap-2">
-                            <div className="flex items-center justify-between">
-                                <p className='text-sm font-medium tracking-tight text-gray-500 dark:text-gray-400'>
-                                    {racecheckName}
-                                </p>
-
-
-                            </div>
-
-                            <div className="flex flex-col gap-2">
-                                <p className="text-sm font-medium tracking-tight text-gray-500 dark:text-gray-400 font-mono">
-                                    {racecheckData.runners?.length ?? 0} participantes cargados
-                                </p>
-
-                                <p className="text-sm font-medium tracking-tight text-gray-500 dark:text-gray-400 font-mono">
-                                    {racecheckData.modalities?.map((modality: string) => modality).join(', ')}
-                                </p>
-                                <p className="text-sm font-medium tracking-tight text-gray-500 dark:text-gray-400 font-mono">
-                                    {racecheckData.categories?.map((category: string) => category).join(', ')}
-                                </p>
-                            </div>
-                        </div>
-                    </>
-                )}
-
-            </div>
-            <div className='w-full flex flex-col h-max gap-6 p-3'>
-                <RaceCheckTable
-                    modalities={watch('modalities') ?? []}
-                    genders={watch('genders') ?? []}
-                    runners={racecheckData.runners ?? []}
-                    previewMode={event?._id ? { eventId: event?._id } : undefined}
-                />
-            </div>
-        </>
+            )}
+        </div>
     )
 }

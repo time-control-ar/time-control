@@ -10,7 +10,7 @@ export function ModeToggle() {
     return (
         <button
             type="button"
-            className="h-10 w-10 transition-all rounded-full flex items-center justify-center active:scale-95 active:rotate-45 duration-300"
+            className="custom_button transition-all rounded-full flex items-center justify-center active:scale-95 active:rotate-45 duration-100"
             onClick={() => setTheme(theme === "light" ? "dark" : "light")}
         >
             <Sun className="h-5 w-5 hidden dark:block dark:text-gray-100" />

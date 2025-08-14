@@ -1,22 +1,28 @@
 import React from 'react'
 
-const DorsalComponent = ({ dorsal }: { dorsal: number }) => {
-    return (
-        <div>
-            <div className="flex flex-col justify-between items-center rounded-md overflow-hidden h-[45px] w-[60px] shadow">
-                <div className="w-full h-3 bg-gradient-to-r from-slate-700 to-slate-800 justify-between flex items-center py-1.5 px-3">
-                    <div className="w-1 h-1 rounded-full bg-white dark:bg-gray-100"></div>
-                    <div className="w-1 h-1 rounded-full bg-white dark:bg-gray-100"></div>
-                </div>
+interface DorsalComponentProps {
+    dorsal: string;
+    preview?: boolean;
+}
 
-                <div className="bg-white dark:bg-gray-100 w-full h-full flex items-center justify-center">
-                    <p className="font-bold text-lg text-gray-700 dark:text-gray-800 text-center tracking-tighter font-mono">
-                        {dorsal}
-                    </p>
+export const DorsalComponent = ({ dorsal, preview = true }: DorsalComponentProps) => {
+
+    return (
+        <div className={`${preview ? 'bg-slate-200 dark:bg-transparent p-0.5 rounded-xl' : ''} w-max`}>
+            <div className='bg-white dark:bg-gray-100 overflow-hidden flex flex-col w-[57px] rounded-lg'>
+                <div className="flex flex-col items-center justify-center relative ">
+                    <div className="w-full max flex items-center justify-between bg-gradient-to-r from-slate-600 to-slate-900 h-[15px] px-3">
+                        <div className="rounded-full bg-white dark:bg-gray-100 w-1 h-1"></div>
+                        <div className="rounded-full bg-white dark:bg-gray-100 w-1 h-1"></div>
+                    </div>
+
+                    <div className="w-full pt-1 pb-1.5 flex items-center justify-center">
+                        <p className="font-bold text-gray-700 dark:text-gray-800 text-center tracking-tighter font-mono text-base">
+                            {parseInt(dorsal)}
+                        </p>
+                    </div>
                 </div>
             </div>
         </div>
     )
 }
-
-export default DorsalComponent

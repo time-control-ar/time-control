@@ -1,14 +1,15 @@
 import EventForm from '@/components/events/event-form'
-import { getEventById } from '@/lib/server/eventService'
+import { getEventById } from '@/services/event'
 
 interface PageProps {
-  params: {
+  params: Promise<{
     id: string
-  }
+  }>
 }
 
 export default async function EditarEvento({ params }: PageProps) {
-  const event = await getEventById(params.id)
+  const resolvedParams = await params
+  const event = await getEventById(resolvedParams?.id ?? '')
 
   return <EventForm event={event} />
 }

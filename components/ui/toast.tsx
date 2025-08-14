@@ -1,22 +1,23 @@
 'use client'
 
 import { AnimatePresence, motion } from 'framer-motion'
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { CheckCircle2, AlertCircle, Info, X } from 'lucide-react'
 import { useIsMobile } from '@/hooks/use-mobile'
 
 const Toast = ({
+    isVisible,
     message,
     type,
     dismissible = false,
     onDismiss
 }: {
+    isVisible: boolean,
     message: string,
     type: 'success' | 'error' | 'info',
     dismissible?: boolean,
     onDismiss?: () => void
 }) => {
-    const [isVisible, setIsVisible] = useState(true)
     const isMobile = useIsMobile()
 
     useEffect(() => {
@@ -29,7 +30,6 @@ const Toast = ({
 
         if (!dismissible) {
             const timer = setTimeout(() => {
-                setIsVisible(false)
                 onDismiss?.()
             }, isMobile ? 4000 : 3000)
             return () => clearTimeout(timer)
@@ -55,33 +55,31 @@ const Toast = ({
 
     return (
         <AnimatePresence mode="wait">
-            {isVisible && (
-                <motion.div
-                    initial={{ opacity: 0, y: -20, scale: 0.95 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: 20, scale: 0.95 }}
-                    transition={{ duration: 0.2, ease: "easeOut" }}
-                    className="fixed top-4 left-4 right-4 z-[9999] md:top-5 md:left-1/2 md:-translate-x-1/2 md:right-auto md:w-auto md:max-w-md toast-container"
-                >
-                    <div className={`${bgColor} px-4 py-3 md:px-6 md:py-4 rounded-2xl shadow-lg border flex items-center gap-3 backdrop-blur-sm`}>
-                        <Icon className="w-5 h-5 flex-shrink-0" />
-                        <span className="font-medium text-sm md:text-base flex-1 break-words">{message}</span>
-                        {dismissible && (
-                            <button
-                                type="button"
-                                onClick={() => {
-                                    setIsVisible(false)
-                                    onDismiss?.()
-                                }}
-                                className="ml-2 md:ml-4 hover:opacity-70 flex-shrink-0 p-1 rounded-full hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
-                                aria-label="Cerrar notificación"
-                            >
-                                <X className="w-4 h-4" />
-                            </button>
-                        )}
-                    </div>
-                </motion.div>
-            )}
+            <motion.div
+                initial={{ opacity: 0, y: -20, scale: 0.95 }}
+                animate={{ opacity: isVisible ? 1 : 0, y: isVisible ? 0 : -20, scale: 1 }}
+                exit={{ opacity: isVisible ? 0 : 1, y: isVisible ? -20 : 0, scale: 0.95 }}
+                transition={{ duration: 0.2, ease: "easeOut" }}
+                className="fixed top-4 left-4 right-4 z-[9999] md:top-5 md:left-1/2 md:-translate-x-1/2 md:right-auto md:w-auto md:max-w-md toast-container"
+            >
+                <div className={`${bgColor} px-4 py-3 md:px-6 md:py-4 rounded-2xl shadow-lg border flex items-center gap-3 backdrop-blur-sm`}>
+                    <Icon className="w-5 h-5 flex-shrink-0" />
+                    <span className="font-medium text-sm md:text-base flex-1 break-words">{message}</span>
+                    {dismissible && (
+                        <button
+                            type="button"
+                            onClick={() => {
+                                onDismiss?.()
+                            }}
+                            className="ml-2 md:ml-4 hover:opacity-70 flex-shrink-0 p-1 rounded-full hover:bg-cdark/5 dark:hover:bg-white/5 transition-colors"
+                            aria-label="Cerrar notificación"
+                        >
+                            <X className="w-4 h-4" />
+                        </button>
+                    )}
+                </div>
+            </motion.div>
+
         </AnimatePresence>
     )
 }

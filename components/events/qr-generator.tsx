@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { QRCodeSVG } from 'qrcode.react'
 import JSZip from 'jszip'
 import { saveAs } from 'file-saver'
-import { CheckIcon, ExternalLink, EyeIcon, FolderIcon, Loader2 } from 'lucide-react'
+import { ExternalLink, EyeIcon, FolderIcon, Loader2 } from 'lucide-react'
 import { generateQRUrl } from '@/lib/utils'
 import { QrCodeIcon } from 'lucide-react'
 import Modal from '../ui/modal'
@@ -14,11 +14,9 @@ interface QRGeneratorProps {
     eventId: string
     eventName: string
     maxParticipants: number
-    stayAfterCreation: boolean
-    setStayAfterCreation: (stayAfterCreation: boolean) => void
 }
 
-export default function QRGenerator({ eventId, eventName, maxParticipants, stayAfterCreation, setStayAfterCreation }: QRGeneratorProps) {
+export default function QRGenerator({ eventId, eventName, maxParticipants }: QRGeneratorProps) {
     const [isGenerating, setIsGenerating] = useState(false)
     const [progress, setProgress] = useState(0)
     const baseUrl = process.env.NEXT_PUBLIC_QR_URL
@@ -105,7 +103,7 @@ export default function QRGenerator({ eventId, eventName, maxParticipants, stayA
         }
     }
 
-    const isEmpty = !eventName || !maxParticipants || !baseUrl || maxParticipants === 0
+    const isEmpty = !eventName || !maxParticipants || !baseUrl || !eventId
 
     return (
         <div className="w-full h-max rounded-3xl bg-yellow-100 dark:bg-yellow-200 shadow-lg md:shadow-none p-2">
@@ -113,7 +111,7 @@ export default function QRGenerator({ eventId, eventName, maxParticipants, stayA
             {isEmpty ? (
                 <div className="flex flex-col gap-2 p-2 w-full">
                     <p className='text-sm text-gray-600'>
-                        No se puede generar el listado de QR porque no se han proporcionado los datos necesarios
+                        Podrás generar el listado de QR cuando se haya creado el evento
                     </p>
                 </div>
             ) : (
@@ -125,39 +123,30 @@ export default function QRGenerator({ eventId, eventName, maxParticipants, stayA
                                 Códigos QR
                             </h3>
                         </div>
-                        {eventId ? (
-                            <p className='text-sm text-gray-600'>
-                                Descarga el listado de códigos QR para que los participantes puedan acceder a su ticket personalizado.
-                            </p>
-                        ) : (
-                            <div className='flex flex-col gap-2'>
-                                <p className='text-sm text-gray-600'>
-                                    No se puede generar el listado de QR porque no se ha creado el evento
-                                </p>
 
-                                <div className='flex items-center gap-3 cursor-pointer' onClick={() => setStayAfterCreation(!stayAfterCreation)}>
-                                    <div className='min-w-4 min-h-4 rounded-md overflow-visible border-gray-300 dark:border-gray-700 appearance-none checked:bg-gray-950 checked:border-gray-950 flex items-center justify-center bg-gray-950' >
-                                        {stayAfterCreation && <CheckIcon className='w-4 h-4 text-white' />}
-                                    </div>
-                                    <p className='text-sm text-gray-600'>
-                                        Permanecer en el sitio hasta que se haya creado el evento
-                                    </p>
-                                </div>
-
-                            </div>
-                        )}
+                        <p className='text-sm text-gray-600'>
+                            Descargar listado de códigos QR para dorsales de los participantes.
+                        </p>
                     </div>
 
                     {eventId && (
-                        <div className="flex items-center gap-2 justify-between">
+                        <div className="flex items-center justify-between">
+
                             <button
                                 type="button"
-                                className='rounded-btn !border-0 !h-12 !pr-4 !bg-gray-950 max-w-max flex items-center gap-2 !text-white'
+                                className='rounded-btn !border-0 !bg-transparent max-w-max flex items-center gap-2 !text-cdark !w-max'
+                                onClick={() => setOpenTestQR(true)}
+                                disabled={isGenerating || isEmpty}
+                            >
+                                <p className='text-sm font-medium'>Probar QRs</p>
+                                <EyeIcon className='w-4 h-4' />
+                            </button>
+                            <button
+                                type="button"
+                                className='rounded-btn !rounded-2xl !border-0 !h-12 !pr-4 !bg-gray-950 max-w-max flex items-center gap-2 !text-white !w-max'
                                 onClick={downloadQRs}
                                 disabled={isGenerating || isEmpty}
                             >
-
-
                                 {isGenerating ? (
                                     <>
                                         <Loader2 className='w-4 h-4 animate-spin' />
@@ -173,16 +162,6 @@ export default function QRGenerator({ eventId, eventName, maxParticipants, stayA
                                         </div>
                                     </>
                                 )}
-                            </button>
-
-                            <button
-                                type="button"
-                                className='rounded-btn !border-0 !bg-transparent max-w-max flex items-center gap-2 !text-black'
-                                onClick={() => setOpenTestQR(true)}
-                                disabled={isGenerating || isEmpty}
-                            >
-                                <p className='text-sm font-medium'>Probar QRs</p>
-                                <EyeIcon className='w-4 h-4' />
                             </button>
                         </div>
                     )}
@@ -218,61 +197,64 @@ export default function QRGenerator({ eventId, eventName, maxParticipants, stayA
                         />
                     </div>
 
-                    <AnimatePresence mode="wait">
-                        {typeof selectedDorsal === 'number' && selectedDorsal > 0 ? (
-                            <motion.div
-                                key={selectedDorsal}
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 1 }}
-                                exit={{ opacity: 0 }}
-                                transition={{ duration: 0.2 }}
-                                className='flex flex-col gap-2 items-center justify-center'
-                            >
-                                <div className="h-60 w-60 rounded-xl overflow-hidden">
-                                    <QRCodeSVG
-                                        className="w-full h-full"
-                                        value={generateQRUrl(eventId, selectedDorsal)}
-                                        size={256}
-                                        level="H"
-                                        includeMargin={true}
-                                    />
-                                </div>
-                                <p className='text-xs text-gray-500 mt-3 text-wrap p-3 text-center max-w-md'>
-                                    {generateQRUrl(eventId, selectedDorsal)}
-                                </p>
+                    <div className="h-[350px] flex items-center justify-center">
 
-                                <button
-                                    type='button'
-                                    className='rounded-btn max-w-max flex items-center gap-2 w-full'
-                                    onClick={() => window.open(generateQRUrl(eventId, selectedDorsal), '_blank')}
+                        <AnimatePresence mode="wait">
+                            {typeof selectedDorsal === 'number' && selectedDorsal > 0 ? (
+                                <motion.div
+                                    key={selectedDorsal}
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    exit={{ opacity: 0 }}
+                                    transition={{ duration: 0.2 }}
+                                    className='flex flex-col gap-2 items-center justify-center'
                                 >
-                                    <p className='text-sm font-medium'>
-                                        Ir al ticket
+                                    <div className="h-60 w-60 rounded-xl overflow-hidden">
+                                        <QRCodeSVG
+                                            className="w-full h-full"
+                                            value={generateQRUrl(eventId, selectedDorsal)}
+                                            size={256}
+                                            level="H"
+                                            includeMargin={true}
+                                        />
+                                    </div>
+                                    <p className='text-xs text-gray-500 mt-3 text-wrap p-3 text-center max-w-md'>
+                                        {generateQRUrl(eventId, selectedDorsal)}
                                     </p>
-                                    <ExternalLink className='w-4 h-4' />
-                                </button>
-                            </motion.div>
-                        ) : (
-                            <motion.div
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 1 }}
-                                exit={{ opacity: 0 }}
-                                transition={{ duration: 0.2 }}
-                                className='flex flex-col gap-3 items-center justify-center w-full px-6'
-                            >
-                                <p className='text-base text-gray-500 dark:text-gray-400 font-normal mb-72 text-center'>
-                                    Ingrese un número
-                                    <br />
-                                    <span className="font-bold text-5xl text-gray-950 dark:text-gray-50">1 - {maxParticipants}
-                                    </span>
-                                    <br />
-                                    <span className="text-xl">
-                                        para ver el QR
-                                    </span>
-                                </p>
-                            </motion.div>
-                        )}
-                    </AnimatePresence>
+
+                                    <button
+                                        type='button'
+                                        className='rounded-btn max-w-max flex items-center gap-2 !w-max'
+                                        onClick={() => window.open(generateQRUrl(eventId, selectedDorsal), '_blank')}
+                                    >
+                                        <p className='text-sm font-medium'>
+                                            Ir al ticket
+                                        </p>
+                                        <ExternalLink className='w-4 h-4' />
+                                    </button>
+                                </motion.div>
+                            ) : (
+                                <motion.div
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    exit={{ opacity: 0 }}
+                                    transition={{ duration: 0.2 }}
+                                    className='flex flex-col gap-3 items-center justify-center w-full px-6 mb-20'
+                                >
+                                    <p className='text-base text-gray-500 dark:text-gray-400 font-normal text-center'>
+                                        Ingrese un número
+                                        <br />
+                                        <span className="font-bold text-4xl text-gray-950 dark:text-gray-50">1 - {maxParticipants}
+                                        </span>
+                                        <br />
+                                        <span className="text-xl">
+                                            para ver el QR
+                                        </span>
+                                    </p>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+                    </div>
                 </div>
             </Modal>
         </div >

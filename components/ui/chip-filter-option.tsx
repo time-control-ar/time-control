@@ -18,7 +18,7 @@ const ChipFilterOption = ({ type, isSelected, handleCategoryToggle, index }: Chi
         <motion.button
             type='button'
             key={`${type.value}-${index}`}
-            className={`chip_filter ${isSelected ? "" : "opacity-50"}`}
+            className={`chip_filter max-w-max ${isSelected ? "" : "opacity-50"}`}
             onClick={() => handleCategoryToggle(type.value)}
             whileTap={{ scale: 0.95 }}
             transition={{ type: "spring", stiffness: 400, damping: 17 }}

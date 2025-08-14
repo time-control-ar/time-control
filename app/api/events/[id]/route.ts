@@ -1,21 +1,36 @@
-import { EventResponse } from "@/lib/schemas/event.schema";
 import { connectToDatabase } from "@/lib/mongodb";
 import { NextResponse } from "next/server";
 import { ObjectId } from "mongodb";
 import { auth } from "@/auth";
 
+export async function GET(
+ req: Request,
+ { params }: { params: Promise<{ id: string }> }
+) {
+ const resolvedParams = await params;
+ const { db } = await connectToDatabase();
+ const event = await db
+  .collection("events")
+  .findOne({ _id: new ObjectId(resolvedParams.id) });
+
+ if (!event) {
+  return NextResponse.json({ success: false, data: [] }, { status: 404 });
+ }
+
+ return NextResponse.json({ success: true, data: [event] });
+}
 export async function PUT(
  req: Request,
  { params }: { params: Promise<{ id: string }> }
 ) {
  try {
+  console.log("editing event", req.body);
   const session = await auth();
   if (!session?.user)
    return NextResponse.json({ success: false, data: [] }, { status: 401 });
 
   const resolvedParams = await params;
   const newEvent = await req.json();
-  console.log("newEvent", newEvent);
 
   const { db } = await connectToDatabase();
 
@@ -54,30 +69,9 @@ export async function PUT(
    );
   }
 
-  const serializedEvent: EventResponse = {
-   _id: updatedEvent._id.toString(),
-   name: updatedEvent.name,
-   date: updatedEvent.date,
-   startTime: updatedEvent.startTime,
-   endTime: updatedEvent.endTime,
-   location: updatedEvent.location,
-   locationName: updatedEvent.locationName,
-   description: updatedEvent.description,
-   maxParticipants: updatedEvent.maxParticipants,
-   image: updatedEvent.image,
-   categories: updatedEvent.categories,
-   modalities: updatedEvent.modalities,
-   racecheck: updatedEvent.racecheck,
-   createdBy: updatedEvent.createdBy,
-   createdAt: updatedEvent.createdAt,
-   updatedAt: updatedEvent.updatedAt,
-   type: updatedEvent.type,
-   genders: updatedEvent.genders,
-  };
-
   return NextResponse.json({
    success: true,
-   data: [serializedEvent],
+   data: [updatedEvent],
   });
  } catch (error) {
   console.error("Error al actualizar evento:", error);
@@ -100,6 +94,19 @@ export async function DELETE(
   const resolvedParams = await params;
   const { db } = await connectToDatabase();
 
+  // Obtener el evento antes de eliminarlo para poder eliminar sus imágenes
+  const eventToDelete = await db.collection("events").findOne({
+   _id: new ObjectId(resolvedParams.id),
+  });
+
+  if (!eventToDelete) {
+   return NextResponse.json(
+    { success: false, message: "Evento no encontrado" },
+    { status: 404 }
+   );
+  }
+
+  // Eliminar el evento de la base de datos
   const result = await db.collection("events").deleteOne({
    _id: new ObjectId(resolvedParams.id),
   });

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useCallback, useEffect, useMemo } from 'react'
-import { ArrowUp, BrushCleaning, CheckIcon, PlusIcon, SearchIcon, SlidersIcon, XIcon } from 'lucide-react'
+import { ArrowUp, BrushCleaning, PlusIcon, SearchIcon, SlidersIcon, XIcon } from 'lucide-react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { EventCard } from './event-card'
 import { EventResponse } from '@/lib/schemas/event.schema'
@@ -36,7 +36,7 @@ const EventsListSearch = ({ eventsData }: { eventsData: EventResponse[] }) => {
 
             const matchesSearch = serializedName.includes(serializedSearch) || serializedDescription.includes(serializedSearch)
             const matchesCategory = selectedTypes.length === 0 || selectedTypes.includes(e.type)
-            const matchesLocation = selectedLocations.length === 0 || selectedLocations.includes(e.locationName)
+            const matchesLocation = selectedLocations.length === 0 || selectedLocations.includes(e.location?.name ?? '')
             return matchesSearch && matchesCategory && matchesLocation
         })
         setEvents(filteredEvents)
@@ -45,7 +45,7 @@ const EventsListSearch = ({ eventsData }: { eventsData: EventResponse[] }) => {
         return selectedEventTypes.length + selectedLocations.length
     }, [selectedEventTypes, selectedLocations])
 
-    const uniqueLocations = Array.from(new Set(eventsData?.map(event => event.locationName) ?? []))
+    const uniqueLocations = Array.from(new Set(eventsData?.map(event => event.location?.name) ?? []))
 
     const handleLocationToggle = (location: string) => {
 
@@ -94,7 +94,7 @@ const EventsListSearch = ({ eventsData }: { eventsData: EventResponse[] }) => {
                     w-full flex flex-col items-start justify-between gap-3
                     bg-gradient-to-b
                     from-white via-white to-white/90
-                    dark:from-black dark:via-black/90 dark:to-black/90
+                    dark:from-cdark dark:via-cdark/90 dark:to-cdark/90
                     `}
             >
 
@@ -133,7 +133,7 @@ const EventsListSearch = ({ eventsData }: { eventsData: EventResponse[] }) => {
                             <div>
                                 <button
                                     type="button"
-                                    className={`rounded-full flex items-center justify-center h-10 w-10 custom_border dark:bg-cgray`}
+                                    className={`custom_button`}
                                     onClick={() => setFiltersOpen(!filtersOpen)}
                                 >
                                     {filtersOpen ? (
@@ -146,7 +146,7 @@ const EventsListSearch = ({ eventsData }: { eventsData: EventResponse[] }) => {
 
                             <div className='relative overflow-visible' onClick={() => handleClearFilters()}>
                                 {filtersCount > 0 && (
-                                    <div className='absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full z-20 flex items-center justify-center'>
+                                    <div className='absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full z-20 flex items-center justify-center cursor-pointer'>
                                         <p className='text-white font-mono text-[11px] font-medium tracking-tight justify-center'>
                                             {filtersCount}
                                         </p>
@@ -156,7 +156,7 @@ const EventsListSearch = ({ eventsData }: { eventsData: EventResponse[] }) => {
                                 <button
                                     type="button"
                                     disabled={filtersCount === 0}
-                                    className={`rounded-full flex items-center justify-center h-10 w-10 custom_border dark:bg-cgray disabled:opacity-50 disabled:cursor-not-allowed`}
+                                    className={`custom_button disabled:opacity-50 disabled:cursor-not-allowed`}
                                 >
                                     <BrushCleaning className="w-5 h-5 text-gray-700 dark:text-gray-300 z-20 transition-all duration-75 disabled:cursor-not-allowed" />
                                 </button>
@@ -173,7 +173,6 @@ const EventsListSearch = ({ eventsData }: { eventsData: EventResponse[] }) => {
                                 transition={{ type: "spring", stiffness: 300, damping: 30, duration: 0.2 }}
                                 className='flex flex-col gap-2 w-full'
                             >
-
                                 <div className="flex flex-col gap-2 pt-3">
                                     <div className="flex items-center gap-2 w-full h-max overflow-auto scrollbar-hide pb-1 px-3 md:px-6">
                                         {eventTypes.map((type, index) => {
@@ -195,26 +194,13 @@ const EventsListSearch = ({ eventsData }: { eventsData: EventResponse[] }) => {
                                             const isSelected = selectedLocations.includes(location)
 
                                             return (
-                                                <motion.button
-                                                    type='button'
+                                                <ChipFilterOption
                                                     key={`${location}-${index}`}
-                                                    className={`chip_filter ${isSelected ? "" : "opacity-50"}`}
-                                                    onClick={() => handleLocationToggle(location)}
-                                                    whileTap={{ scale: 0.95 }}
-                                                    transition={{ type: "spring", stiffness: 400, damping: 17 }}
-                                                >
-                                                    <div className="rounded-xl p-1 h-5 w-5 bg-gray-100 dark:bg-cgray flex items-center justify-center transition-all duration-75">
-                                                        {isSelected && (
-                                                            <div>
-                                                                <CheckIcon className="w-5 h-5 text-green-500 dark:text-green-500" />
-                                                            </div>
-                                                        )}
-
-                                                    </div>
-                                                    <p className={`text-xs font-medium ${isSelected ? "text-gray-950 dark:text-white" : "text-gray-500 dark:text-gray-400"}`}>
-                                                        {location}
-                                                    </p>
-                                                </motion.button>
+                                                    type={{ value: location, name: location }}
+                                                    isSelected={isSelected}
+                                                    handleCategoryToggle={handleLocationToggle}
+                                                    index={index}
+                                                />
                                             )
                                         })}
                                     </div>
@@ -229,7 +215,10 @@ const EventsListSearch = ({ eventsData }: { eventsData: EventResponse[] }) => {
             <motion.div className="mx-auto w-full h-max grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 pb-20 px-3 max-w-screen-lg items-start justify-center">
 
                 {isAdmin && (
-                    <div className="flex items-center justify-center h-[200px] relative rounded-xl z-10 rounded-bl-3xl border border-dashed border-gray-300 dark:border-gray-700 gap-2 cursor-pointer md:hover:shadow-xl dark:hover:border-gray-600 transition-all duration-100 w-full max-w-[350px] mx-auto"
+                    <div className="relative flex items-center justify-center gap-2 cursor-pointer 
+                     w-full max-w-[350px] h-[200px] z-10 rounded-xl rounded-bl-3xl
+                     bg-gray-100 dark:bg-cgray 
+                     md:hover:bg-opacity-50 transition-all duration-100 mx-auto"
                         onClick={() => router.push('/eventos/nuevo')}
                     >
                         <button>

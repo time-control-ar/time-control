@@ -1,5 +1,26 @@
+import { RacecheckRunner } from "./racecheck.schema";
 import { z } from "zod";
-import { Category, Gender, Modality } from "../utils";
+
+export interface Gender {
+ name: string;
+ matchsWith: string;
+}
+export interface Modality {
+ name: string;
+ categories?: Category[];
+}
+export interface Category {
+ name: string;
+ matchsWith: string;
+}
+export interface Runner {
+ racecheck: RacecheckRunner;
+ posGeneral: number;
+ posCat: number;
+ modality: Modality;
+ category: Category;
+ gender: Gender;
+}
 
 export const eventCreateSchema = z.object({
  name: z
@@ -45,6 +66,22 @@ export const eventCreateSchema = z.object({
  location: z
   .object(
    {
+    name: z.string().refine(
+     (name) => {
+      return name.trim().length > 0;
+     },
+     {
+      message: "El nombre de la ubicación no puede estar vacío.",
+     }
+    ),
+    direction: z.string().refine(
+     (direction) => {
+      return direction.trim().length > 0;
+     },
+     {
+      message: "La dirección no puede estar vacía.",
+     }
+    ),
     lat: z
      .number({
       required_error: "La latitud es obligatoria.",
@@ -60,6 +97,7 @@ export const eventCreateSchema = z.object({
      .min(-180, "La longitud debe estar entre -180 y 180 grados.")
      .max(180, "La longitud debe estar entre -180 y 180 grados."),
    },
+
    {
     required_error: "Debe seleccionar una ubicación en el mapa.",
     invalid_type_error:
@@ -68,20 +106,12 @@ export const eventCreateSchema = z.object({
   )
   .refine(
    (location) => {
-    // Evitar la ubicación por defecto (Australia)
     return !(location.lat === -34.397 && location.lng === 150.644);
    },
    {
     message:
      "Debe seleccionar una ubicación específica en el mapa. La ubicación por defecto no es válida.",
    }
-  ),
- locationName: z
-  .string()
-  .optional()
-  .refine(
-   (name) => !name || name.trim().length > 0,
-   "El nombre de la ubicación no puede estar vacío si se proporciona."
   ),
  description: z.string().optional(),
  maxParticipants: z
@@ -97,7 +127,7 @@ export const eventCreateSchema = z.object({
      .array(
       z.object({
        name: z.string(),
-       matchsWith: z.string().optional(),
+       matchsWith: z.string(),
       })
      )
      .optional(),
@@ -108,7 +138,7 @@ export const eventCreateSchema = z.object({
   .array(
    z.object({
     name: z.string(),
-    matchsWith: z.string().optional(),
+    matchsWith: z.string(),
    })
   )
   .optional(),
@@ -133,10 +163,10 @@ export interface EventResponse {
  location: {
   lat: number;
   lng: number;
+  name: string;
+  direction: string;
  };
- locationName: string;
  genders: Gender[];
- categories: Category[];
  modalities: Modality[];
  racecheck: string | null;
 }

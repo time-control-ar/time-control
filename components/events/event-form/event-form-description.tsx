@@ -1,17 +1,37 @@
-import { BoldIcon, ItalicIcon, UnderlineIcon, ListIcon, ListOrderedIcon } from 'lucide-react'
 import { Editor } from '@tiptap/react'
 import { EditorContent } from '@tiptap/react'
+import { BoldIcon, ItalicIcon, UnderlineIcon, ListIcon, ListOrderedIcon } from 'lucide-react'
+import { useState, useEffect } from 'react'
 
 interface EventFormDescriptionProps {
     editor: Editor | null;
 }
 
 export function EventFormDescription({ editor }: EventFormDescriptionProps) {
+    const [forceUpdate, setForceUpdate] = useState(0);
+
+    useEffect(() => {
+        if (!editor) return;
+
+        const updateButtons = () => {
+            setForceUpdate(prev => prev + 1);
+        };
+
+        // Escuchar cambios en el editor
+        editor.on('update', updateButtons);
+        editor.on('selectionUpdate', updateButtons);
+
+        return () => {
+            editor.off('update', updateButtons);
+            editor.off('selectionUpdate', updateButtons);
+        };
+    }, [editor]);
+
     return (
         <div className='w-full flex flex-col gap-1'>
             <label className="label-input">Descripción</label>
             <div className="flex flex-col w-full gap-2">
-                <div className="flex gap-2">
+                <div className="flex gap-2" key={forceUpdate}>
                     <button
                         type="button"
                         className={`p-2 rounded ${editor?.isActive('bold') ? 'bg-gray-200 dark:bg-gray-700' : 'bg-transparent'}`}

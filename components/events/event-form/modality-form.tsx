@@ -17,11 +17,14 @@ export function ModalityForm({ append }: ModalityFormProps) {
     }
 
     return (
-        <div className="flex gap-2 w-full items-end max-w-sm">
-            <div className="flex-1">
+        <div className="flex flex-col gap-2 w-full max-w-xs">
+            <p className="label-input font-medium text-gray-700 dark:text-gray-300 font-mono">
+                Crear modalidad
+            </p>
+            <div className="flex-1 flex gap-2 items-center">
                 <input
                     type="text"
-                    className="input w-full"
+                    className="input w-full font-mono !text-lg "
                     placeholder="Nombre de modalidad"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
@@ -32,17 +35,18 @@ export function ModalityForm({ append }: ModalityFormProps) {
                         }
                     }}
                 />
-            </div>
 
-            <div>
-                <button
-                    type="button"
-                    className="rounded-full bg-gray-800 dark:bg-gray-300 flex items-center justify-center p-2 transition-all duration-75 disabled:opacity-50 disabled:cursor-not-allowed"
-                    onClick={handleSubmit}
-                    disabled={!name.trim()}
-                >
-                    <PlusIcon className="w-4 h-4 text-white dark:text-gray-950" strokeWidth={2.5} />
-                </button>
+
+                <div>
+                    <button
+                        type="button"
+                        className="rounded-full bg-gray-800 dark:bg-gray-300 flex items-center justify-center p-2 transition-all duration-75 disabled:opacity-50 disabled:cursor-not-allowed"
+                        onClick={handleSubmit}
+                        disabled={!name.trim()}
+                    >
+                        <PlusIcon className="w-4 h-4 text-white dark:text-gray-950" strokeWidth={2.5} />
+                    </button>
+                </div>
             </div>
         </div>
     )
