@@ -174,7 +174,7 @@ const EventsListSearch = ({ eventsData }: { eventsData: EventResponse[] }) => {
                                 className='flex flex-col gap-2 w-full'
                             >
                                 <div className="flex flex-col gap-2 pt-3">
-                                    <div className="flex items-center gap-2 w-full h-max overflow-auto scrollbar-hide pb-1 px-3 md:px-6">
+                                    <div className="flex items-center gap-2 w-full h-max overflow-auto scrollbar-hide pb-1 px-3">
                                         {eventTypes.map((type, index) => {
                                             const isSelected = selectedEventTypes.includes(type.value)
 
@@ -189,7 +189,7 @@ const EventsListSearch = ({ eventsData }: { eventsData: EventResponse[] }) => {
                                             )
                                         })}
                                     </div>
-                                    <div className="flex items-center gap-2 w-full h-max overflow-auto scrollbar-hide pb-1 px-3 md:px-6">
+                                    <div className="flex items-center gap-2 w-full h-max overflow-auto scrollbar-hide pb-1 px-3">
                                         {uniqueLocations?.map((location, index) => {
                                             const isSelected = selectedLocations.includes(location)
 

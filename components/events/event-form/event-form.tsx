@@ -404,26 +404,23 @@ export default function EventForm({ event }: EventFormProps) {
                 )}
                 {activeTab === 1 && (
                     <div className="flex flex-col xl:flex-row gap-12 w-full max-w-7xl mx-auto px-6">
-                        <div className="w-full max-w-[500px] !xl:w-[500px] flex-1 mx-auto">
-                            <EventFormConfig
-                                watch={watch}
-                                handleRemoveCategory={handleRemoveCategory}
-                                handleRemoveModality={handleRemoveModality}
-                                handleEditCategory={handleEditCategory}
-                                handleAddCategory={handleAddCategory}
-                                handleAddGender={handleAddGender}
-                                handleRemoveGender={handleRemoveGender}
-                                append={append}
-                                newCategoryModality={newCategoryModality}
-                                setNewCategoryModality={setNewCategoryModality}
-                                editingCategory={editingCategory}
-                                handleCancelEdit={handleCancelEdit}
-                                racecheckUnassignedCategories={racecheckUnassignedCategories}
-                            />
+                        <EventFormConfig
+                            watch={watch}
+                            handleRemoveCategory={handleRemoveCategory}
+                            handleRemoveModality={handleRemoveModality}
+                            handleEditCategory={handleEditCategory}
+                            handleAddCategory={handleAddCategory}
+                            handleAddGender={handleAddGender}
+                            handleRemoveGender={handleRemoveGender}
+                            append={append}
+                            newCategoryModality={newCategoryModality}
+                            setNewCategoryModality={setNewCategoryModality}
+                            editingCategory={editingCategory}
+                            handleCancelEdit={handleCancelEdit}
+                            racecheckUnassignedCategories={racecheckUnassignedCategories}
+                        />
 
-                        </div>
-
-                        <div className="flex flex-col gap-6 xl:sticky top-14 inset-1 h-max w-full">
+                        <div className="flex flex-col gap-6 xl:sticky top-14 inset-1 h-max w-full max-w-[60vw]">
                             <EventFormResults
                                 runners={results}
                                 racecheckErrors={invalidLines}

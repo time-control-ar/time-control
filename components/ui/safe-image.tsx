@@ -29,7 +29,8 @@ export default function SafeImage({
     const validSrc = validateImageUrl(src)
 
     return (
-        <motion.div className={`flex items-center justify-center w-full z-10 h-[200px] relative rounded-3xl ${className}`}
+        <motion.div className={`${className ?? `h-[300px] w-[200px] rounded-xl rounded-bl-3xl overflow-hidden`}`}
+            key={src + imageLoading ? 'loading' : 'loaded'}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.3 }}
@@ -45,13 +46,12 @@ export default function SafeImage({
                     <p className="text-gray-500 dark:text-gray-400 text-sm tracking-tight text-center font-medium">
                         {imageError ? 'Error al cargar imagen' : fallbackText}
                     </p>
-                </div >
-
+                </div>
             ) : (
                 <Image
                     src={validSrc}
                     alt={alt}
-                    className={`${className} ${imageLoading ? 'opacity-0' : 'opacity-100'} transition-opacity duration-300 h-full w-full`}
+                    className={`${className} ${imageLoading ? 'opacity-0' : 'opacity-100'} transition-opacity duration-300 h-full w-full object-cover object-left-top`}
                     fill={fill}
                     priority={priority}
                     onLoad={() => setImageLoading(false)}

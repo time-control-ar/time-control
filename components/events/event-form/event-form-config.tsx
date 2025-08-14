@@ -86,7 +86,7 @@ export function EventFormConfig({
     ) ?? []
 
     return (
-        <div className="flex flex-col gap-12 w-full">
+        <div className="flex flex-col gap-12 w-full md:w-[700px] mx-auto">
             {/* Tabla de Modalidades */}
             <div className="flex flex-col gap-3 w-full">
                 <div className="px-3 lg:px-6">

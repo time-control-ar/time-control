@@ -8,19 +8,17 @@ interface DorsalComponentProps {
 export const DorsalComponent = ({ dorsal, preview = true }: DorsalComponentProps) => {
 
     return (
-        <div className={`${preview ? 'bg-slate-200 dark:bg-transparent p-0.5 rounded-xl' : ''} w-max`}>
-            <div className='bg-white dark:bg-gray-100 overflow-hidden flex flex-col w-[57px] rounded-lg'>
-                <div className="flex flex-col items-center justify-center relative ">
-                    <div className="w-full max flex items-center justify-between bg-gradient-to-r from-slate-600 to-slate-900 h-[15px] px-3">
-                        <div className="rounded-full bg-white dark:bg-gray-100 w-1 h-1"></div>
-                        <div className="rounded-full bg-white dark:bg-gray-100 w-1 h-1"></div>
-                    </div>
+        <div className={`${preview ? 'border-2 border-slate-100' : ''} flex flex-col my-auto dark:bg-transparent rounded-lg overflow-hidden w-max`}>
+            <div className="flex flex-col items-center justify-center relative ">
+                <div className="h-[10px] px-2 w-full max flex items-center justify-between bg-gradient-to-r from-slate-600 to-slate-900">
+                    <div className="rounded-full bg-white dark:bg-gray-100 w-[2px] h-[2px]"></div>
+                    <div className="rounded-full bg-white dark:bg-gray-100 w-[2px] h-[2px]"></div>
+                </div>
 
-                    <div className="w-full pt-1 pb-1.5 flex items-center justify-center">
-                        <p className="font-bold text-gray-700 dark:text-gray-800 text-center tracking-tighter font-mono text-base">
-                            {parseInt(dorsal)}
-                        </p>
-                    </div>
+                <div className='bg-white dark:bg-gray-100 overflow-hidden flex flex-col w-[52px] h-max py-1'>
+                    <p className="font-bold text-gray-700 dark:text-gray-800 text-center font-mono text-base">
+                        {parseInt(dorsal)}
+                    </p>
                 </div>
             </div>
         </div>

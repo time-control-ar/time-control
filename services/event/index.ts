@@ -4,6 +4,8 @@ import { EventFormData, EventResponse } from "@/lib/schemas/event.schema";
 import { connectToDatabase } from "@/lib/mongodb";
 import { ObjectId } from "mongodb";
 import { auth } from "@/auth";
+import { buildResults, getRacecheckRunners } from "@/lib/utils";
+import { TicketResponse } from "@/lib/schemas/racecheck.schema";
 
 export async function createEvent(
  newEvent: EventFormData
@@ -158,6 +160,58 @@ export async function getEventById(id: string): Promise<EventResponse | null> {
   return serializedEvent;
  } catch (e) {
   console.error("Error al obtener evento por ID:", e);
+  return null;
+ }
+}
+
+export async function getRunnerTicket(
+ eventId: string,
+ dorsal: string
+): Promise<TicketResponse | null> {
+ try {
+  const event = await getEventById(eventId);
+  if (!event || !event.racecheck) {
+   return null;
+  }
+  const { validLines } = getRacecheckRunners(
+   event.racecheck,
+   event.modalities,
+   event.genders
+  );
+
+  const results = buildResults(validLines, event.modalities, event.genders);
+
+  const runner = results.runners.find(
+   (runner) => runner.racecheck.dorsal === dorsal
+  );
+
+  if (
+   !runner ||
+   !runner.category ||
+   !runner.modality ||
+   !runner.gender ||
+   !runner.racecheck
+  ) {
+   return null;
+  }
+
+  const runnersBySameCategory = results.runners.filter(
+   (r) => r.category.name === runner?.category.name
+  ).length;
+  const runnersBySameModality = results.runners.filter(
+   (r) => r.modality.name === runner?.modality.name
+  ).length;
+
+  return {
+   runner,
+   event,
+   metrics: {
+    runnersBySameModality: runnersBySameModality,
+    runnersBySameCategory: runnersBySameCategory,
+   },
+  };
+ } catch (e) {
+  console.error("Error al obtener ticket:", e);
   return null;
  }
 }

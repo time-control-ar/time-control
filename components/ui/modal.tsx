@@ -48,15 +48,14 @@ const Modal = ({
                 </div>
             )}
             {showCloseButton && (
-                <div>
-                    <button
-                        type="button"
-                        className={`custom_button ${!title ? 'absolute right-3 top-3' : ''}`}
-                        onClick={onClose}
-                    >
-                        <XIcon strokeWidth={2.5} className="w-4 h-4 text-gray-700 dark:text-gray-300 z-20" />
-                    </button>
-                </div>
+
+                <button
+                    type="button"
+                    className={`custom_button ${!title ? 'absolute right-3 top-3' : ''}`}
+                    onClick={onClose}
+                >
+                    <XIcon strokeWidth={2.5} className="w-4 h-4 text-gray-700 dark:text-gray-300 z-20" />
+                </button>
             )}
 
             {children}
@@ -70,7 +69,7 @@ const Modal = ({
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    transition={{ duration: 0.2, ease: 'easeInOut' }}
+                    transition={{ duration: 0.2 }}
                     onClick={onClose}
                     className="fixed inset-0 z-50 bg-cdark/5 backdrop-blur-md flex items-center justify-center overflow-hidden md:py-4"
                 >

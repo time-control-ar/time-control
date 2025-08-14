@@ -2,7 +2,9 @@ import EventsListSearch from '@/components/events/events-list-search';
 import { ModeToggle } from '@/components/mode-toggle';
 import AnimatedLogo from "@/components/ui/animated-logo";
 import { SignInButton } from '@/components/ui/sign-in-button';
-import { searchEvents } from '@/services/event';
+import { getRunnerTicket, searchEvents } from '@/services/event';
+import RunnerTicket from '@/components/ui/runner-ticket';
+import { TicketResponse } from '@/lib/schemas/racecheck.schema';
 
 export default async function Home({
   searchParams,
@@ -13,26 +15,11 @@ export default async function Home({
   const eventId = resolvedSearchParams?.eventId as string;
   const dorsal = resolvedSearchParams?.dorsal as string;
 
-  console.log(eventId, dorsal)
-
-  // Solo intentar obtener el ticket si tenemos tanto eventId como dorsal
-  // let ticket = null;
-  // let event = null;
-
-  // if (eventId && dorsal) {
-  //   console.log("Buscando ticket para eventId:", eventId, "dorsal:", dorsal);
-  //   ticket = await obtainTicketServer(eventId, dorsal);
-
-  //   if (ticket) {
-  //     // Si encontramos el ticket, necesitamos el evento correspondiente
-  //     const { getEventById } = await import('@/lib/server/eventService');
-  //     event = await getEventById(eventId);
-  //     console.log("Ticket encontrado:", ticket);
-  //     console.log("Evento encontrado:", event?.name);
-  //   } else {
-  //     console.log("No se pudo obtener el ticket");
-  //   }
-  // }
+  let ticket: TicketResponse | null = null;
+  if (eventId && dorsal) {
+    console.log("Buscando ticket para eventId:", eventId, "dorsal:", dorsal);
+    ticket = await getRunnerTicket(eventId, dorsal);
+  }
   const events = await searchEvents({ query: "" });
 
   return (
@@ -47,7 +34,13 @@ export default async function Home({
         </div>
       </div>
 
-      <EventsListSearch eventsData={events ?? []} />
+      {ticket ? (
+        <div className="m-auto max-w-[700px] max-h-[80vh] flex flex-col gap-4">
+          <RunnerTicket runner={ticket.runner} event={ticket.event} metrics={ticket.metrics} />
+        </div>
+      ) : (
+        <EventsListSearch eventsData={events ?? []} />
+      )}
     </div>
   );
 }

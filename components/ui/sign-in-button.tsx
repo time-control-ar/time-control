@@ -37,11 +37,11 @@ export function SignInButton() {
                     title=""
                     className="!max-w-[440px]"
                 >
-                    <div className="flex flex-col items-center justify-center h-min gap-6 px-6 pb-6">
+                    <div className="flex flex-col items-center justify-center h-min gap-6 px-6 p-6">
                         <div className="relative h-12 w-12 md:w-16 md:h-16 overflow-hidden rounded-full">
                             <Image src={session.user?.image || ''} alt="User" layout='fill' className="object-cover" />
                         </div>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                        <p className="text-sm text-gray-500 dark:text-gray-400 text-center">
                             ¿Desea cerrar sesión de <span className="font-medium dark:text-white">{session.user?.name}</span>?
                         </p>
 

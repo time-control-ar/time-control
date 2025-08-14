@@ -80,6 +80,15 @@ export const EventDate = ({ eventDate, previewMode }: { eventDate: string, previ
     )
 }
 
+export const EventDescription = ({ description }: { description: string }) => {
+    return (
+        <div className="p-4">
+
+            <div className="whitespace-pre-wrap break-words text-base text-gray-700 dark:text-gray-300" dangerouslySetInnerHTML={{ __html: description || '' }} />
+        </div>
+    )
+}
+
 export const EventCard = ({ event, previewMode = false }: { event: EventResponse, previewMode?: boolean, selectedTab?: string }) => {
     const router = useRouter()
     const { data: session } = useSession()
@@ -155,9 +164,7 @@ export const EventCard = ({ event, previewMode = false }: { event: EventResponse
                     )}
 
 
-                    <motion.div
-                        className={`w-full overflow-hidden flex flex-col h-max mx-auto relative`}
-                    >
+                    <div className="relative w-full h-[200px] rounded-xl rounded-bl-3xl overflow-hidden">
                         <div className="z-20 absolute bottom-0 left-0 p-2 ">
                             <EventDate eventDate={event?.date || ''} />
                         </div>
@@ -165,12 +172,11 @@ export const EventCard = ({ event, previewMode = false }: { event: EventResponse
                         <SafeImage
                             src={event?.image || ''}
                             alt={event?.name || ''}
-                            className="z-10 object-cover object-left-top rounded-bl-3xl rounded-xl"
                             fill
                             priority
                             fallbackText="Imagen"
                         />
-                    </motion.div>
+                    </div>
 
                     <div className="flex flex-col w-full px-5 pt-4 pb-6 mx-auto md:h-max">
                         <div className="flex flex-col gap-1 items-start justify-between w-full">
@@ -195,7 +201,6 @@ export const EventCard = ({ event, previewMode = false }: { event: EventResponse
                     <Modal
                         isOpen={isOpen}
                         onClose={() => setIsOpen(false)}
-                        // title={}
                         showCloseButton={true}
                     >
                         <div className="flex w-full items-center justify-start px-2 gap-1 pb-2 border-b border-gray-100 dark:border-cgray py-3">
@@ -225,7 +230,11 @@ export const EventCard = ({ event, previewMode = false }: { event: EventResponse
                                     className="flex flex-col gap-3 p-2 h-max overflow-y-auto pb-12"
                                 >
                                     <div className="flex flex-col gap-3 pb-6">
+                                        <h1 className="text-2xl font-semibold tracking-tight text-gray-800 dark:text-white mb-2 px-3 pt-4">
+                                            {event?.name}
+                                        </h1>
                                         <div className="flex flex-col md:flex-row gap-2 w-full h-full">
+
                                             <div className="relative w-full h-[200px] md:h-[250px]">
                                                 <div className="absolute bottom-3 left-3 z-20">
                                                     <EventDate eventDate={event?.date || ''} />
@@ -239,14 +248,9 @@ export const EventCard = ({ event, previewMode = false }: { event: EventResponse
                                                     fallbackText="Imagen"
                                                 />
                                             </div>
-                                            <div className="px-3 pb-4 md:hidden">
-                                                <h1 className="text-2xl font-semibold tracking-tight text-gray-800 dark:text-white mb-2">
-                                                    {event?.name}
-                                                </h1>
 
-                                                <div
-                                                    className="whitespace-pre-wrap break-words text-base text-gray-700 dark:text-gray-300" dangerouslySetInnerHTML={{ __html: event?.description || '' }}
-                                                />
+                                            <div className="pb-6 pt-2 md:hidden">
+                                                <EventDescription description={event?.description || ''} />
                                             </div>
 
 
@@ -261,23 +265,21 @@ export const EventCard = ({ event, previewMode = false }: { event: EventResponse
                                                     </div>
                                                 )}
                                             </div>
-                                            <div className="pb-3">
-                                                <p>
-                                                    {event.location.name}
-                                                </p>
-                                                <p className="text-sm text-gray-500 dark:text-gray-400 font-mono">
-                                                    {event.location.direction}
-                                                </p>
-                                            </div>
                                         </div>
 
-                                        <div className="px-3 hidden md:block gap-2">
-                                            <h1 className="text-2xl font-semibold tracking-tight text-gray-800 dark:text-white mb-2">
-                                                {event?.name}
-                                            </h1>
-                                            <div
-                                                className="whitespace-pre-wrap break-words text-base text-gray-700 dark:text-gray-300" dangerouslySetInnerHTML={{ __html: event?.description || '' }}
-                                            />
+                                        <div className="flex flex-col md:flex-row justify-between gap-2">
+                                            <div className="w-full max-w-[450px] hidden md:block">
+                                                <EventDescription description={event?.description || ''} />
+                                            </div>
+                                            <div className="w-[300px] p-4 flex flex-col gap-1">
+                                                <p className="font-medium text-base text-cblack dark:text-white">
+                                                    {event.location.name}
+                                                </p>
+                                                <p className="text-sm text-slate-500 dark:text-400">
+                                                    {event.location.direction}
+                                                </p>
+
+                                            </div>
                                         </div>
                                     </div>
                                 </motion.div>
@@ -288,7 +290,7 @@ export const EventCard = ({ event, previewMode = false }: { event: EventResponse
                                     animate={{ opacity: 1, y: 0 }}
                                     exit={{ opacity: 0, y: 10 }}
                                     transition={{ duration: 0.2 }}
-                                    className="h-full overflow-auto flex p-2 pb-6"
+                                    className="h-full overflow-auto flex p-2 pb-6 min-h-[50vh]"
                                 >
                                     <ResultsTable
                                         title={event?.name}
@@ -342,7 +344,7 @@ const EventLocationMap = ({ event }: { event: EventResponse }) => {
 
     const mapContainerStyle = {
         width: 'full',
-        height: '270px',
+        height: '280px',
         overflow: 'hidden'
     };
 
@@ -371,7 +373,7 @@ const EventLocationMap = ({ event }: { event: EventResponse }) => {
             <GoogleMap
                 mapContainerStyle={mapContainerStyle}
                 center={center}
-                zoom={15}
+                zoom={14}
                 options={{
                     disableDefaultUI: true,
                     zoomControl: false,
@@ -392,7 +394,7 @@ const EventLocationMap = ({ event }: { event: EventResponse }) => {
             <button
                 disabled={!center}
                 type='button'
-                className="absolute top-3 right-3 z-10 rounded-xl w-max h-[39px] backdrop-blur-sm bg-gray-100/90 border-gray-300 shadow-lg flex items-center gap-1 px-3 shadow-cdark/50 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="absolute top-3 right-3 z-10 rounded-xl w-max h-[39px] backdrop-blur-sm bg-white/90 border-gray-300 shadow-lg flex items-center gap-1 px-3 shadow-cdark/50 disabled:opacity-50 disabled:cursor-not-allowed"
                 onClick={() => {
                     const url = `https://www.google.com/maps?q=${center?.lat},${center?.lng}`;
                     window.open(url, '_blank', 'noopener,noreferrer');

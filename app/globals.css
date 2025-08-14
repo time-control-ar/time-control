@@ -55,12 +55,12 @@
 /* Modern Table Styles */
 .modern-table {
   @apply w-full h-auto flex flex-col overflow-auto rounded-xl shadow-lg dark:shadow-none 
-  bg-white dark:bg-black
+  bg-white dark:bg-cdark
   border border-gray-200 dark:border-cblack/80;
 }
 
 .modern-table-header {
-  @apply sticky top-0 z-20 w-full backdrop-blur-xl rounded-t-xl bg-white/90 dark:bg-black;
+  @apply sticky top-0 z-20 w-full backdrop-blur-xl rounded-t-xl bg-white/90 dark:bg-cdark;
 }
 
 .modern-table-header th {

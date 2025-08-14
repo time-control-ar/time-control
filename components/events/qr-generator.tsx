@@ -169,13 +169,13 @@ export default function QRGenerator({ eventId, eventName, maxParticipants }: QRG
             )}
 
             <Modal
-                title={`${eventName}`}
                 isOpen={openTestQR}
                 onClose={() => setOpenTestQR(false)}
                 className="md:!w-[350px] h-[600px]"
 
             >
                 <div className="flex flex-col gap-5 w-full items-center justify-center py-6">
+                    {eventName}
                     <div className="flex flex-col items-center justify-center bg-white dark:bg-gray-100 border border-gray-100 dark:border-gray-700 rounded-xl overflow-hidden h-[65px] w-[90px] relative mx-auto">
                         <div className="w-full h-4.5 absolute top-0 left-0 bg-red-400 dark:bg-slate-800">
                             <div className="justify-between flex items-center py-1.5 px-3">
