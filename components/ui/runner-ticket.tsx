@@ -75,11 +75,12 @@ const RunnerTicket = ({ runner, event, metrics }: TicketResponse) => {
                 <div>
                     <button
                         type="button"
-                        className="h-10 rounded-full w-10 flex items-center justify-center relative select-none gap-2 bg-gray-100 dark:bg-gray-800 transition-colors shadow-md"
+                        className="rounded-btn !border-0 !w-10 !h-10 !p-0"
                         onClick={() => router.push('/')}
                     >
-                        <ArrowLeftIcon className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+                        <ArrowLeftIcon className="h-4 w-4 tracking-tight   " />
                     </button>
+                    <p className="text-xs font-semibold tracking-tight"></p>
                 </div>
 
 
@@ -88,13 +89,13 @@ const RunnerTicket = ({ runner, event, metrics }: TicketResponse) => {
             <div className="flex py-3 w-[90%] max-w-[370px]">
                 <button
                     type="button"
-                    className="h-10 px-4 rounded-full w-max flex items-center justify-center relative select-none gap-2 bg-gray-100 dark:bg-gray-800 transition-colors hover:bg-gray-200 dark:hover:bg-gray-700"
+                    className="rounded-btn !border-0 !w-max"
                     onClick={handleDownload}
                 >
-                    <p className="text-gray-500 text-sm font-normal tracking-tight font-mono">
+                    <p className="text-xs font-semibold tracking-tight">
                         Descargar
                     </p>
-                    <DownloadIcon className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+                    <DownloadIcon className="h-4 w-4 tracking-tight   " />
                 </button>
             </div>
 
@@ -111,46 +112,14 @@ const RunnerTicket = ({ runner, event, metrics }: TicketResponse) => {
                         />
                     </div>
 
-                    <div className="grid grid-cols-2 gap-8 px-3 pt-8">
-                        <div className='max-w-max mx-auto'>
-                            <div className="flex flex-col items-center">
-                                <h1 className="text-[40px] -mt-2 font-black tracking-tight text-gray-700 italic font-mono">
-                                    {posCat || 'N/A'} <span className="text-gray-400 text-xl font-mono -ml-3">
-                                        / {metrics?.runnersBySameCategory || 'N/A'}
-                                    </span>
-                                </h1>
-                            </div>
-                            <p className="text-gray-500 text-xs font-normal tracking-tight font-mono">
-                                {runner.category.name}
-                            </p>
-                        </div>
-
-                        <div className='max-w-max mx-auto mt-auto'>
-                            <div className="flex flex-col items-center justify-end">
-                                <h1 className="text-[35px] -mt-2 font-extrabold tracking-tight text-gray-700 italic font-mono">
-                                    {posGeneral || 'N/A'} <span className="text-gray-400 text-xl font-mono -ml-3">
-                                        / {metrics?.runnersBySameModality || 'N/A'}
-                                    </span>
-                                </h1>
-                            </div>
-                            <p className="text-gray-500 text-xs font-normal tracking-tight font-mono">
-                                General
-                            </p>
-                        </div>
-
-                        <div className="flex flex-col items-start justify-start col-span-2">
-                            <p className="text-gray-700 text-2xl font-semibold tracking-tight text-start w-full pb-3">
-                                {racecheck.nombre}
-                            </p>
-
-                            <div className="flex flex-col items-start justify-end gap-1 w-full">
-                                <p className="text-gray-400 text-xs font-normal tracking-tight font-mono">
-                                    Modalidad
-                                </p>
-                                <h1 className="text-4xl font-semibold tracking-tight text-gray-700 italic font-mono pb-3">
-                                    {runner.modality.name}
-                                </h1>
-                            </div>
+                    <div className="flex flex-col px-3 pt-3">
+                        <p className="text-gray-400 text-xs font-normal tracking-tight font-mono">
+                            Corredor
+                        </p>
+                        <p className="text-gray-700 text-2xl font-semibold tracking-tight text-start w-full mb-3">
+                            {racecheck.nombre}
+                        </p>
+                        <div className="flex flex-col items-start justify-start mb-3">
                             <p className="text-gray-400 text-xs font-normal tracking-tight font-mono">
                                 Tiempo
                             </p>
@@ -166,6 +135,44 @@ const RunnerTicket = ({ runner, event, metrics }: TicketResponse) => {
                             <h1 className="text-sm font-normal tracking-tight text-gray-400 italic font-mono pb-3 -mt-3">
                                 {racecheck.ritmo || 'N/A'}
                             </h1>
+                        </div>
+                        <div className="grid grid-cols-2 gap-8">
+                            <div className="max-w-max mx-auto">
+                                <h1 className="text-4xl font-semibold tracking-tight text-gray-700 italic font-mono pb-3">
+                                    {racecheck.dorsal}
+                                </h1>
+                                <p className="text-gray-500 text-xs font-normal tracking-tight font-mono">
+                                    Dorsal
+                                </p>
+                            </div>
+                            <div className="max-w-max mx-auto">
+                                <h1 className="text-4xl font-semibold tracking-tight text-gray-700 italic font-mono pb-3">
+                                    {runner.modality.name}
+                                </h1>
+                                <p className="text-gray-500 text-xs font-normal tracking-tight font-mono">
+                                    Modalidad
+                                </p>
+                            </div>
+                            <div className='max-w-max mx-auto'>
+                                <h1 className="text-[40px] -mt-2 font-semibold tracking-tight text-gray-700 italic font-mono">
+                                    {posCat || 'N/A'} <span className="text-gray-400 text-xl font-mono -ml-3">
+                                        / {metrics?.runnersBySameCategory || 'N/A'}
+                                    </span>
+                                </h1>
+                                <p className="text-gray-500 text-xs font-normal tracking-tight font-mono">
+                                    {runner.category.name}
+                                </p>
+                            </div>
+                            <div className='max-w-max mx-auto mt-auto'>
+                                <h1 className="text-[35px] -mt-2 font-semibold tracking-tight text-gray-700 italic font-mono">
+                                    {posGeneral || 'N/A'} <span className="text-gray-400 text-xl font-mono -ml-3">
+                                        / {metrics?.runnersBySameModality || 'N/A'}
+                                    </span>
+                                </h1>
+                                <p className="text-gray-500 text-xs font-normal tracking-tight font-mono">
+                                    General
+                                </p>
+                            </div>
                         </div>
                     </div>
 

@@ -292,13 +292,21 @@ export const EventCard = ({ event, previewMode = false }: { event: EventResponse
                                     transition={{ duration: 0.2 }}
                                     className="h-full overflow-auto flex p-2 pb-6 min-h-[50vh]"
                                 >
-                                    <ResultsTable
-                                        title={event?.name}
-                                        runners={racecheckData ?? []}
-                                        modalities={event?.modalities ?? []}
-                                        genders={event?.genders ?? []}
-                                        eventId={event?._id}
-                                    />
+                                    {racecheckData.length > 0 ? (
+                                        <ResultsTable
+                                            title={event?.name}
+                                            runners={racecheckData ?? []}
+                                            modalities={event?.modalities ?? []}
+                                            genders={event?.genders ?? []}
+                                            eventId={event?._id}
+                                        />) : (
+                                        <div className="w-full h-full flex items-center justify-center py-12">
+                                            <p className="text-sm text-gray-500 dark:text-gray-400">
+                                                No hay resultados disponibles aún
+                                            </p>
+                                        </div>
+                                    )
+                                    }
                                 </motion.div>
                             )}
                         </AnimatePresence>
@@ -350,7 +358,7 @@ const EventLocationMap = ({ event }: { event: EventResponse }) => {
 
     if (loadError) {
         return (
-            <div className="w-full h-[150px] rounded-tl-3xl rounded-xl bg-gray-100 dark:bg-gray-900 flex items-center justify-center">
+            <div className="w-full h-[150px] rounded-tl-3xl rounded-xl bg-gray-100 dark:bg-cblack flex items-center justify-center">
                 <p className="text-xs text-gray-500 dark:text-gray-400 text-center px-2">
                     Error al cargar el mapa
                 </p>
@@ -360,7 +368,7 @@ const EventLocationMap = ({ event }: { event: EventResponse }) => {
 
     if (!isLoaded) {
         return (
-            <div className="w-full h-[150px] rounded-tl-3xl rounded-xl bg-gray-100 dark:bg-gray-900 flex items-center justify-center">
+            <div className="w-full h-[150px] rounded-tl-3xl rounded-xl bg-gray-100 dark:bg-cblack flex items-center justify-center">
                 <p className="text-xs text-gray-500 dark:text-gray-400">
                     Cargando...
                 </p>

@@ -43,7 +43,8 @@ export function EventFormResults({
     setValue,
     isSubmitting,
     setToast,
-    racecheckErrors
+    racecheckErrors,
+    event
 }: EventFormResultsProps) {
     const [activeTab, setActiveTab] = useState<'racecheck' | 'runners'>('racecheck')
 
@@ -154,8 +155,8 @@ export function EventFormResults({
                         )}
 
                         {/* Tabla de RacecheckRunner */}
-                        {activeTab === 'runners' && (
-                            <ResultsTable title={fileName} runners={runners} modalities={modalities} genders={genders} />
+                        {activeTab === 'runners' && event?._id && (
+                            <ResultsTable eventId={event._id} title={fileName} runners={runners} modalities={modalities} genders={genders} />
                         )}
                     </div>
                 </div>
