@@ -29,7 +29,7 @@ export default function SafeImage({
     const validSrc = validateImageUrl(src)
 
     return (
-        <motion.div className={`${className ?? `h-[300px] w-[200px] rounded-xl rounded-bl-3xl overflow-hidden`}`}
+        <motion.div className={`${className ?? `h-[300px] w-[200px] flex items-center justify-center rounded-xl rounded-bl-3xl overflow-hidden`}`}
             key={src + imageLoading ? 'loading' : 'loaded'}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -41,7 +41,7 @@ export default function SafeImage({
                     <Loader className="w-5 h-5 animate-spin" />
                 </div>
             ) : (!validSrc || imageError) ? (
-                <div className={`flex flex-col items-center justify-center h-full w-full`} >
+                <div className={`flex flex-col items-center justify-center h-full w-full bg-gray-100 dark:bg-cblack`} >
                     <ImageIcon className="w-6 h-6 text-gray-500 dark:text-gray-400" strokeWidth={1.5} />
                     <p className="text-gray-500 dark:text-gray-400 text-sm tracking-tight text-center font-medium">
                         {imageError ? 'Error al cargar imagen' : fallbackText}
