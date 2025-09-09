@@ -245,20 +245,21 @@ export const buildResults = (
     }
    });
   });
- });
+  genders.forEach((gender) => {
+   const runnersInGender = result.filter(
+    (runner) => runner.gender === gender && runner.modality === modality
+   );
 
- // Calcular posición por sexo
+   const orderedByTime = orderByTime(runnersInGender.map((r) => r.racecheck));
 
- genders.forEach((gender) => {
-  const runnersInGender = result.filter((runner) => runner.gender === gender);
-
-  const orderedByTime = orderByTime(runnersInGender.map((r) => r.racecheck));
-
-  orderedByTime.forEach((racecheckRunner, index) => {
-   const runnerIndex = result.findIndex((r) => r.racecheck === racecheckRunner);
-   if (runnerIndex !== -1) {
-    result[runnerIndex].posSexo = index + 1;
-   }
+   orderedByTime.forEach((racecheckRunner, index) => {
+    const runnerIndex = result.findIndex(
+     (r) => r.racecheck === racecheckRunner
+    );
+    if (runnerIndex !== -1) {
+     result[runnerIndex].posSexo = index + 1;
+    }
+   });
   });
  });
 
