@@ -88,7 +88,6 @@ const RaceCheckTable = ({ racecheckErrors, runners }: { racecheckErrors: Raceche
                                 <th className="text-left font-mono text-sm text-gray-500 dark:text-gray-100 py-3 hidden md:table-cell">Categoría</th>
                                 <th className="text-center font-mono text-sm text-gray-500 dark:text-gray-100 py-3 hidden md:table-cell">Sexo</th>
                                 <th className="text-left font-mono text-sm text-gray-500 dark:text-gray-100 py-3">Tiempo</th>
-                                <th className="text-left font-mono text-sm text-gray-500 dark:text-gray-100 py-3 hidden md:table-cell">Ritmo</th>
                             </tr>
                         </thead>
                         <tbody className="modern-table-body">
@@ -99,8 +98,14 @@ const RaceCheckTable = ({ racecheckErrors, runners }: { racecheckErrors: Raceche
                                     <td className="text-start font-mono text-sm py-3">{runner.nombre}</td>
                                     <td className="text-start font-mono text-sm py-3 hidden md:table-cell">{runner.categoria}</td>
                                     <td className="text-center font-mono text-sm py-3 hidden md:table-cell">{runner.sexo}</td>
-                                    <td className="text-center font-mono text-sm py-3">{runner.tiempo}</td>
-                                    <td className="text-center font-mono text-sm py-3 hidden md:table-cell">{runner.ritmo}</td>
+                                    <td className="text-center font-mono text-sm py-3">
+
+                                        <div className="flex flex-col gap-1">
+                                            <p className="text-center font-mono text-sm">{runner.tiempo}</p>
+                                            <p className="text-xs opacity-50">{runner.ritmo}</p>
+                                        </div>
+
+                                    </td>
                                 </tr>
                             ))}
                         </tbody>

@@ -217,6 +217,7 @@ export const buildResults = (
      racecheck: runner,
      posGeneral: indexRunner + 1,
      posCat: 0,
+     posSexo: 0,
      modality: modality,
      category: matchedCategory,
      gender: matchedGender,
@@ -243,6 +244,21 @@ export const buildResults = (
      result[runnerIndex].posCat = index + 1;
     }
    });
+  });
+ });
+
+ // Calcular posición por sexo
+
+ genders.forEach((gender) => {
+  const runnersInGender = result.filter((runner) => runner.gender === gender);
+
+  const orderedByTime = orderByTime(runnersInGender.map((r) => r.racecheck));
+
+  orderedByTime.forEach((racecheckRunner, index) => {
+   const runnerIndex = result.findIndex((r) => r.racecheck === racecheckRunner);
+   if (runnerIndex !== -1) {
+    result[runnerIndex].posSexo = index + 1;
+   }
   });
  });
 

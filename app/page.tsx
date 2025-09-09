@@ -35,9 +35,7 @@ export default async function Home({
       </div>
 
       {ticket ? (
-        <div className="m-auto max-w-[700px] max-h-[80vh] flex flex-col gap-4">
-          <RunnerTicket runner={ticket.runner} event={ticket.event} metrics={ticket.metrics} />
-        </div>
+        <RunnerTicket runner={ticket.runner} event={ticket.event} metrics={ticket.metrics} />
       ) : (
         <EventsListSearch eventsData={events ?? []} />
       )}

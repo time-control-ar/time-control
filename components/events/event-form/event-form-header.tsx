@@ -41,7 +41,7 @@ export function EventFormHeader({ event, router, activeTab, setActiveTab, isSubm
             </div>
 
 
-            <div className="flex flex-col justify-start w-full mx-auto mt-3 sticky z-40 top-0 bg-white/80 dark:bg-cdark/80 backdrop-blur-lg py-2 mb-12">
+            <div className="flex flex-col justify-start w-full mx-auto mt-3 sticky z-50 top-0 bg-white/80 dark:bg-cdark/80 backdrop-blur-lg py-2 mb-12">
                 <div className="max-w-7xl mx-auto w-full flex items-center px-6 gap-3 relative">
                     <div className="absolute w-[90%] -bottom-2 left-1/2 -translate-x-1/2 h-[2px] bg-gradient-to-r from-transparent to-transparent via-slate-200 dark:via-cgray"></div>
                     {eventFormTabs.slice(0, event ? 2 : 1).map((tab, index: number) => (

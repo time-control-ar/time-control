@@ -18,5 +18,6 @@ export interface TicketResponse {
  metrics: {
   runnersBySameModality: number;
   runnersBySameCategory: number;
+  runnersBySameGender: number;
  };
 }

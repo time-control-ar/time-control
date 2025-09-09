@@ -241,7 +241,7 @@ const EventsListSearch = ({ eventsData }: { eventsData: EventResponse[] }) => {
                                 viewport={{ once: true }}
                                 className='relative w-full flex items-center justify-center'
                             >
-                                <EventCard event={event} previewMode={false} />
+                                <EventCard event={event} />
                             </motion.div>
                         ))}
                     </>

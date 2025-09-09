@@ -3,20 +3,20 @@ import SafeImage from '../../ui/safe-image'
 import { useState } from 'react'
 import { deleteImage, uploadImage } from '@/services/image';
 
-interface EventFormImageProps {
+interface EventFormLogoProps {
     eventId: string | undefined;
-    eventImage: string | undefined;
+    eventLogo: string | undefined;
     replaceUrl: (url: string) => void;
     setToast: (toast: { message: string; type: 'success' | 'error' | 'info'; show: boolean }) => void;
 }
 
-export function EventFormImage({
+export function EventFormLogo({
     eventId,
-    eventImage,
+    eventLogo,
     setToast,
     replaceUrl
-}: EventFormImageProps) {
-    const [isUpdatingImage, setIsUpdatingImage] = useState(false)
+}: EventFormLogoProps) {
+    const [isUpdatingLogo, setIsUpdatingLogo] = useState(false)
     const [currentFile, setCurrentFile] = useState<File | undefined>(undefined)
 
     const handleChangeImage = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -35,7 +35,7 @@ export function EventFormImage({
             // Validar tipo de archivo
             if (!file.type.startsWith('image/')) {
                 setToast({
-                    message: 'El archivo debe ser una imagen',
+                    message: 'El archivo debe ser una imagen (PNG, JPG)',
                     type: 'error',
                     show: true
                 })
@@ -45,7 +45,7 @@ export function EventFormImage({
             // Validar tamaño (15MB)
             if (file.size > 15 * 1024 * 1024) {
                 setToast({
-                    message: 'La imagen no puede superar los 15MB',
+                    message: 'El logo no puede superar los 15MB',
                     type: 'error',
                     show: true
                 })
@@ -55,29 +55,30 @@ export function EventFormImage({
             try {
                 if (!eventId) {
                     setToast({
-                        message: 'Error al actualizar la imagen',
+                        message: 'Error al actualizar el logo',
                         type: 'error',
                         show: true
                     })
                     return
                 }
-                setIsUpdatingImage(true)
-                const newBlob = await uploadImage(eventId, `image-${eventId}`, file, "image");
+                setIsUpdatingLogo(true)
+
+                const newBlob = await uploadImage(eventId, `logo-${eventId}`, file, "logo");
                 replaceUrl(newBlob.url)
                 setToast({
-                    message: 'Imagen actualizada exitosamente',
+                    message: 'Logo actualizado exitosamente',
                     type: 'success',
                     show: true
                 })
             } catch (error) {
                 setToast({
-                    message: 'Error al actualizar la imagen',
+                    message: 'Error al actualizar el logo',
                     type: 'error',
                     show: true
                 })
                 console.error(error);
             } finally {
-                setIsUpdatingImage(false)
+                setIsUpdatingLogo(false)
                 setCurrentFile(undefined)
             }
 
@@ -96,16 +97,16 @@ export function EventFormImage({
     const handleDeleteImage = async () => {
 
         try {
-            if (!eventId || !eventImage) {
+            if (!eventId || !eventLogo) {
                 return setToast({
                     message: 'Error al eliminar la imagen',
                     type: 'error',
                     show: true
                 })
             }
-            setIsUpdatingImage(true)
+            setIsUpdatingLogo(true)
 
-            await deleteImage(eventId, eventImage, "image")
+            await deleteImage(eventId, eventLogo, "logo")
             replaceUrl('')
 
             setCurrentFile(undefined)
@@ -123,14 +124,14 @@ export function EventFormImage({
                 show: true
             });
         } finally {
-            setIsUpdatingImage(false)
+            setIsUpdatingLogo(false)
         }
     }
 
     if (!eventId) {
         return (
             <p className='text-gray-500 text-sm p-4 border border-dashed border-gray-200 dark:border-cgray rounded-3xl'>
-                Podrás agregar la imagen cuando se haya creado el evento
+                Podrás agregar el logo cuando se haya creado el evento
             </p>
         )
     }
@@ -138,31 +139,31 @@ export function EventFormImage({
     return (
         <div className='w-full flex flex-col gap-1'>
             <label className="label-input">
-                Imagen
+                Logo
             </label>
 
-            <div className="flex overflow-hidden h-[200px] items-center bg-gray-50 dark:bg-gray-500/10 border-t border-gray-100 dark:border-cgray justify-center z-10 object-cover rounded-bl-3xl rounded-xl relative">
-                {isUpdatingImage ? (
+            <div className="flex overflow-hidden h-[120px] w-[300px] items-center bg-gray-50 dark:bg-gray-500/10 border-t border-gray-100 dark:border-cgray justify-center z-10 object-cover rounded-bl-3xl rounded-xl relative">
+                {isUpdatingLogo ? (
                     <div className="flex items-center justify-center h-full w-full gap-2 py-3" >
                         <Loader2 size={20} className="animate-spin  text-cdark dark:text-white" />
-                        <span className="text-sm font-medium ml-2">Actualizando imagen...</span>
+                        <span className="text-sm font-medium ml-2">Actualizando logo...</span>
                     </div>
-                ) : eventImage ? (
+                ) : eventLogo ? (
                     <>
                         <SafeImage
-                            src={eventImage}
+                            src={eventLogo}
                             alt={eventId}
-                            className="object-cover object-left-top h-full w-full"
+                            className="object-contain"
                             fill
                             priority
-                            fallbackText="Imagen"
+                            fallbackText="Logo"
                         />
                         <div className="flex items-center gap-1 absolute top-2 right-2">
                             <button
                                 type="button"
                                 className="rounded-full bg-red-600 flex items-center justify-center p-2 hover:bg-red-700 transition-all duration-75 w-max z-10"
                                 onClick={handleDeleteImage}
-                                disabled={isUpdatingImage}
+                                disabled={isUpdatingLogo}
                             >
                                 <TrashIcon
                                     className="w-4 h-4 text-white" strokeWidth={2.5}
@@ -175,24 +176,24 @@ export function EventFormImage({
                         <input
                             accept='image/*'
                             onChange={handleChangeImage}
-                            disabled={isUpdatingImage}
+                            disabled={isUpdatingLogo}
                             className="hidden"
                             id="image-upload"
                             type="file"
                         />
 
-                        <label htmlFor="image-upload" className={`cursor-pointer ${isUpdatingImage || !eventId || !!currentFile ? 'opacity-50' : ''}`}>
+                        <label htmlFor="image-upload" className={`cursor-pointer ${isUpdatingLogo || !eventId || !!currentFile ? 'opacity-50' : ''}`}>
                             <div className="text-gray-500 flex flex-col items-center justify-center">
                                 {currentFile ? (
                                     <>
                                         <Loader2 size={24} className="mx-auto mb-2 animate-spin" />
-                                        <p className='text-sm'>Procesando imagen...</p>
+                                        <p className='text-sm'>Procesando logo...</p>
                                         <p className="text-xs">{currentFile.name}</p>
                                     </>
                                 ) : (
                                     <>
-                                        <File size={24} className="mx-auto mb-2" />
-                                        <p className='text-sm'>Haz clic para seleccionar una imagen</p>
+                                        <File size={24} className="mx-auto mb-2 text-center" />
+                                        <p className='text-xs text-center'>Haz clic para seleccionar un logo</p>
                                         <p className="text-xs">PNG, JPG hasta 15MB</p>
                                     </>
                                 )}

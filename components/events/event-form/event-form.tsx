@@ -35,6 +35,7 @@ import { EventFormLocation } from './event-form-location'
 import { EventFormResults } from './event-form-results'
 import { EventFormConfig } from './event-form-config'
 import { EventFormType } from './event-form-type'
+import { EventFormLogo } from './event-form-logo'
 
 
 interface EventFormProps {
@@ -69,6 +70,7 @@ export default function EventForm({ event }: EventFormProps) {
         _id: event?._id ?? "",
         name: event?.name ?? "",
         image: event?.image ?? "",
+        logo: event?.logo ?? "",
         date: event?.date ?? "",
         startTime: event?.startTime ?? "",
         endTime: event?.endTime ?? "",
@@ -221,6 +223,9 @@ export default function EventForm({ event }: EventFormProps) {
 
     const handleReplaceImage = async (url: string) => {
         setValue('image', url)
+    }
+    const handleReplaceLogo = async (url: string) => {
+        setValue('logo', url)
     }
 
     const onSubmit = async (data: EventFormData) => {
@@ -391,6 +396,12 @@ export default function EventForm({ event }: EventFormProps) {
                                 eventId={event?._id}
                                 eventImage={watch('image')}
                                 replaceUrl={handleReplaceImage}
+                                setToast={setToast}
+                            />
+                            <EventFormLogo
+                                eventId={event?._id}
+                                eventLogo={watch('logo')}
+                                replaceUrl={handleReplaceLogo}
                                 setToast={setToast}
                             />
                             <QRGenerator

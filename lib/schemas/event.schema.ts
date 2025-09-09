@@ -17,6 +17,7 @@ export interface Runner {
  racecheck: RacecheckRunner;
  posGeneral: number;
  posCat: number;
+ posSexo: number;
  modality: Modality;
  category: Category;
  gender: Gender;
@@ -119,6 +120,7 @@ export const eventCreateSchema = z.object({
   .min(1, "Debe tener al menos 1 participante.")
   .optional(),
  image: z.string().optional(),
+ logo: z.string().optional(),
  modalities: z
   .array(
    z.object({
@@ -156,6 +158,7 @@ export interface EventResponse {
  description: string;
  maxParticipants: number;
  image: string;
+ logo: string;
  createdBy: string;
  createdAt: string;
  updatedAt: string;

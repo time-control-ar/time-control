@@ -201,12 +201,15 @@ export async function getRunnerTicket(
   const runnersBySameModality = results.runners.filter(
    (r) => r.modality.name === runner?.modality.name
   ).length;
-
+  const runnersBySameGender = results.runners.filter(
+   (r) => r.gender.name === runner?.gender.name
+  ).length;
   return {
    runner,
    event,
    metrics: {
     runnersBySameModality: runnersBySameModality,
+    runnersBySameGender: runnersBySameGender,
     runnersBySameCategory: runnersBySameCategory,
    },
   };

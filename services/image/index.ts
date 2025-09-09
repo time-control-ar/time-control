@@ -7,7 +7,8 @@ import { ObjectId } from "mongodb";
 export const uploadImage = async (
  eventId: string,
  fileName: string,
- file: File
+ file: File,
+ type: "image" | "logo"
 ) => {
  try {
   const blob = await put(fileName, file, {
@@ -19,9 +20,10 @@ export const uploadImage = async (
 
   //  update the event image to the new blob url
   const { db } = await connectToDatabase();
+
   await db
    .collection("events")
-   .updateOne({ _id: new ObjectId(eventId) }, { $set: { image: blob.url } });
+   .updateOne({ _id: new ObjectId(eventId) }, { $set: { [type]: blob.url } });
 
   return blob;
  } catch (error) {
@@ -30,7 +32,11 @@ export const uploadImage = async (
  }
 };
 
-export const deleteImage = async (eventId: string, fileUrl: string) => {
+export const deleteImage = async (
+ eventId: string,
+ fileUrl: string,
+ type: "image" | "logo"
+) => {
  try {
   console.log("deleting image", fileUrl);
   const blob = await del(fileUrl, {
@@ -40,7 +46,7 @@ export const deleteImage = async (eventId: string, fileUrl: string) => {
   const { db } = await connectToDatabase();
   await db
    .collection("events")
-   .updateOne({ _id: new ObjectId(eventId) }, { $set: { image: "" } });
+   .updateOne({ _id: new ObjectId(eventId) }, { $set: { [type]: "" } });
 
   return blob;
  } catch (error) {

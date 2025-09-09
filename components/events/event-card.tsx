@@ -2,11 +2,11 @@ import { ClockIcon, InfoIcon, MapPinIcon, PencilIcon, TrashIcon, TrophyIcon } fr
 import { EventResponse } from '@/lib/schemas/event.schema'
 import { motion } from "framer-motion"
 import SafeImage from '@/components/ui/safe-image'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import { adminEmails, buildResults, getRacecheckRunners } from '@/lib/utils'
 import Modal from '../ui/modal'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { AnimatePresence } from 'framer-motion'
 import { deleteEvent } from '@/services/event'
 import { GoogleMap, Marker } from '@react-google-maps/api'
@@ -89,15 +89,16 @@ export const EventDescription = ({ description }: { description: string }) => {
     )
 }
 
-export const EventCard = ({ event, previewMode = false }: { event: EventResponse, previewMode?: boolean, selectedTab?: string }) => {
+export const EventCard = ({ event, previewMode = false }: { event: EventResponse, previewMode?: boolean }) => {
     const router = useRouter()
+    const searchParams = useSearchParams()
     const { data: session } = useSession()
     const isAdmin = session?.user?.email && adminEmails.includes(session.user.email)
 
     const [isOpenDeleteModal, setIsOpenDeleteModal] = useState(false)
     const [isOpen, setIsOpen] = useState(false)
 
-    const [selectedTab, setSelectedTab] = useState<string>('info')
+    const [selectedTab, setSelectedTab] = useState<string>(event.racecheck ? 'results' : 'info')
 
 
     const handleTabChange = (tab: string) => {
@@ -126,8 +127,16 @@ export const EventCard = ({ event, previewMode = false }: { event: EventResponse
 
     }
 
+
     const { validLines } = getRacecheckRunners(event?.racecheck || '', event?.modalities || [], event?.genders || [])
     const { runners: racecheckData } = buildResults(validLines, event?.modalities || [], event?.genders || [])
+
+    useEffect(() => {
+        console.log(searchParams)
+        if (searchParams.get('eventId') === event._id) {
+            setIsOpen(true)
+        }
+    }, [event._id, searchParams])
 
     return (
         <>
@@ -203,15 +212,16 @@ export const EventCard = ({ event, previewMode = false }: { event: EventResponse
                         onClose={() => setIsOpen(false)}
                         showCloseButton={true}
                     >
-                        <div className="flex w-full items-center justify-start px-2 gap-1 pb-2 border-b border-gray-100 dark:border-cgray py-3">
+                        <div className="flex w-full items-end pt-4 justify-start px-2 border-b border-gray-100 dark:border-cgray">
                             {tabs.map((tab) => (
                                 <button
                                     key={tab.value}
                                     type="button"
                                     onClick={() => handleTabChange(tab.value)}
-                                    className={` transition-colors flex items-center justify-center gap-2 rounded-[11px] px-3 h-10 ${selectedTab === tab.value ? '' : 'opacity-60'}`}
+                                    className={`py-3 flex items-center justify-center gap-2 px-4 border-b-2 
+                                        ${selectedTab === tab.value ? 'border-cyan-300' : 'opacity-60 border-transparent'}`}
                                 >
-                                    <tab.icon className={`w-5 h-5 ${selectedTab === tab.value ? 'text-cyan-300' : 'text-gray-800 dark:text-white'}`} />
+                                    <tab.icon className={`w-4 h-4 ${selectedTab === tab.value ? 'text-cyan-500' : 'text-gray-800 dark:text-white'}`} />
                                     <p className={`text-sm font-mono font-semibold tracking-tight text-gray-800 dark:text-white`}>
                                         {tab.label}
                                     </p>
@@ -290,7 +300,7 @@ export const EventCard = ({ event, previewMode = false }: { event: EventResponse
                                     animate={{ opacity: 1, y: 0 }}
                                     exit={{ opacity: 0, y: 10 }}
                                     transition={{ duration: 0.2 }}
-                                    className="h-full overflow-auto flex p-2 pb-6 min-h-[50vh]"
+                                    className="h-full overflow-auto flex min-h-[50vh]"
                                 >
                                     {racecheckData.length > 0 ? (
                                         <ResultsTable
